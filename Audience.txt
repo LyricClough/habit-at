@@ -1,0 +1,3 @@
+Ideal User Characteristics: Goal Oriented, Busy, Self-Improvement Mindset, Data-Driven Thinker, Detailed Oriented
+Specific problem to solve: People with trouble forming or stopping habits, who require detailed reminders and information to be able to change.
+Usability & Accessibility: Colorblind accessible UI, hover and click features, simplicity is key (but with all the needed information).
