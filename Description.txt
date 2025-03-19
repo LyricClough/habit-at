@@ -1,1 +1,0 @@
-Our app will provide analytics and notifications (text/email) to help users build good habits and break bad ones. We will add a social feature as well so that users can compare with their friends and work together to build better habits!
