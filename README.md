@@ -4,10 +4,14 @@
 ## Habit-At
 
 ## Names below:
-Lyric Clough (lyric.clough@colorado.edu) LyricClough
+Lyric Clough (lyric.clough@colorado.edu)
+
 Aaditya Yanamandra (aaya7809@colorado.edu)
+
 Julian Franko (jufr1176@colorado.edu)
+
 Cal Duffy (dedu4158@colorado.edu)
+
 Sudarshan Damodharan (suda5189@colorado.edu)	
 
 ## App Name
