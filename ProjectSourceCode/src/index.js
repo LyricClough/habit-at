@@ -13,7 +13,7 @@ const session = require('express-session'); // To set the session object. To sto
 
 // create `ExpressHandlebars` instance and configure the layouts and partials dir.
 const hbs = handlebars.create({
-  extname: 'hbs',
+ extname: 'hbs',
   layoutsDir: __dirname + '/views/layouts',
   partialsDir: __dirname + '/views/partials',
 });
@@ -33,5 +33,7 @@ app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
 
 app.get('/', (req, res) => {
-  res.render('pages/login');
+  res.send('Hello World!');
 });
+
+app.listen('3000');
