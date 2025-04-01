@@ -16,7 +16,7 @@ const hbs = handlebars.create({
   extname: 'hbs',
   layoutsDir: __dirname + '/views/layouts',
   partialsDir: __dirname + '/views/partials',
-});*/
+});
 
 // database configuration
 const dbConfig = {
@@ -33,5 +33,5 @@ app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
 
 app.get('/', (req, res) => {
-  res.render('views/pages/login');
+  res.render('pages/login');
 });
