@@ -1,0 +1,22 @@
+
+<table>
+    <tr>
+        <th>Friends</th><th></th>
+    </tr>
+    {{#each friends}}
+    {{if this.sender == user.username}}
+    <tr>
+        <td>{{this.sender}}</td> <td><button class="btn btn-secondary mt-3">Remove friend</button></td>
+    </tr>
+    {{else}}
+    <tr>
+        <td>{{this.receiver}}</td> <td><button class="btn btn-secondary mt-3">Remove friend</button></td>
+    </tr>
+    {{/if}} 
+    {{/each}}
+</table>
+
+
+
+<button class="btn btn-primary mt-3" onclick="sendFriendRequest()">Add friend</button>
+
