@@ -36,4 +36,10 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
+//######DASHBOARD########
+app.get('/dashboard', (req, res) => {
+  res.render('pages/dashboard');
+});
+//#######################
+
 app.listen('3000');
