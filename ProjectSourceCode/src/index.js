@@ -55,4 +55,10 @@ app.get('/welcome', (req, res) => {
   res.json({status: 'success', message: 'Welcome!'});
 });
 
+//######DASHBOARD########
+app.get('/dashboard', (req, res) => {
+  res.render('pages/dashboard');
+});
+//#######################
+
 module.exports = app.listen(3000);
