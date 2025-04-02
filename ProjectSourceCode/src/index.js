@@ -36,4 +36,28 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
+// Routes for login.hbs
+
+
+// Routes for register.hbs
+
+
+// Routes for dashboard.hbs
+
+
+// Routes for calendar.hbs
+
+
+// Routes for statistics.hbs
+
+
+// Routes for friends.hbs
+
+
+// Routes for settings.hbs
+
+app.get('/Settings', (req, res) => {
+  res.render('pages/settings');
+});
+
 app.listen('3000');
