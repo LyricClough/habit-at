@@ -36,21 +36,6 @@ app.get('/', (req, res) => {
   res.render('pages/dashboard');
 });
 
-//######DASHBOARD########
-app.get('/dashboard', (req, res) => {
-
-  //Make sure logged in (temporarily disabled)
-  // if (user) {
-  //   res.render('pages/dashboard');
-  // }
-  // else {
-  //   res.redirect('pages/login');
-  // }
-
-  res.render('pages/dashboard');
-});
-//#######################
-
 app.get('/welcome', (req, res) => {
   res.json({status: 'success', message: 'Welcome!'});
 });
