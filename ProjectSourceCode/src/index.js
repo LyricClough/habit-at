@@ -33,11 +33,20 @@ app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
 
 app.get('/', (req, res) => {
-  res.send('Hello World!');
+  res.render('pages/dashboard');
 });
 
 //######DASHBOARD########
 app.get('/dashboard', (req, res) => {
+
+  //Make sure logged in (temporarily disabled)
+  // if (user) {
+  //   res.render('pages/dashboard');
+  // }
+  // else {
+  //   res.redirect('pages/login');
+  // }
+
   res.render('pages/dashboard');
 });
 //#######################
