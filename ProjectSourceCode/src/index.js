@@ -37,3 +37,9 @@ app.get('/', (req, res) => {
 });
 
 app.listen('3000');
+
+//function to get a friends list from the database
+
+function getfriends(username){
+const friends_list = 'SELECT friends.sender, friends.receiver FROM friends WHERE (sender = $1 OR receiver = $1) AND mutual = true';
+}

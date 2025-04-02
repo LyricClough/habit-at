@@ -1,0 +1,15 @@
+
+<div onload="getfriends(user.username)">
+    {{#each friends_list}}
+    {{if this.sender = user.username}}
+    <li>{{this.sender}}</li>
+    {{else}}
+    <li>{{this.receiver}}</li>
+    {{/if}} 
+    {{/each}}
+</div>
+
+
+
+<button class="btn btn-primary mt-3">Add friend</button>
+<button class="btn btn-secondary mt-3">Remove friend</button>
