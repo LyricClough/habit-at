@@ -36,10 +36,18 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
-app.listen('3000');
+app.get('/welcome', (req, res) => {
+  res.json({status: 'success', message: 'Welcome!'});
+});
+
+module.exports = app.listen(3000);
 
 //function to get a friends list from the database
 
 function getfriends(username){
 const friends_list = 'SELECT friends.sender, friends.receiver FROM friends WHERE (sender = $1 OR receiver = $1) AND mutual = true';
+}
+
+function sendFriendRequest(){
+const send_friend_request = 'INSERT INTO friends (sender, receiver, mutual) VALUES ($1, $2, false)';
 }
