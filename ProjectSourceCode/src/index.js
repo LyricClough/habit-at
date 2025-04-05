@@ -42,16 +42,17 @@ app.get('/welcome', (req, res) => {
 
 module.exports = app.listen(3000);
 
-app.get('/welcome', (req, res) => {
-  res.json({status: 'success', message: 'Welcome!'});
+//function to retreive the friends list from the database
+
+app.get('/friends', (req, res) => {
+  var userId = req.session.userId;
+  var query = 'SELECT friends.sender, friends.receiver FROM friends WHERE (sender == $2 OR receiver == $2) AND mutual = true';
+  db.any(query, [userId])
+    .then(data => {
+      res.render('pages/friends');
+    })
+    .catch(error => {
+      console.error('Error fetching friends:', error);
+      res.status(500).json({status: 'error', message: 'Error fetching friends'});
+    });
 });
-
-module.exports = app.listen(3000);
-
-function getfriends(username){
-const friends_list = 'SELECT friends.sender, friends.receiver FROM friends WHERE (sender = $1 OR receiver = $1) AND mutual = true';
-}
-
-function sendFriendRequest(){
-const send_friend_request = 'INSERT INTO friends (sender, receiver, mutual) VALUES ($1, $2, false)';
-}
