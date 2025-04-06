@@ -1,4 +1,6 @@
 {{> head}}
-{{> nav}}
+{{#unless hideNav}}
+  {{> nav}}
+{{/unless}}
 {{{body}}}
 {{> footer}}

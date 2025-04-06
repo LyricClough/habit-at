@@ -40,4 +40,22 @@ app.get('/welcome', (req, res) => {
   res.json({status: 'success', message: 'Welcome!'});
 });
 
-module.exports = app.listen(3000);
+// Render the login page without the nav bar
+app.get('/login', (req, res) => {
+  res.render('pages/login', { hideNav: true });
+});
+
+// Render the registration page without the nav bar
+app.get('/register', (req, res) => {
+  res.render('pages/register', { hideNav: true });
+});
+
+// module.exports = app.listen(3000);
+
+// Start the server on port 3000
+module.exports = app.listen(3000, () => {
+  console.log('Server is running on http://localhost:3000');
+});
+
+
+
