@@ -14,9 +14,8 @@ const hbs = handlebars.create({
   partialsDir: path.join(__dirname, 'views', 'partials'),
 });
 
-// Database configuration (if running in Docker, 'db' resolves to the db container)
 const dbConfig = {
-  host: 'db', // If testing locally outside Docker, change to 'localhost'
+  host: 'db', 
   port: 5432,
   database: process.env.POSTGRES_DB,
   user: process.env.POSTGRES_USER,
@@ -78,9 +77,15 @@ app.post('/register', async (req, res) => {
     console.log(error);
     // Check for duplicate key error (unique constraint violation)
     if (error.code === '23505') {
+      let message = 'Duplicate entry. Please check your details.';
+      if (error.constraint === 'users_username_key') {
+        message = 'Username already exists. Please choose a different one.';
+      } else if (error.constraint === 'users_email_key') {
+        message = 'An account with this email already exists.';
+      }
       return res.render('pages/register', {
         hideNav: true,
-        message: 'Username already exists. Please choose a different one.',
+        message,
         error: true,
       });
     }
@@ -93,12 +98,13 @@ app.post('/register', async (req, res) => {
 });
 
 
+
 // Render the login page (with nav hidden)
 app.get('/login', (req, res) => {
   res.render('pages/login', { hideNav: true });
 });
 
-// Handle login form submission (users log in using their username)
+
 app.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -131,6 +137,7 @@ app.post('/login', async (req, res) => {
     });
   }
 });
+
 
 // Middleware to protect routes
 const auth = (req, res, next) => {
