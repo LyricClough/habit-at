@@ -36,23 +36,18 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
-<<<<<<< HEAD
-=======
-app.get('/welcome', (req, res) => {
-  res.json({status: 'success', message: 'Welcome!'});
-});
-
-module.exports = app.listen(3000);
->>>>>>> de297ed (added database implimentation of send friend request)
-
 app.get('/welcome', (req, res) => {
   res.json({status: 'success', message: 'Welcome!'});
 });
 
 module.exports = app.listen(3000);
 
-<<<<<<< HEAD
-=======
+app.get('/welcome', (req, res) => {
+  res.json({status: 'success', message: 'Welcome!'});
+});
+
+module.exports = app.listen(3000);
+
 function getfriends(username){
 const friends_list = 'SELECT friends.sender, friends.receiver FROM friends WHERE (sender = $1 OR receiver = $1) AND mutual = true';
 }
@@ -60,4 +55,3 @@ const friends_list = 'SELECT friends.sender, friends.receiver FROM friends WHERE
 function sendFriendRequest(){
 const send_friend_request = 'INSERT INTO friends (sender, receiver, mutual) VALUES ($1, $2, false)';
 }
->>>>>>> de297ed (added database implimentation of send friend request)
