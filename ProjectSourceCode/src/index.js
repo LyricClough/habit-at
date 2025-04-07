@@ -48,8 +48,8 @@ app.get('/friends', (req, res) => {
   var userId = req.session.userId;
   var query = 'SELECT friends.sender, friends.receiver FROM friends WHERE (sender == $2 OR receiver == $2) AND mutual = true';
   db.any(query, [userId])
-    .then(data => {
-      res.render('pages/friends');
+    .then(friends => {
+      res.render('pages/friends', friends);
     })
     .catch(error => {
       console.error('Error fetching friends:', error);
