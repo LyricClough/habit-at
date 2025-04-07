@@ -63,10 +63,8 @@ app.get('/register', (req, res) => {
   res.render('pages/register', { hideNav: true });
 });
 
-// Handle registration form submission
 app.post('/register', async (req, res) => {
   try {
-    // Expect username, email, and password from the registration form
     const { username, email, password } = req.body;
     const hash = await bcrypt.hash(password, 10);
     const insertQuery = `
@@ -78,13 +76,22 @@ app.post('/register', async (req, res) => {
     return res.redirect('/login');
   } catch (error) {
     console.log(error);
+    // Check for duplicate key error (unique constraint violation)
+    if (error.code === '23505') {
+      return res.render('pages/register', {
+        hideNav: true,
+        message: 'Username already exists. Please choose a different one.',
+        error: true,
+      });
+    }
     return res.render('pages/register', {
       hideNav: true,
-      message: 'Could not register, try a different username',
+      message: 'Could not register, try again.',
       error: true,
     });
   }
 });
+
 
 // Render the login page (with nav hidden)
 app.get('/login', (req, res) => {
