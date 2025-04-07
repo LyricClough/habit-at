@@ -1,188 +1,26 @@
-// // require('../env');
-// const express = require('express'); // To build an application server or API
-// const app = express();
-// const handlebars = require('express-handlebars');
-// const Handlebars = require('handlebars');
-// const path = require('path');
-// const pgp = require('pg-promise')(); // To connect to the Postgres DB from the node server
-// const bodyParser = require('body-parser');
-// const session = require('express-session'); // To set the session object. To store or access session data, use the `req.session`, which is (generally) serialized as JSON by the store.
-
-// const bcrypt = require('bcryptjs'); //  To hash passwords
-
-// // create `ExpressHandlebars` instance and configure the layouts and partials dir.
-// const hbs = handlebars.create({
-//  extname: 'hbs',
-//   layoutsDir: __dirname + '/views/layouts',
-//   partialsDir: __dirname + '/views/partials',
-// });
-
-// // database configuration
-// const dbConfig = {
-//   host: 'db', // the database server
-//   port: 5432, // the database port
-//   database: process.env.POSTGRES_DB, // the database name
-//   user: process.env.POSTGRES_USER, // the user account to connect with
-//   password: process.env.POSTGRES_PASSWORD, // the password of the user account
-// };
-
-// const db = pgp(dbConfig)
-
-// // Test DB connection
-// db.connect()
-//   .then(obj => {
-//     console.log('Database connection successful');
-//     obj.done();
-//   })
-//   .catch(error => {
-//     console.log('ERROR:', error.message || error);
-//   });
-
-
-// // Register `hbs` as our view engine using its bound `engine()` function.
-// app.engine('hbs', hbs.engine);
-// app.set('view engine', 'hbs');
-// app.set('views', path.join(__dirname, 'views'));
-
-
-// //Middleware to parse form data and JSON
-// app.use(bodyParser.json());
-// app.use(
-//   bodyParser.urlencoded({
-//     extended: true,
-//   })
-// );
-
-// // Session Configuration
-// app.use(
-//   session({
-//     secret: process.env.SESSION_SECRET,
-//     saveUninitialized: false,
-//     resave: false,
-//   })
-// );
-
-
-// app.get('/', (req, res) => {
-//   return res.redirect('/login');
-// });
-
-
-// // Render the registration page
-// app.get('/register', (req, res) => {
-//   res.render('pages/register', { hideNav: true });
-// });
-
-// // Handle registration form submission
-// app.post('/register', async (req, res) => {
-//   try {
-//     const { username, password } = req.body;
-
-//     const hash = await bcrypt.hash(password, 10);
-
-//     const insertQuery = `
-//       INSERT INTO users (username, password)
-//       VALUES ($1, $2)
-//       RETURNING username;
-//     `;
-
-//     await db.one(insertQuery, [username, hash]);
-
-//     return res.redirect('/login');
-//   } catch (error) {
-//     console.log(error);
-//     return res.render('pages/register', {
-//       layout: 'auth',
-//       message: 'Could not register, Try a Different Username',
-//       error: true,
-//     });
-//   }
-// });
-
-// // Render the login page 
-// app.get('/login', (req, res) => {
-//   res.render('pages/login', { hideNav: true });
-// });
-
-
-// app.post('/login', async (req, res) => {
-//   try {
-//     const { username, password } = req.body;
-
-//     const user = await db.oneOrNone(
-//       'SELECT * FROM users WHERE username = $1',
-//       [username]
-//     );
-
-//     if (!user) {
-//       return res.render('pages/login', {
-//         layout: 'auth',
-//         message: 'Incorrect username or password.',
-//         error: true,
-//       });
-//     }
-
-//     const match = await bcrypt.compare(password, user.password);
-//     if (!match) {
-//       return res.render('pages/login', {
-//         layout: 'auth',
-//         message: 'Incorrect username or password.',
-//         error: true,
-//       });
-//     }
-
-
-//   } catch (error) {
-//     console.log(error);
-//     return res.render('pages/login', {
-//       layout: 'auth',
-//       message: 'Something went wrong. Try again.',
-//       error: true,
-//     });
-//   }
-// });
-
-
-// // Middleware to protect routes
-// const auth = (req, res, next) => {
-//   if (!req.session.user) {
-//     return res.redirect('/login');
-//   }
-//   next();
-// };
-
-// app.use(auth);
-
-// // Start the server on port 3000
-// module.exports = app.listen(3000, () => {
-//   console.log('Server is running on http://localhost:3000');
-// });
-
-// require('../env');
-const express = require('express'); // To build an application server or API
+const express = require('express');
 const app = express();
 const handlebars = require('express-handlebars');
-const Handlebars = require('handlebars');
 const path = require('path');
-const pgp = require('pg-promise')(); // To connect to the Postgres DB from the node server
+const pgp = require('pg-promise')();
 const bodyParser = require('body-parser');
-const session = require('express-session'); // To set the session object.
-const bcrypt = require('bcryptjs'); // To hash passwords
+const session = require('express-session');
+const bcrypt = require('bcryptjs');
 
-// create `ExpressHandlebars` instance and configure the layouts and partials dir.
+// Create Handlebars instance
 const hbs = handlebars.create({
   extname: 'hbs',
-  layoutsDir: __dirname + '/views/layouts',
-  partialsDir: __dirname + '/views/partials',
+  layoutsDir: path.join(__dirname, 'views', 'layouts'),
+  partialsDir: path.join(__dirname, 'views', 'partials'),
 });
 
-// database configuration
+// Database configuration (if running in Docker, 'db' resolves to the db container)
 const dbConfig = {
-  host: 'db', // the database server
-  port: 5432, // the database port
-  database: process.env.POSTGRES_DB, // the database name
-  user: process.env.POSTGRES_USER, // the user account to connect with
-  password: process.env.POSTGRES_PASSWORD, // the password of the user account
+  host: 'db', // If testing locally outside Docker, change to 'localhost'
+  port: 5432,
+  database: process.env.POSTGRES_DB,
+  user: process.env.POSTGRES_USER,
+  password: process.env.POSTGRES_PASSWORD,
 };
 
 const db = pgp(dbConfig);
@@ -197,18 +35,14 @@ db.connect()
     console.log('ERROR:', error.message || error);
   });
 
-// Register `hbs` as our view engine using its bound `engine()` function.
+// Register Handlebars as the view engine
 app.engine('hbs', hbs.engine);
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Middleware to parse form data and JSON
+// Middleware to parse JSON and form data
 app.use(bodyParser.json());
-app.use(
-  bodyParser.urlencoded({
-    extended: true,
-  })
-);
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Session Configuration
 app.use(
@@ -219,11 +53,12 @@ app.use(
   })
 );
 
+// Redirect root to /login
 app.get('/', (req, res) => {
   return res.redirect('/login');
 });
 
-// Render the registration page
+// Render the registration page (with nav hidden)
 app.get('/register', (req, res) => {
   res.render('pages/register', { hideNav: true });
 });
@@ -231,30 +66,32 @@ app.get('/register', (req, res) => {
 // Handle registration form submission
 app.post('/register', async (req, res) => {
   try {
-    const { username, password } = req.body;
+    // Expect username, email, and password from the registration form
+    const { username, email, password } = req.body;
     const hash = await bcrypt.hash(password, 10);
     const insertQuery = `
-      INSERT INTO users (username, password)
-      VALUES ($1, $2)
-      RETURNING username;
+      INSERT INTO users (username, email, password)
+      VALUES ($1, $2, $3)
+      RETURNING username, email;
     `;
-    await db.one(insertQuery, [username, hash]);
+    await db.one(insertQuery, [username, email, hash]);
     return res.redirect('/login');
   } catch (error) {
     console.log(error);
     return res.render('pages/register', {
       hideNav: true,
-      message: 'Could not register, Try a Different Username',
+      message: 'Could not register, try a different username',
       error: true,
     });
   }
 });
 
-// Render the login page 
+// Render the login page (with nav hidden)
 app.get('/login', (req, res) => {
   res.render('pages/login', { hideNav: true });
 });
 
+// Handle login form submission (users log in using their username)
 app.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -276,7 +113,7 @@ app.post('/login', async (req, res) => {
     }
     req.session.user = user;
     req.session.save(() => {
-      return res.redirect('/discover');
+      return res.redirect('/dashboard');
     });
   } catch (error) {
     console.log(error);
@@ -298,10 +135,23 @@ const auth = (req, res, next) => {
 
 app.use(auth);
 
-// Start the server on port 3000
-module.exports = app.listen(3000, () => {
-  console.log('Server is running on http://localhost:3000');
+// Dashboard route – ensure you have a corresponding view at views/pages/dashboard.hbs
+app.get('/dashboard', (req, res) => {
+  res.render('pages/dashboard', { hideNav: false, user: req.session.user });
 });
 
+// Logout route: destroy session and redirect to /login
+app.get('/logout', (req, res) => {
+  req.session.destroy(err => {
+    if (err) console.log(err);
+    return res.redirect('/login');
+  });
+});
+
+// Start the server on port 3000 (or change the host port mapping in your docker-compose file if needed)
+const PORT = process.env.PORT || 3000;
+module.exports = app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
 
 

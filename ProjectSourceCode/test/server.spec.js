@@ -10,7 +10,12 @@ chai.should();
 chai.use(chaiHttp);
 const {assert, expect} = chai;
 
-// ********************** DEFAULT LOGIN TESTCASE ****************************
+// ********************** DEFAULT WELCOME TESTCASE ****************************
+
+
+// *********************** TODO: WRITE 2 UNIT TESTCASES **************************
+
+// *********************** LOGIN TESTCASE **************************
 
 describe('Server!', () => {
   it('Redirects to the login page from the root endpoint', done => {
@@ -27,6 +32,6 @@ describe('Server!', () => {
       });
   });
 });
-// *********************** TODO: WRITE 2 UNIT TESTCASES **************************
+
 
 // ********************************************************************************
