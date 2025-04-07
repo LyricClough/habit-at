@@ -10,23 +10,23 @@ chai.should();
 chai.use(chaiHttp);
 const {assert, expect} = chai;
 
-// ********************** DEFAULT WELCOME TESTCASE ****************************
+// ********************** DEFAULT LOGIN TESTCASE ****************************
 
 describe('Server!', () => {
-  // Sample test case given to test / endpoint.
-  it('Returns the default welcome message', done => {
+  it('Redirects to the login page from the root endpoint', done => {
     chai
       .request(server)
-      .get('/welcome')
+      .get('/')
+      .redirects(0) // Prevent automatic redirection
       .end((err, res) => {
-        expect(res).to.have.status(200);
-        expect(res.body.status).to.equals('success');
-        assert.strictEqual(res.body.message, 'Welcome!');
+        // Expect a 302 (or 301) redirection status code
+        expect(res).to.have.status(302);
+        // Optionally check the Location header for '/login'
+        expect(res).to.have.header('location', '/login');
         done();
       });
   });
 });
-
 // *********************** TODO: WRITE 2 UNIT TESTCASES **************************
 
 // ********************************************************************************
