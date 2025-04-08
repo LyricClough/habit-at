@@ -36,28 +36,67 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
-// Routes for login.hbs
-
-
-// Routes for register.hbs
-
-
-// Routes for dashboard.hbs
-
-
-// Routes for calandar.hbs
-
-app.get('/calendar', (req, res) => {
-  res.render('pages/calendar');
+app.get('/welcome', (req, res) => {
+  res.json({status: 'success', message: 'Welcome!'});
 });
 
+// Routes
 
-// Routes for statistics.hbs
+// Main Route
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
 
+// Routes for calendar.hbs
+app.get('/calendar', async (req, res) => {
+  const userId = req.session.userId; // Get user ID from session (if logged in)
 
-// Routes for friends.hbs
+  try {
+    // Fetch habits from the database
+    const habits = await db.any(`
+      SELECT * FROM habits 
+      JOIN user_contents ON habits.user_habit_id = user_contents.user_habit_id
+      WHERE user_contents.user_id = $1
+      ORDER BY weekday, time_slot`, [userId]);
 
+    // Organize the habits by weekday and time slot
+    const calendarData = Array.from({ length: 7 }, () => Array(24).fill(null));
+    habits.forEach(habit => {
+      calendarData[habit.weekday][habit.time_slot] = habit;
+    });
 
-// Routes for settings.hbs
+    // Render the calendar page
+    res.render('pages/calendar', { calendarData });
+  } catch (err) {
+    console.error("Error fetching calendar data: ", err);
+    res.status(500).send('Error loading calendar');
+  }
+});
 
-app.listen('3000');
+// POST route to handle adding a new habit
+app.post('/add-habit', async (req, res) => {
+  const { habitName, habitDescription, habitWeekday, habitTime } = req.body;
+
+  try {
+    // Insert habit into the "habits" table
+    const newHabit = await db.one(`
+      INSERT INTO habits (habit_name, description, weekday, time_slot)
+      VALUES ($1, $2, $3, $4)
+      RETURNING user_habit_id`, [habitName, habitDescription, habitWeekday, habitTime]);
+
+    // Associate the habit with the logged-in user
+    const userId = req.session.userId; // Assuming user ID is stored in the session
+    await db.none(`
+      INSERT INTO user_contents (user_id, user_habit_id)
+      VALUES ($1, $2)`, [userId, newHabit.user_habit_id]);
+
+    // Send success response
+    res.json({ message: 'Habit added successfully!' });
+  } catch (error) {
+    console.error("Error adding habit:", error);
+    res.status(500).json({ message: "Error adding habit" });
+  }
+});
+
+// Start the server
+module.exports = app.listen(3000);
