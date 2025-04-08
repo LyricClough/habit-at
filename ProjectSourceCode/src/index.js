@@ -32,10 +32,6 @@ app.engine('hbs', hbs.engine);
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
 
-app.get('/', (req, res) => {
-  res.render('pages/dashboard');
-});
-
 app.get('/welcome', (req, res) => {
   res.json({status: 'success', message: 'Welcome!'});
 });
