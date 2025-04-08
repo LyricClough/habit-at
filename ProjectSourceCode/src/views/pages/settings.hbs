@@ -16,18 +16,18 @@
   </head>
   <body>
     <div class="container py-5">
-        <h2 class="mb-4">User Settings</h2>
-        <form>
+        <h2 class="mb-4">User Settings for {{user.username}} (password is {{user.password}})</h2>
+        <form method="POST" action="/settings">
             <div class="row mb-4">
                 <div class="col-md-6">
                     <h4>Personal Information</h4>
                     <div class="mb-3">
-                        <label for="fullName" class="form-label">Full Name</label>
-                        <input type="text" class="form-control" id="fullName" value="John Doe">
+                        <label for="username" class="form-label">Full Name</label>
+                        <input type="text" name="username" class="form-control" id="username" value={{user.username}}>
                     </div>
                     <div class="mb-3">
                         <label for="email" class="form-label">Email address</label>
-                        <input type="email" class="form-control" id="email" value="john.doe@example.com">
+                        <input type="email" class="form-control" id="email" value={{user.email}}>
                     </div>
                     <div class="mb-3">
                         <label for="phone" class="form-label">Phone Number</label>
@@ -78,15 +78,15 @@
                     <h4>Change Password</h4>
                     <div class="mb-3">
                         <label for="currentPassword" class="form-label">Current Password</label>
-                        <input type="password" class="form-control" id="currentPassword">
+                        <input type="password" class="form-control" id="currentPassword" name="currentPassword">
                     </div>
                     <div class="mb-3">
                         <label for="newPassword" class="form-label">New Password</label>
-                        <input type="password" class="form-control" id="newPassword">
+                        <input type="password" class="form-control" id="newPassword" name="newPassword">
                     </div>
                     <div class="mb-3">
                         <label for="confirmPassword" class="form-label">Confirm New Password</label>
-                        <input type="password" class="form-control" id="confirmPassword">
+                        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword">
                     </div>
                 </div>
                 <div class="col-md-6">
