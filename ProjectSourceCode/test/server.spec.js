@@ -36,16 +36,34 @@ describe('Server!', () => {
     chai
       .request(server)
       .get('/')
-      .redirects(0) // Prevent automatic redirection
+      .redirects(0) 
       .end((err, res) => {
-        // Expect a 302 (or 301) redirection status code
         expect(res).to.have.status(302);
-        // Optionally check the Location header for '/login'
         expect(res).to.have.header('location', '/login');
         done();
       });
   });
 });
+
+describe('Registration', () => {
+  it('Registers a new user and redirects to the login page', done => {
+    chai
+      .request(server)
+      .post('/register')
+      .send({
+        username: 'newuser',
+        email: 'newuser@example.com',
+        password: 'password123'
+      })
+      .redirects(0) // prevent following the redirect automatically
+      .end((err, res) => {
+        expect(res).to.have.status(302);
+        expect(res).to.have.header('location', '/login');
+        done();
+      });
+  });
+});
+
 
 
 // ********************************************************************************
