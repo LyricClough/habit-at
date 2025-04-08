@@ -1,18 +1,15 @@
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="ProjectSourceCode/src/resources/css/calendarStyle.css">
 
-<div class="row">
-    <div class="d-flex justify-content-center">
-        <div class="custom-container">
-            <!-- Create Event Button to open Modal -->
-            <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#habit_modal">
-                Add Habit
-            </button>
-        </div>
-    </div>
-    <div class="col">
+<div class="row justify-content-center">
+    <div class="col-8">
         <div class="container-md container-fluid py-4 h-100">
             <div id="calendar" class="row h-100">
+                
+                <!-- Add Habit Button -->
+                <button type="button" class="btn btn-primary mt-2 mb-2" data-bs-toggle="modal" data-bs-target="#habit_modal">
+                    Add Habit
+                </button>
+
                 <!-- Calendar days -->
                 <div class="col-sm m-1 bg-light rounded px-1 px-md-2" id="sunday">
                     <div class="h6 text-center position-relative py-2 day">
