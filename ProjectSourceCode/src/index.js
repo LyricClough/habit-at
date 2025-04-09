@@ -182,3 +182,18 @@ module.exports = app.listen(PORT, () => {
 });
 
 
+//######DASHBOARD########
+app.get('/dashboard', (req, res) => {
+
+  //Make sure logged in (temporarily disabled)
+  // if (user) {
+  //   res.render('pages/dashboard');
+  // }
+  // else {
+  //   res.redirect('pages/login');
+  // }
+
+  res.render('pages/dashboard');
+});
+//#######################
+
