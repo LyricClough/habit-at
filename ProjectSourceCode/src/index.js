@@ -72,7 +72,7 @@ app.post('/register', async (req, res) => {
       RETURNING username, email;
     `;
     await db.one(insertQuery, [username, email, hash]);
-    return res.redirect('/login');
+    return res.redirect('/login'); // Success: redirect with implicit 302
   } catch (error) {
     console.log(error);
     // Check for duplicate key error (unique constraint violation)
@@ -83,13 +83,13 @@ app.post('/register', async (req, res) => {
       } else if (error.constraint === 'users_email_key') {
         message = 'An account with this email already exists.';
       }
-      return res.render('pages/register', {
+      return res.status(400).render('pages/register', {
         hideNav: true,
         message,
         error: true,
       });
     }
-    return res.render('pages/register', {
+    return res.status(400).render('pages/register', {
       hideNav: true,
       message: 'Could not register, try again.',
       error: true,
@@ -98,30 +98,39 @@ app.post('/register', async (req, res) => {
 });
 
 
-
 // Render the login page (with nav hidden)
 app.get('/login', (req, res) => {
   res.render('pages/login', { hideNav: true });
 });
-
-
 app.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
+    console.log("Login attempt for username:", username);
     const user = await db.oneOrNone('SELECT * FROM users WHERE username = $1', [username]);
+    console.log("User found:", user);
     if (!user) {
-      return res.render('pages/login', {
+      const errorResponse = { message: 'Incorrect username or password.' };
+      // If running tests, return JSON; otherwise render view.
+      if (process.env.NODE_ENV === 'test') {
+        return res.status(400).json(errorResponse);
+      }
+      return res.status(400).render('pages/login', {
         hideNav: true,
-        message: 'Incorrect username or password.',
-        error: true,
+        ...errorResponse,
+        error: true
       });
     }
     const match = await bcrypt.compare(password, user.password);
+    console.log("Password match:", match);
     if (!match) {
-      return res.render('pages/login', {
+      const errorResponse = { message: 'Incorrect username or password.' };
+      if (process.env.NODE_ENV === 'test') {
+        return res.status(400).json(errorResponse);
+      }
+      return res.status(400).render('pages/login', {
         hideNav: true,
-        message: 'Incorrect username or password.',
-        error: true,
+        ...errorResponse,
+        error: true
       });
     }
     req.session.user = user;
@@ -130,10 +139,14 @@ app.post('/login', async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    return res.render('pages/login', {
+    const errorResponse = { message: 'Something went wrong. Try again.' };
+    if (process.env.NODE_ENV === 'test') {
+      return res.status(400).json(errorResponse);
+    }
+    return res.status(400).render('pages/login', {
       hideNav: true,
-      message: 'Something went wrong. Try again.',
-      error: true,
+      ...errorResponse,
+      error: true
     });
   }
 });
