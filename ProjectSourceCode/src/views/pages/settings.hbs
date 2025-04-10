@@ -22,16 +22,16 @@
                 <div class="col-md-6">
                     <h4>Personal Information</h4>
                     <div class="mb-3">
-                        <label for="username" class="form-label">Full Name</label>
+                        <label for="username" class="form-label">Username</label>
                         <input type="text" name="username" class="form-control" id="username" value={{user.username}}>
                     </div>
                     <div class="mb-3">
                         <label for="email" class="form-label">Email address</label>
-                        <input type="email" class="form-control" id="email" value={{user.email}}>
+                        <input type="email" class="form-control" id="email" name="email" value="{{user.email}}">
                     </div>
                     <div class="mb-3">
-                        <label for="phone" class="form-label">Phone Number</label>
-                        <input type="tel" class="form-control" id="phone" value="+1 (555) 123-4567">
+                        <label for="phone" class="form-label">Phone Number (Note: Only US phone numbers, do not include extension) </label>
+                        <input type="tel" class="form-control" id="phone" name="phone" value="{{user.phone}}">
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -49,12 +49,14 @@
                 <div class="col-md-6">
                     <h4>Email and Phone Preferences</h4>
                     <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="emailCheck" checked>
                         <label class="form-check-label" for="emailcheck">Receive email notifications</label>
+                        <input type="checkbox" class="form-check-input" id="emailCheck" name="email_notif" {{#if user.email_notif}}checked{{/if}}>
                     </div>
                     <div class="mb-3 form-check">
                         <input type="checkbox" class="form-check-input" id="phoneCheck">
                         <label class="form-check-label" for="phoneCheck">Receive text notifications</label>
+                        <input type="checkbox" class="form-check-input" id="phoneCheck" name="phone_notif" {{#if user.phone_notif}}checked{{/if}}>
+
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -92,21 +94,22 @@
                 <div class="col-md-6">
                     <h4>Privacy Settings</h4>
                     <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="profileVisibilityCheck" checked aria-label="Switch profile visibility" data-bs-toggle="tooltip" data-bs-placement="top" title="Switch profile visibility">
                         <label class="form-check-label" for="profileVisibilityCheck">Profile is visible to others</label>
+                        <input class="form-check-input" type="checkbox" id="profileVisibilityCheck" name="show_profile" {{#if user.show_profile}}checked{{/if}}>
+
                     </div>
                     
                     <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="darkModeSwitch" checked aria-label="Switch between light and dark mode" data-bs-toggle="tooltip" data-bs-placement="top" title="Switch between light and dark mode">
                         <label class="form-check-label" for="darkModeSwitch">Dark Mode</label>
+                        <input class="form-check-input" type="checkbox" id="darkModeSwitch" name="dark_mode" {{#if user.dark_mode}}checked{{/if}}>
                     </div>
 
                     <script>
                         document.addEventListener('DOMContentLoaded', (event) => {
                             const htmlElement = document.documentElement;
                             const switchElement = document.getElementById('darkModeSwitch');
-                            const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)").matches;
-                            const currentTheme = localStorage.getItem('bsTheme') || (prefersDarkScheme ? 'dark' : 'light');
+                            const userPrefersDark = {{user.dark_mode}};
+                            const currentTheme = userPrefersDark ? 'dark' : 'light';
 
                             htmlElement.setAttribute('data-bs-theme', currentTheme);
                             switchElement.checked = currentTheme === 'dark';
