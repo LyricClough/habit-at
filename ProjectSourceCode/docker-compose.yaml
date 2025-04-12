@@ -12,7 +12,7 @@ services:
   web:
     image: node:lts
     user: 'node' #you can remove this if you are facing access issues when installing node packages
-    working_dir: /ProjectSourceCode
+    working_dir: /repository
     env_file: .env
     environment:
       - NODE_ENV=development
@@ -23,6 +23,5 @@ services:
     volumes:
       - ./:/repository
     command: 'npm run testandrun'
-
 volumes:
   habit-at:

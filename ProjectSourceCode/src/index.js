@@ -181,4 +181,19 @@ module.exports = app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
+module.exports = app.listen(3000);
 
+//function to retreive the friends list from the database
+
+app.get('/friends', (req, res) => {
+  var userId = req.session.userInfo.userId;
+  var query = 'SELECT friends.sender, friends.receiver FROM friends WHERE (sender = $1 OR receiver = $1) AND mutual = true';
+  db.any(query, [userId])
+    .then(friends => {
+      res.render('pages/friends', friends);
+    })
+    .catch(error => {
+      console.error('Error fetching friends:', error);
+      res.status(500).json({status: 'error', message: 'Error fetching friends'});
+    });
+});

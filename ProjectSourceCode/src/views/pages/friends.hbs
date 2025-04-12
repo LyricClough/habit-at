@@ -1,7 +1,9 @@
+<h1>Friends</h1>
+
 
 <table>
     <tr>
-        <th>Friends</th><th></th>
+        <th> My Friends</th><th></th>
     </tr>
     {{#each friends}}
     {{if this.sender == user.username}}
@@ -19,7 +21,22 @@
 
 
 <button class="btn btn-primary mt-3" onclick="sendFriendRequest()">Add friend</button>
-<<<<<<< HEAD
-=======
+<div class="modal fade" id="friendrequest" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div>
+                <form id="data-form">
+                    <div>
+                        <label for="username" class="form-label">Username:</label>
+                        <input type="text" class="form-control" id="username">
+                    </div>
+                    <button class="btn btn-primary" type="button" onclick="sendFriendRequest()">
+                        Send Friend Request
+                    </button>
+                </form>
+            </div>
+        </div>
 
->>>>>>> e6b9426 (added code to create the friends list)
+    </div>
+
+</div>
