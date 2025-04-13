@@ -18,6 +18,17 @@
     {{/each}}
 </table>
 
+<table>
+    <tr>
+        <th> Pending Request</th><th></th>
+    </tr>
+    {{#each pending}}
+    <tr>
+        <td>{{this.sender}}</td> <td><button class="btn btn-secondary mt-3">Add friend</button></td>
+    </tr>
+    {{/each}}
+</table>
+
 
 
 <button class="btn btn-primary mt-3" onclick="sendFriendRequest()">Add friend</button>
@@ -30,7 +41,7 @@
                         <label for="username" class="form-label">Username:</label>
                         <input type="text" class="form-control" id="username">
                     </div>
-                    <button class="btn btn-primary" type="button">
+                    <button class="btn btn-primary" type="submit" id="submit-button">
                         Send Friend Request
                     </button>
                 </form>

@@ -188,8 +188,19 @@ module.exports = app.listen(3000);
 app.get('/friends', (req, res) => {
   var userId = req.session.userInfo.userId;
   var query = 'SELECT friends.sender, friends.receiver FROM friends WHERE (sender = $1 OR receiver = $1) AND mutual = true';
+  var pendingREquest = 'SELECT friends.sender FROM friends WHERE reciever = $1 AND mutual = false';
   db.any(query, [userId])
     .then(friends => {
+      db.any(pendingREquest, [userId])
+        .then(pending => {
+          friends.forEach(friend => {
+            friend.mutual = true;
+          });
+          return friends;
+        })
+        .then(friends => {
+          res.render('pages/friends', { friends }, {pending});
+        });
       res.render('pages/friends', friends);
     })
     .catch(error => {
