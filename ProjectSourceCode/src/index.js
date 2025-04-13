@@ -197,3 +197,21 @@ app.get('/friends', (req, res) => {
       res.status(500).json({status: 'error', message: 'Error fetching friends'});
     });
 });
+
+app.post('/friends', (req, res) => {
+  const { friendId } = req.body;
+  const userId = req.session.userInfo.userId;
+  const query = `
+    INSERT INTO friends (sender, receiver, mutual)
+    VALUES ($1, $2, false)
+    RETURNING sender, receiver;
+  `;
+  db.one(query, [userId, friendId])
+    .then(friend => {
+      res.status(200).json({status: 'success', message: 'Friend Request sent', friend});
+    })
+    .catch(error => {
+      console.error('Error adding friend:', error);
+      res.status(500).json({status: 'error', message: 'Error adding friend'});
+    });
+});
