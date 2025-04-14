@@ -23,15 +23,17 @@
         <th> Pending Request</th><th></th>
     </tr>
     {{#each pending}}
+    
     <tr>
-        <td>{{this.sender}}</td> <td><button class="btn btn-secondary mt-3">Add friend</button></td>
+        <form action="/accept-friend" method="POST" id="data-form"></form>
+        <td>{{this.sender}}</td> <td><button class="btn btn-secondary mt-3" type="submit">Accept Friend Request</button></td>
+        </form>
     </tr>
     {{/each}}
 </table>
 
 
 
-<button class="btn btn-primary mt-3" onclick="sendFriendRequest()">Add friend</button>
 <div class="modal fade" id="friendrequest" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">

@@ -226,3 +226,21 @@ app.post('/friends', (req, res) => {
       res.status(500).json({status: 'error', message: 'Error adding friend'});
     });
 });
+
+app.post('/accept-friend', (req, res) => {
+  const { friendId } = req.body;
+  const userId = req.session.userInfo.userId;
+  const query = `
+    UPDATE friends
+    SET mutual = true
+    WHERE sender = $1 AND receiver = $2;
+  `;
+  db.none(query, [friendId, userId])
+    .then(() => {
+      res.status(200).json({status: 'success', message: 'Friend request accepted'});
+    })
+    .catch(error => {
+      console.error('Error accepting friend request:', error);
+      res.status(500).json({status: 'error', message: 'Error accepting friend request'});
+    });
+});
