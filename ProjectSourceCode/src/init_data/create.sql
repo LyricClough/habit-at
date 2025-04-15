@@ -3,7 +3,7 @@ user_id SERIAL PRIMARY KEY NOT NULL,
 username VARCHAR(100) NOT NULL UNIQUE,
 email VARCHAR(100) NOT NULL UNIQUE,
 password VARCHAR(100) NOT NULL
-phone VARCHAR(10), 
+phone VARCHAR(10), –Note: Only accommodates US phone numbers (no extension)
 email_notif BOOLEAN DEFAULT TRUE,
 phone_notif BOOLEAN DEFAULT FALSE,
 show_profile BOOLEAN DEFAULT FALSE,
@@ -33,7 +33,7 @@ date DATE NOT NULL
 
 CREATE TABLE habits_to_history (
 	habit_id INT NOT NULL,
-	history_id INT NOT NULL,
+history_id INT NOT NULL,
   	FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE,
  	FOREIGN KEY (habit_id) REFERENCES habits (habit_id) ON DELETE CASCADE,
 );
