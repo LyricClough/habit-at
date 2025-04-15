@@ -1,145 +1,296 @@
-<!doctype html>
-<html lang="en" data-bs-theme="light">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Settings Page</title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
-    <style>
-        html {
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-    </style>
-  </head>
-  <body>
-    <div class="container py-5">
-        <h2 class="mb-4">User Settings for {{user.username}} (password is {{user.password}})</h2>
-        <form method="POST" action="/settings">
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <h4>Personal Information</h4>
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        <input type="text" name="username" class="form-control" id="username" value={{user.username}}>
-                    </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email address</label>
-                        <input type="email" class="form-control" id="email" name="email" value="{{user.email}}">
-                    </div>
-                    <div class="mb-3">
-                        <label for="phone" class="form-label">Phone Number (Note: Only US phone numbers, do not include extension) </label>
-                        <input type="tel" class="form-control" id="phone" name="phone" value="{{user.phone}}">
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <h4>Profile Picture</h4>
-                    <div class="mb-3">
-                        <img src="/api/placeholder/150/150" alt="Profile Picture" class="img-thumbnail mb-2">
-                        <input class="form-control" type="file" id="profilePicture">
-                    </div>
-                </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings Page</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom toggle switch styling */
+    .toggle-checkbox:checked {
+      right: 0;
+      background-color: #1a202c;
+      border-color: #1a202c;
+    }
+    .toggle-checkbox:checked + .toggle-label {
+      background-color: #4a5568;
+    }
+    body {
+    transition: background-color 0.3s, color 0.3s;
+    }
+  </style>
+</head>
+<body class="bg-white">
+  <div class="max-w-3xl mx-auto py-8 px-4">
+    <h1 class="text-3xl font-bold mb-8 text-center">{{user.username}}'s Settings</h1>
+
+    <div class="w-full mb-8">
+      <div class="grid grid-cols-3 w-full">
+        <button id="personal-tab" class="py-2 px-4 bg-white font-medium border-b-2 border-black">
+          Personal Information
+        </button>
+        <button id="preferences-tab" class="py-2 px-4 bg-gray-50 text-gray-600 font-medium">
+          Preferences
+        </button>
+        <button id="password-tab" class="py-2 px-4 bg-gray-50 text-gray-600 font-medium">
+          Password Settings
+        </button>
+      </div>
+
+      <div id="personal-content" class="border rounded-lg p-6 mt-4">
+        <form method="POST" action="/settings/profile">
+          <div class="space-y-6">
+            <div class="space-y-2">
+              <label for="username" class="text-sm font-medium">Username</label>
+              <input 
+                id="username" 
+                name="username" 
+                class="w-full px-3 py-2 border rounded-md" 
+                value={{user.username}}
+              />
+              <p class="text-sm text-gray-500">This is the name that will be displayed to other users.</p>
             </div>
 
-            <hr>
-
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <h4>Email and Phone Preferences</h4>
-                    <div class="mb-3 form-check">
-                        <label class="form-check-label" for="emailcheck">Receive email notifications</label>
-                        <input type="checkbox" class="form-check-input" id="emailCheck" name="email_notif" {{#if user.email_notif}}checked{{/if}}>
-                    </div>
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="phoneCheck">
-                        <label class="form-check-label" for="phoneCheck">Receive text notifications</label>
-                        <input type="checkbox" class="form-check-input" id="phoneCheck" name="phone_notif" {{#if user.phone_notif}}checked{{/if}}>
-
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <h4>Account Settings</h4>
-                    <div class="mb-3">
-                        <label for="timezone" class="form-label">Time Zone</label>
-                        <select class="form-select" id="timezone">
-                                <option value="UTC-8">Pacific Time (PT)</option>
-                                <option value="UTC-5">Eastern Time (ET)</option>
-                                <option value="UTC+0">Coordinated Universal Time (UTC)</option>
-                                <option value="UTC+1">Central European Time (CET)</option>
-                            </select>
-                    </div>
-                </div>
+            <div class="space-y-2">
+              <label for="email" class="text-sm font-medium">Email</label>
+              <input 
+                id="email" 
+                name="email" 
+                type="email" 
+                class="w-full px-3 py-2 border rounded-md" 
+                value={{user.email}}
+              />
+              <p class="text-sm text-gray-500">
+                This is the email that will be used for notifications and login.
+              </p>
             </div>
 
-            <hr>
-
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <h4>Change Password</h4>
-                    <div class="mb-3">
-                        <label for="currentPassword" class="form-label">Current Password</label>
-                        <input type="password" class="form-control" id="currentPassword" name="currentPassword">
-                    </div>
-                    <div class="mb-3">
-                        <label for="newPassword" class="form-label">New Password</label>
-                        <input type="password" class="form-control" id="newPassword" name="newPassword">
-                    </div>
-                    <div class="mb-3">
-                        <label for="confirmPassword" class="form-label">Confirm New Password</label>
-                        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword">
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <h4>Privacy Settings</h4>
-                    <div class="form-check form-switch">
-                        <label class="form-check-label" for="profileVisibilityCheck">Profile is visible to others</label>
-                        <input class="form-check-input" type="checkbox" id="profileVisibilityCheck" name="show_profile" {{#if user.show_profile}}checked{{/if}}>
-
-                    </div>
-                    
-                    <div class="form-check form-switch">
-                        <label class="form-check-label" for="darkModeSwitch">Dark Mode</label>
-                        <input class="form-check-input" type="checkbox" id="darkModeSwitch" name="dark_mode" {{#if user.dark_mode}}checked{{/if}}>
-                    </div>
-
-                    <script>
-                        document.addEventListener('DOMContentLoaded', (event) => {
-                            const htmlElement = document.documentElement;
-                            const switchElement = document.getElementById('darkModeSwitch');
-                            const userPrefersDark = {{user.dark_mode}};
-                            const currentTheme = userPrefersDark ? 'dark' : 'light';
-
-                            htmlElement.setAttribute('data-bs-theme', currentTheme);
-                            switchElement.checked = currentTheme === 'dark';
-
-                            switchElement.addEventListener('change', function () {
-                                const newTheme = this.checked ? 'dark' : 'light';
-                                htmlElement.setAttribute('data-bs-theme', newTheme);
-                                localStorage.setItem('bsTheme', newTheme);
-                            });
-
-                            // Tooltip activation
-                            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-                            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                                return new bootstrap.Tooltip(tooltipTriggerEl);
-                            });
-                        });
-                    </script>
-                    <noscript>
-                        <div class="alert alert-danger" role="alert">
-                            JavaScript is disabled.
-                        </div>
-                    </noscript>
-                </div>
+            <div class="space-y-2">
+              <label for="phone" class="text-sm font-medium">Phone Number</label>
+              <input 
+                id="phone" 
+                name="phone" 
+                type="tel" 
+                class="w-full px-3 py-2 border rounded-md" 
+                value={{user.phone}}
+              />
+              <p class="text-sm text-gray-500">
+                This is the phone number that will be used for notifications.
+              </p>
             </div>
 
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <button type="button" class="btn btn-secondary me-md-2">Cancel</button>
-                <button type="submit" class="btn btn-primary">Save Changes</button>
-            </div>
+            <button type="submit" class="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800">
+              Save Changes
+            </button>
+          </div>
         </form>
+      </div>
+
+      <div id="preferences-content" class="border rounded-lg p-6 mt-4 hidden">
+        <form method="POST" action="/settings/preferences">
+          <div class="space-y-6">
+            <h2 class="text-xl font-semibold">Notification Settings</h2>
+            
+            <div class="space-y-4">
+              <div class="flex items-center">
+                <input 
+                  type="checkbox" 
+                  id="email-notifications" 
+                  name="email_notif" 
+                  class="h-4 w-4 rounded border-gray-300"
+                  {{#if user.email_notif}}checked{{/if}}
+                />
+                <label for="email-notifications" class="ml-2 text-sm font-medium">
+                  Receive email notifications
+                </label>
+              </div>
+              
+              <div class="flex items-center">
+                <input 
+                  type="checkbox" 
+                  id="phone-notifications" 
+                  name="phone_notif" 
+                  class="h-4 w-4 rounded border-gray-300"
+                  {{#if user.phone_notif}}checked{{/if}}
+                />
+                <label for="phone-notifications" class="ml-2 text-sm font-medium">
+                  Receive phone notifications
+                </label>
+              </div>
+            </div>
+            
+            <hr class="my-6" />
+            
+            <h2 class="text-xl font-semibold">Privacy & Display</h2>
+            
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <label for="profile-visible" class="text-sm font-medium">
+                  Profile is visible to others
+                </label>
+                <div class="relative inline-block w-12 h-6">
+                  <input 
+                    type="checkbox"
+                    id="profile-visible" 
+                    name="show_profile" 
+                    class="toggle-checkbox absolute w-6 h-6 rounded-full bg-white border-2 border-gray-300 appearance-none cursor-pointer"
+                    {{#if user.show_profile}}checked{{/if}}
+                  />
+                  <label 
+                    for="profile-visible"
+                    class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
+                  ></label>
+                </div>
+              </div>
+              
+              <div class="flex items-center justify-between">
+                <label for="dark-mode" class="text-sm font-medium">
+                  Dark Mode
+                </label>
+                <div class="relative inline-block w-12 h-6">
+                  <input 
+                    type="checkbox"
+                    id="dark-mode" 
+                    name="dark_mode" 
+                    class="toggle-checkbox absolute w-6 h-6 rounded-full bg-white border-2 border-gray-300 appearance-none cursor-pointer"
+                    {{#if user.dark_mode}}checked{{/if}}
+                  />
+                  <label 
+                    for="dark-mode"
+                    class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
+                  ></label>
+                </div>
+              </div>
+            </div>
+            
+            <button type="submit" class="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 mt-4">
+              Save Preferences
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div id="password-content" class="border rounded-lg p-6 mt-4 hidden">
+        <form method="POST" action="/settings/preferences">
+          <div class="space-y-6">
+            <h2 class="text-xl font-semibold">Change Password</h2>
+
+            <div class="space-y-2">
+              <label for="current-password" class="text-sm font-medium">Current Password</label>
+              <input
+                id="current-password" 
+                name="currentPassword" 
+                type="password"
+                class="w-full px-3 py-2 border rounded-md"
+              />
+            </div>
+            
+            <div class="space-y-2">
+              <label for="new-password" class="text-sm font-medium">New Password</label>
+              <input
+                id="new-password" 
+                name="newPassword" 
+                type="password"
+                class="w-full px-3 py-2 border rounded-md"
+              />
+            </div>
+            
+            <div class="space-y-2">
+              <label for="confirm-password" class="text-sm font-medium">Confirm Password</label>
+              <input
+                id="confirm-password" 
+                name="confirmPassword" 
+                type="password"
+                class="w-full px-3 py-2 border rounded-md"
+              />
+            </div>
+            
+            <button type="submit" class="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800">
+              Update Password
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-  </body>
+  </div>
+
+  <script>
+    // Make sure the DOM is fully loaded before attaching event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      // Tab functionality
+      const personalTab = document.getElementById('personal-tab');
+      const preferencesTab = document.getElementById('preferences-tab');
+      const personalContent = document.getElementById('personal-content');
+      const preferencesContent = document.getElementById('preferences-content');
+      
+      if (personalTab && preferencesTab && personalContent && preferencesContent) {
+        personalTab.addEventListener('click', function() {
+          // Update tab styling
+          personalTab.classList.remove('bg-gray-50', 'text-gray-600');
+          personalTab.classList.add('bg-white', 'border-b-2', 'border-black');
+          preferencesTab.classList.remove('bg-white', 'border-b-2', 'border-black');
+          preferencesTab.classList.add('bg-gray-50', 'text-gray-600');
+          
+          // Show/hide content
+          personalContent.classList.remove('hidden');
+          preferencesContent.classList.add('hidden');
+        });
+        
+        preferencesTab.addEventListener('click', function() {
+          // Update tab styling
+          preferencesTab.classList.remove('bg-gray-50', 'text-gray-600');
+          preferencesTab.classList.add('bg-white', 'border-b-2', 'border-black');
+          personalTab.classList.remove('bg-white', 'border-b-2', 'border-black');
+          personalTab.classList.add('bg-gray-50', 'text-gray-600');
+          
+          // Show/hide content
+          preferencesContent.classList.remove('hidden');
+          personalContent.classList.add('hidden');
+        });
+      }
+    });
+  
+    document.addEventListener('DOMContentLoaded', function() {
+      const tabs = {
+        personal: {
+          tab: document.getElementById('personal-tab'),
+          content: document.getElementById('personal-content')
+        },
+        preferences: {
+          tab: document.getElementById('preferences-tab'),
+          content: document.getElementById('preferences-content')
+        },
+        password: {
+          tab: document.getElementById('password-tab'),
+          content: document.getElementById('password-content')
+        }
+      };
+  
+      function resetTabs() {
+        for (const key in tabs) {
+          tabs[key].tab.classList.add('bg-gray-50', 'text-gray-600');
+          tabs[key].tab.classList.remove('bg-white', 'border-b-2', 'border-black');
+          tabs[key].content.classList.add('hidden');
+        }
+      }
+  
+      function activateTab(name) {
+        resetTabs();
+        const tab = tabs[name];
+        tab.tab.classList.remove('bg-gray-50', 'text-gray-600');
+        tab.tab.classList.add('bg-white', 'border-b-2', 'border-black');
+        tab.content.classList.remove('hidden');
+        localStorage.setItem('activeTab', name);
+      }
+  
+      for (const key in tabs) {
+        tabs[key].tab.addEventListener('click', () => activateTab(key));
+      }
+  
+      // Load the saved tab or default to 'personal'
+      const savedTab = localStorage.getItem('activeTab') || 'personal';
+      activateTab(savedTab);
+    });
+  </script>
+</body>
 </html>
