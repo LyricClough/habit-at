@@ -1,73 +1,84 @@
-{{!-- calendar.hbs --}}
-<h1>Calendar</h1>
+{{> head}}
 
-<!-- Add Habit Button -->
-<button id="add-habit-btn" class="btn btn-primary">Add Habit</button>
+{{#unless hideNav}}
+  {{> nav}}
+{{/unless}}
 
-<!-- Modal -->
-<div class="modal" id="habitModal" tabindex="-1" role="dialog" aria-labelledby="habitModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="habitModalLabel">Add a New Habit</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <form id="habit-form">
-          <div class="form-group">
-            <label for="habitName">Habit Name</label>
-            <input type="text" class="form-control" id="habitName" required>
-          </div>
-          <div class="form-group">
-            <label for="habitDescription">Description</label>
-            <textarea class="form-control" id="habitDescription" required></textarea>
-          </div>
-          <div class="form-group">
-            <label for="habitWeekday">Weekday</label>
-            <select class="form-control" id="habitWeekday">
-              <option value="0">Sunday</option>
-              <option value="1">Monday</option>
-              <option value="2">Tuesday</option>
-              <option value="3">Wednesday</option>
-              <option value="4">Thursday</option>
-              <option value="5">Friday</option>
-              <option value="6">Saturday</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="habitTime">Time</label>
-            <input type="number" class="form-control" id="habitTime" min="0" max="23" required>
-          </div>
-          <button type="submit" class="btn btn-success">Submit Habit</button>
-        </form>
+<div class="container">
+  <!-- Calendar Header -->
+  <div class="row mt-4">
+    <h1 class="col">Your Habit Calendar</h1>
+    <button id="add-habit-btn" class="btn btn-primary">Add Habit</button>
+  </div>
+
+  <!-- Habit Modal -->
+  <div class="modal fade" id="habitModal" tabindex="-1" role="dialog" aria-labelledby="habitModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="habitModalLabel">Add a New Habit</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="habit-form">
+            <div class="form-group">
+              <label for="habitName">Habit Name</label>
+              <input type="text" class="form-control" id="habitName" required>
+            </div>
+            <div class="form-group">
+              <label for="habitDescription">Description</label>
+              <input type="text" class="form-control" id="habitDescription">
+            </div>
+            <div class="form-group">
+              <label for="habitWeekday">Day of the Week</label>
+              <select class="form-control" id="habitWeekday" required>
+                <option value="0">Sunday</option>
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="habitTime">Time</label>
+              <input type="number" class="form-control" id="habitTime" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Habit</button>
+          </form>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- The Calendar Table -->
-<div id="calendar">
-  <table class="table table-bordered">
+  <!-- Calendar Table -->
+  <table class="table table-bordered mt-4">
     <thead>
       <tr>
-        <th>Add Habit</th>
-        <th>Sunday</th>
-        <th>Monday</th>
-        <th>Tuesday</th>
-        <th>Wednesday</th>
-        <th>Thursday</th>
-        <th>Friday</th>
-        <th>Saturday</th>
+        <th>Time</th>
+        {{#each weekdays}}
+          <th>{{this}}</th>
+        {{/each}}
       </tr>
     </thead>
     <tbody>
-      {{#each calendarData as |day|}}
+      {{#each calendarData}}
         <tr>
-          <td>{{#if day.habit_name}}<p>{{day.habit_name}}</p>{{/if}}</td>
-          {{#each day as |timeSlot|}}
-            <td>{{timeSlot ? timeSlot.habit_name : ''}}</td>
+          <td>{{@index}}</td> <!-- Hour (row index) -->
+          {{#each this}}
+            <td>
+              {{#if this}}
+                <!-- Display habit info if available -->
+                <p>{{this.habit_name}}</p>
+                <p>{{this.description}}</p>
+              {{else}}
+                <!-- Empty cell if no habit -->
+                <p>No Habit</p>
+              {{/if}}
+            </td>
           {{/each}}
         </tr>
       {{/each}}
@@ -75,8 +86,4 @@
   </table>
 </div>
 
-<!-- Include Bootstrap JS for the modal functionality -->
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
-
-<script src="/resources/js/calendar.js"></script>
+{{> footer}}

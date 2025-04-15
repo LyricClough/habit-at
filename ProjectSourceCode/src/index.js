@@ -14,8 +14,28 @@ const hbs = handlebars.create({
   partialsDir: path.join(__dirname, 'views', 'partials'),
 });
 
+// Register helpers
+hbs.handlebars.registerHelper('range', function(start, end, options) {
+  let result = '';
+  for (let i = start; i <= end; i++) {
+    result += options.fn(i);
+  }
+  return result;
+});
+
+hbs.handlebars.registerHelper('getHabit', function(calendarData, day, hour) {
+  const dayColumn = calendarData[day];
+  return dayColumn ? dayColumn[hour] : null;
+});
+
+// Setup view engine
+app.engine('hbs', hbs.engine);
+app.set('view engine', 'hbs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Database setup
 const dbConfig = {
-  host: 'db', 
+  host: 'db',
   port: 5432,
   database: process.env.POSTGRES_DB,
   user: process.env.POSTGRES_USER,
@@ -24,7 +44,6 @@ const dbConfig = {
 
 const db = pgp(dbConfig);
 
-// Test DB connection
 db.connect()
   .then(obj => {
     console.log('Database connection successful');
@@ -34,16 +53,12 @@ db.connect()
     console.log('ERROR:', error.message || error);
   });
 
-// Register Handlebars as the view engine
-app.engine('hbs', hbs.engine);
-app.set('view engine', 'hbs');
-app.set('views', path.join(__dirname, 'views'));
-
-// Middleware to parse JSON and form data
+// Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Session Configuration
+app.use('/resources', express.static(path.join(__dirname, 'resources')));
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -53,14 +68,8 @@ app.use(
 );
 
 // Routes
+app.get('/', (req, res) => res.redirect('/login'));
 
-// Main Route
-// Redirect root to /login
-app.get('/', (req, res) => {
-  return res.redirect('/login');
-});
-
-// Render the registration page (with nav hidden)
 app.get('/register', (req, res) => {
   res.render('pages/register', { hideNav: true });
 });
@@ -69,166 +78,135 @@ app.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
     const hash = await bcrypt.hash(password, 10);
-    const insertQuery = `
+    await db.one(`
       INSERT INTO users (username, email, password)
       VALUES ($1, $2, $3)
       RETURNING username, email;
-    `;
-    await db.one(insertQuery, [username, email, hash]);
-    return res.redirect('/login'); // Success: redirect with implicit 302
+    `, [username, email, hash]);
+    return res.redirect('/login');
   } catch (error) {
-    console.log(error);
-    // Check for duplicate key error (unique constraint violation)
+    let message = 'Could not register, try again.';
     if (error.code === '23505') {
-      let message = 'Duplicate entry. Please check your details.';
       if (error.constraint === 'users_username_key') {
-        message = 'Username already exists. Please choose a different one.';
+        message = 'Username already exists.';
       } else if (error.constraint === 'users_email_key') {
-        message = 'An account with this email already exists.';
+        message = 'Email already in use.';
       }
-      return res.status(400).render('pages/register', {
-        hideNav: true,
-        message,
-        error: true,
-      });
     }
     return res.status(400).render('pages/register', {
       hideNav: true,
-      message: 'Could not register, try again.',
+      message,
       error: true,
     });
   }
 });
 
-
-// Render the login page (with nav hidden)
 app.get('/login', (req, res) => {
   res.render('pages/login', { hideNav: true });
 });
+
 app.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-    console.log("Login attempt for username:", username);
     const user = await db.oneOrNone('SELECT * FROM users WHERE username = $1', [username]);
-    console.log("User found:", user);
-    if (!user) {
-      const errorResponse = { message: 'Incorrect username or password.' };
-      // If running tests, return JSON; otherwise render view.
-      if (process.env.NODE_ENV === 'test') {
-        return res.status(400).json(errorResponse);
-      }
+    if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(400).render('pages/login', {
         hideNav: true,
-        ...errorResponse,
-        error: true
-      });
-    }
-    const match = await bcrypt.compare(password, user.password);
-    console.log("Password match:", match);
-    if (!match) {
-      const errorResponse = { message: 'Incorrect username or password.' };
-      if (process.env.NODE_ENV === 'test') {
-        return res.status(400).json(errorResponse);
-      }
-      return res.status(400).render('pages/login', {
-        hideNav: true,
-        ...errorResponse,
+        message: 'Incorrect username or password.',
         error: true
       });
     }
     req.session.user = user;
-    req.session.save(() => {
-      return res.redirect('/dashboard');
-    });
+    req.session.save(() => res.redirect('/dashboard'));
   } catch (error) {
     console.log(error);
-    const errorResponse = { message: 'Something went wrong. Try again.' };
-    if (process.env.NODE_ENV === 'test') {
-      return res.status(400).json(errorResponse);
-    }
     return res.status(400).render('pages/login', {
       hideNav: true,
-      ...errorResponse,
+      message: 'Something went wrong. Try again.',
       error: true
     });
   }
 });
 
-// Middleware to protect routes
+// Auth middleware
 const auth = (req, res, next) => {
-  if (!req.session.user) {
-    return res.redirect('/login');
-  }
+  if (!req.session.user) return res.redirect('/login');
   next();
 };
 
 app.use(auth);
 
-// Dashboard route – ensure you have a corresponding view at views/pages/dashboard.hbs
+// Dashboard
 app.get('/dashboard', (req, res) => {
   res.render('pages/dashboard', { hideNav: false, user: req.session.user });
 });
 
-// Logout route: destroy session and redirect to /login
+// Logout
 app.get('/logout', (req, res) => {
   req.session.destroy(err => {
     if (err) console.log(err);
-    return res.redirect('/login');
+    res.redirect('/login');
   });
 });
 
-// Routes for calendar.hbs
+// Calendar
+// GET calendar
 app.get('/calendar', async (req, res) => {
-  const userId = req.session.userId; // Get user ID from session (if logged in)
+  const userId = req.session.user?.user_id;
+
+  if (!userId) return res.redirect('/login');
 
   try {
-    // Fetch habits from the database
     const habits = await db.any(`
-      SELECT * FROM habits 
-      JOIN user_contents ON habits.user_habit_id = user_contents.user_habit_id
-      WHERE user_contents.user_id = $1
-      ORDER BY weekday, time_slot`, [userId]);
+      SELECT h.* FROM habits h
+      JOIN users_to_habits uth ON h.habit_id = uth.habit_id
+      WHERE uth.user_id = $1
+      ORDER BY weekday, time_slot
+    `, [userId]);
 
-    // Organize the habits by weekday and time slot
-    const calendarData = Array.from({ length: 7 }, () => Array(24).fill(null));
+    const calendarData = Array.from({ length: 24 }, () => Array(7).fill(null));
     habits.forEach(habit => {
-      calendarData[habit.weekday][habit.time_slot] = habit;
+      if (calendarData[habit.time_slot]) {
+        calendarData[habit.time_slot][habit.weekday] = habit;
+      }
     });
 
-    // Render the calendar page
-    res.render('pages/calendar', { calendarData });
+    const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    res.render('pages/calendar', { calendarData, weekdays });
   } catch (err) {
     console.error("Error fetching calendar data: ", err);
     res.status(500).send('Error loading calendar');
   }
 });
 
-// POST route to handle adding a new habit
+// POST add-habit
 app.post('/add-habit', async (req, res) => {
   const { habitName, habitDescription, habitWeekday, habitTime } = req.body;
+  const userId = req.session.user?.user_id;
+
+  if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
   try {
-    // Insert habit into the "habits" table
     const newHabit = await db.one(`
       INSERT INTO habits (habit_name, description, weekday, time_slot)
       VALUES ($1, $2, $3, $4)
-      RETURNING user_habit_id`, [habitName, habitDescription, habitWeekday, habitTime]);
+      RETURNING habit_id
+    `, [habitName, habitDescription, habitWeekday, habitTime]);
 
-    // Associate the habit with the logged-in user
-    const userId = req.session.userId; // Assuming user ID is stored in the session
     await db.none(`
-      INSERT INTO user_contents (user_id, user_habit_id)
-      VALUES ($1, $2)`, [userId, newHabit.user_habit_id]);
+      INSERT INTO users_to_habits (user_id, habit_id)
+      VALUES ($1, $2)
+    `, [userId, newHabit.habit_id]);
 
-    // Send success response
     res.json({ message: 'Habit added successfully!' });
   } catch (error) {
-    console.error("Error adding habit:", error);
-    res.status(500).json({ message: "Error adding habit" });
+    console.error('Error adding habit:', error);
+    res.status(500).json({ message: 'Error adding habit' });
   }
 });
 
-// Start the server on port 3000 (or change the host port mapping in your docker-compose file if needed)
+// Start server
 const PORT = process.env.PORT || 3000;
 module.exports = app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

@@ -27,9 +27,9 @@ document.addEventListener("DOMContentLoaded", function () {
         body: JSON.stringify({
             habitName,
             habitDescription,
-            habitWeekday,
-            habitTime
-        })
+            habitWeekday: parseInt(habitWeekday),
+            habitTime: parseInt(habitTime)
+          })
         })
         .then(response => response.json())
         .then(data => {
