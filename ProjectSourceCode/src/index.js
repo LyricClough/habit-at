@@ -244,3 +244,18 @@ app.post('/accept-friend', (req, res) => {
       res.status(500).json({status: 'error', message: 'Error accepting friend request'});
     });
 });
+
+
+//######DASHBOARD########
+app.get('/dashboard', (req, res) => {
+
+  //Make sure logged in (temporarily disabled)
+  // if (user) {
+  //   res.render('pages/dashboard');
+  // }
+  // else {
+  //   res.redirect('pages/login');
+  // }
+
+  res.render('pages/dashboard');
+});
