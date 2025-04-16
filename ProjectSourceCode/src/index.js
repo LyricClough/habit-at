@@ -181,70 +181,6 @@ module.exports = app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-module.exports = app.listen(3000);
-
-//function to retreive the friends list from the database
-
-app.get('/friends', (req, res) => {
-  var userId = req.session.userInfo.userId;
-  var query = 'SELECT friends.sender, friends.receiver FROM friends WHERE (sender = $1 OR receiver = $1) AND mutual = true';
-  var pendingREquest = 'SELECT friends.sender FROM friends WHERE reciever = $1 AND mutual = false';
-  db.any(query, [userId])
-    .then(friends => {
-      db.any(pendingREquest, [userId])
-        .then(pending => {
-          friends.forEach(friend => {
-            friend.mutual = true;
-          });
-          return friends;
-        })
-        .then(friends => {
-          res.render('pages/friends', { friends }, {pending});
-        });
-      res.render('pages/friends', friends);
-    })
-    .catch(error => {
-      console.error('Error fetching friends:', error);
-      res.status(500).json({status: 'error', message: 'Error fetching friends'});
-    });
-});
-
-app.post('/friends', (req, res) => {
-  const { friendId } = req.body;
-  const userId = req.session.userInfo.userId;
-  const query = `
-    INSERT INTO friends (sender, receiver, mutual)
-    VALUES ($1, $2, false)
-    RETURNING sender, receiver;
-  `;
-  db.one(query, [userId, friendId])
-    .then(friend => {
-      res.status(200).json({status: 'success', message: 'Friend Request sent', friend});
-    })
-    .catch(error => {
-      console.error('Error adding friend:', error);
-      res.status(500).json({status: 'error', message: 'Error adding friend'});
-    });
-});
-
-app.post('/accept-friend', (req, res) => {
-  const { friendId } = req.body;
-  const userId = req.session.userInfo.userId;
-  const query = `
-    UPDATE friends
-    SET mutual = true
-    WHERE sender = $1 AND receiver = $2;
-  `;
-  db.none(query, [friendId, userId])
-    .then(() => {
-      res.status(200).json({status: 'success', message: 'Friend request accepted'});
-    })
-    .catch(error => {
-      console.error('Error accepting friend request:', error);
-      res.status(500).json({status: 'error', message: 'Error accepting friend request'});
-    });
-});
-
 
 //######DASHBOARD########
 app.get('/dashboard', (req, res) => {
@@ -259,3 +195,5 @@ app.get('/dashboard', (req, res) => {
 
   res.render('pages/dashboard');
 });
+//#######################
+
