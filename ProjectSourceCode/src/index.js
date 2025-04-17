@@ -163,8 +163,29 @@ const auth = (req, res, next) => {
 app.use(auth);
 
 // Dashboard route – ensure you have a corresponding view at views/pages/dashboard.hbs
-app.get('/dashboard', (req, res) => {
-  res.render('pages/dashboard', { hideNav: false, user: req.session.user });
+app.get('/dashboard', async (req, res) => {
+
+  //Get the user_id
+  const current_user_id = req.session.user.user_id;
+
+  console.log('Current User ID:', current_user_id);
+
+  //Get the habit_id from user_id
+  const query = 'SELECT habit_id FROM users_to_habits WHERE user_id = $1';
+  const habit_id = await db.any(query, [current_user_id]);
+
+  //Check if there are habits
+  if (!habit_id.length) {
+    console.log("No habits!");
+    res.render('pages/dashboard', { hideNav: false, user: req.session.user});
+  }
+  else {
+    const habitQuery = 'SELECT * FROM habits WHERE habit_id = $1';
+    const habits = await db.any(habitQuery, [habit_id]);
+
+    res.render('pages/dashboard', { hideNav: false, user: req.session.user, habits});
+  };
+
 });
 
 // Logout route: destroy session and redirect to /login
