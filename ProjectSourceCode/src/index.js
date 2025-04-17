@@ -167,8 +167,18 @@ app.get('/dashboard', async (req, res) => {
 
   //Get the user_id
   const current_user_id = req.session.user.user_id;
-
   console.log('Current User ID:', current_user_id);
+
+  //Get number of friends
+  const friendQuery = 'SELECT count(*) FROM friends WHERE Sender = $1 AND Mutual = TRUE';
+  let friendCount = await db.any(friendQuery, [current_user_id]);
+  friendCount = friendCount.length;
+  console.log("Friend Count: " + friendCount);
+
+  const friendRequestsQuery = 'SELECT count(*) FROM friends WHERE Receiver = $1 AND Mutual = FALSE';
+  let friendRequests = await db.any(friendRequestsQuery, [current_user_id]);
+  friendRequests = friendRequests.length;
+  console.log("Friend Count: " + friendRequests);
 
   //Get the habit_id from user_id
   const query = 'SELECT habit_id FROM users_to_habits WHERE user_id = $1';
@@ -177,13 +187,13 @@ app.get('/dashboard', async (req, res) => {
   //Check if there are habits
   if (!habit_id.length) {
     console.log("No habits!");
-    res.render('pages/dashboard', { hideNav: false, user: req.session.user});
+    res.render('pages/dashboard', { hideNav: true, user: req.session.user, friendCount, friendRequests});
   }
   else {
     const habitQuery = 'SELECT * FROM habits WHERE habit_id = $1';
     const habits = await db.any(habitQuery, [habit_id]);
 
-    res.render('pages/dashboard', { hideNav: false, user: req.session.user, habits});
+    res.render('pages/dashboard', { hideNav: false, user: req.session.user, habits, friendCount, friendRequests});
   };
 
 });
@@ -204,7 +214,7 @@ module.exports = app.listen(PORT, () => {
 
 
 //######DASHBOARD########
-app.get('/dashboard', (req, res) => {
+// app.get('/dashboard', (req, res) => {
 
   //Make sure logged in (temporarily disabled)
   // if (user) {
@@ -214,7 +224,7 @@ app.get('/dashboard', (req, res) => {
   //   res.redirect('pages/login');
   // }
 
-  res.render('pages/dashboard');
-});
+//   res.render('pages/dashboard');
+// });
 //#######################
 
