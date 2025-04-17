@@ -1,62 +1,82 @@
-<head>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-</head>
 
-{{!Navigation bar}}
-<style>
 
-    /* Ensure the sidebar takes up a fixed width and doesn't overflow */
-    #sidebar {
-        width: 20%; /* Adjust the width as needed */
-        position: fixed; /* Fix the sidebar to the left */
-        top: 0;
-        left: 0;
-        height: 100%;
-        background-color: #f8f9fa; /* Optional: change the background color */
-        /*padding-top: 20px;*/ /* Adds space from the top */
-        text-align: center;
-        justify-content: center;
-    }
-
-    /* Adjust the nav links to prevent them from being too wide */
-    #sidebar .nav-link {
-        # display: block;
-        # padding: 10px 15px; /* Adds some space around the text */
-        # width: 18%; /* Ensure links are full width of the sidebar */
-        # text-align: center;
-        text-align: left;
-        margin-top: 10px;
-        color: rgb(114, 114, 113);
-        border-radius: 30px 30px 30px 10px;
-    }
-
-    /* Add hover effect with more specificity */
-    #sidebar .nav-link:hover {
-        background-color: #e9e9e9 !important;
-        # color: white !important;
-    }
-
-</style>
-
-<div id="sidebar" class="shadow-md">
-    <ul class="nav flex-column">
-        <li class="text-xl font-bold text-black dark:text-white">
-            <span>HABIT-@</span>
+<nav class="sidebar bg-white h border-gray-50" style="border-radius: 10px; margin: 10px; margin-top: 0px; border: solid 1px rgb(107, 107, 107)">
+    <div class="flex items-center justify-center h-14 border-b font-semibold">
+      <div>Habit-@</div>
+    </div>
+    <ul>
+        <li>
+          <a href="#" class="h-11 focus:outline-none hover:bg-gray-50 text-gray-600 hover:text-gray-800 border-l-4 border-transparent hover:border-indigo-500 pr-6">
+            <span class="inline-flex justify-center items-center ml-4">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+              <span class="ml-2 text-sm tracking-wide truncate">Dashboard</span>
+            </span>
+          </a>
         </li>
-        <li class="nav-item">
-            <a href="/dashboard" class="nav-link">Dashboard</a>
+        <li>
+          <a href="#" class="h-11 focus:outline-none hover:bg-gray-50 text-gray-600 hover:text-gray-800 border-l-4 border-transparent hover:border-indigo-500 pr-6">
+            <span class="inline-flex justify-center items-center ml-4">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+              <span class="ml-2 text-sm tracking-wide truncate">Calendar</span>
+            </span>
+          </a>
         </li>
-        <li class="nav-item">
-            <a href="/calendar" class="nav-link">Calendar</a>
+        <li>
+          <a href="#" class="h-11 focus:outline-none hover:bg-gray-50 text-gray-600 hover:text-gray-800 border-l-4 border-transparent hover:border-indigo-500 pr-6">
+            <span class="inline-flex justify-center items-center ml-4">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+              <span class="ml-2 text-sm tracking-wide truncate">Statistics</span>
+            </span>
+          </a>
         </li>
-        <li class="nav-item">
-            <a href="/stats" class="nav-link">Statistics</a>
+        <li>
+          <a href="#" class="h-11 focus:outline-none hover:bg-gray-50 text-gray-600 hover:text-gray-800 border-l-4 border-transparent hover:border-indigo-500 pr-6">
+            <span class="inline-flex justify-center items-center ml-4">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+              <span class="ml-2 text-sm tracking-wide truncate">Friends</span>
+            </span>
+          </a>
         </li>
-        <li class="nav-item">
-            <a href="/friends" class="nav-link">Friends</a>
-        </li>
-        <li class="nav-item">
-            <a href="/settings" class="nav-link">Settings</a>
+        <li>
+          <a href="#" class="h-11 focus:outline-none hover:bg-gray-50 text-gray-600 hover:text-gray-800 border-l-4 border-transparent hover:border-indigo-500 pr-6">
+            <span class="inline-flex justify-center items-center ml-4">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+              <span class="ml-2 text-sm tracking-wide truncate">Settings</span>
+            </span>
+          </a>
         </li>
     </ul>
-</div>
+</nav>
+
+<style>
+    
+    .sidebar {
+        width: 15%;
+        background-color: #f8f9fa;
+        padding: 0px;
+        position: fixed;
+        left: 0px;
+        height: 95%;
+        overflow: auto;
+    }
+    .sidebar ul {
+        list-style-type: none;
+        padding: 0;
+    }
+    .sidebar li {
+        margin: 10px 0;
+    }
+    .sidebar a {
+        text-decoration: none;
+        color: #333;
+        display: block;
+        padding: 10px;
+    }
+    .sidebar a:hover {
+        background-color: #ddd;
+    }
+    
+</style>
