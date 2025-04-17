@@ -162,41 +162,111 @@ const auth = (req, res, next) => {
 
 app.use(auth);
 
+// POST add-habit
+app.post('/add-habit', async (req, res) => {
+  const { habitName, habitDescription, habitWeekday, habitTime } = req.body;
+  const userId = req.session.user?.user_id;
+
+  if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+  try {
+    const newHabit = await db.one(`
+      INSERT INTO habits (habit_name, description, weekday, time_slot)
+      VALUES ($1, $2, $3, $4)
+      RETURNING habit_id
+    `, [habitName, habitDescription, habitWeekday, habitTime]);
+
+    await db.none(`
+      INSERT INTO users_to_habits (user_id, habit_id)
+      VALUES ($1, $2)
+    `, [userId, newHabit.habit_id]);
+
+    res.json({ message: 'Habit added successfully!' });
+  } catch (error) {
+    console.error('Error adding habit:', error);
+    res.status(500).json({ message: 'Error adding habit' });
+  }
+});
+
+app.get('/api/habits', async (req, res) => {
+  const userId = req.session.user?.user_id;
+
+  if (!userId) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  try {
+    // Query to get all habits for the user
+    const habitsQuery = `
+      SELECT h.habit_id, h.habit_name, h.description, h.weekday, h.time_slot
+      FROM habits h
+      JOIN users_to_habits uh ON h.habit_id = uh.habit_id
+      WHERE uh.user_id = $1
+    `;
+    const habits = await db.any(habitsQuery, [userId]);
+
+    // Return the habits as a JSON response
+    return res.json(habits);
+  } catch (error) {
+    console.error('Error fetching habits:', error);
+    return res.status(500).json({ message: 'Error fetching habits' });
+  }
+});
+
 // Dashboard route – ensure you have a corresponding view at views/pages/dashboard.hbs
 app.get('/dashboard', async (req, res) => {
 
-  //Get the user_id
-  const current_user_id = req.session.user.user_id;
-  console.log('Current User ID:', current_user_id);
+  const userId = req.session.user?.user_id;
+  if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+  //temporary add habit code
+  const { habitName, habitDescription, habitWeekday, habitTime } = {habitName: "the", habitDescription: "the2", habitWeekday: 2, habitTime: 3};
+  try {
+    const newHabit = await db.one(`
+      INSERT INTO habits (habit_name, description, weekday, time_slot)
+      VALUES ($1, $2, $3, $4)
+      RETURNING habit_id
+    `, [habitName, habitDescription, habitWeekday, habitTime]);
+
+    await db.none(`
+      INSERT INTO users_to_habits (user_id, habit_id)
+      VALUES ($1, $2)
+    `, [userId, newHabit.habit_id]);
+
+    //res.json({ message: 'Habit added successfully!' });
+  } catch (error) {
+    console.error('Error adding habit:', error);
+    res.status(500).json({ message: 'Error adding habit' });
+  }
+  //end temp add habit code
 
   //Get number of friends
   const friendQuery = 'SELECT count(*) FROM friends WHERE Sender = $1 AND Mutual = TRUE';
-  let friendCount = await db.any(friendQuery, [current_user_id]);
+  let friendCount = await db.any(friendQuery, [userId]);
   friendCount = friendCount.length;
-  console.log("Friend Count: " + friendCount);
 
   //Get number of friend requests
   const friendRequestsQuery = 'SELECT count(*) FROM friends WHERE Receiver = $1 AND Mutual = FALSE';
-  let friendRequests = await db.any(friendRequestsQuery, [current_user_id]);
+  let friendRequests = await db.any(friendRequestsQuery, [userId]);
   friendRequests = friendRequests.length;
-  console.log("Friend Count: " + friendRequests);
 
-  //Get the habit_id from user_id relationship
-  const query = 'SELECT habit_id FROM users_to_habits WHERE user_id = $1';
-  const habit_id = await db.any(query, [current_user_id]);
+  /***HABITS***/
 
-  //**
+  // Query to get all habits for the user
+  const habitsQuery = `
+    SELECT h.habit_id, h.habit_name, h.description, h.weekday, h.time_slot
+    FROM habits h
+    JOIN users_to_habits uh ON h.habit_id = uh.habit_id
+    WHERE uh.user_id = $1
+  `;
+  const habits = await db.any(habitsQuery, [userId]);
+
   //Check if there are habits and send all the data to the page
-  //**
-  console.log("User has these habits registered: " + habits);
-  if (!habit_id.length) {
+  if (!habits.length) {
     console.log("No habits!");
     res.render('pages/dashboard', { hideNav: false, user: req.session.user, friendCount, friendRequests});
   }
   else {
-    const habitQuery = 'SELECT * FROM habits WHERE habit_id = $1';
-    const habits = await db.any(habitQuery, [habit_id]);
-
     res.render('pages/dashboard', { hideNav: false, user: req.session.user, habits, friendCount, friendRequests});
   };
 
