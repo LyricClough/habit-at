@@ -175,19 +175,22 @@ app.get('/dashboard', async (req, res) => {
   friendCount = friendCount.length;
   console.log("Friend Count: " + friendCount);
 
+  //Get number of friend requests
   const friendRequestsQuery = 'SELECT count(*) FROM friends WHERE Receiver = $1 AND Mutual = FALSE';
   let friendRequests = await db.any(friendRequestsQuery, [current_user_id]);
   friendRequests = friendRequests.length;
   console.log("Friend Count: " + friendRequests);
 
-  //Get the habit_id from user_id
+  //Get the habit_id from user_id relationship
   const query = 'SELECT habit_id FROM users_to_habits WHERE user_id = $1';
   const habit_id = await db.any(query, [current_user_id]);
 
-  //Check if there are habits
+  //**
+  //Check if there are habits and send all the data to the page
+  //**
   if (!habit_id.length) {
     console.log("No habits!");
-    res.render('pages/dashboard', { hideNav: true, user: req.session.user, friendCount, friendRequests});
+    res.render('pages/dashboard', { hideNav: false, user: req.session.user, friendCount, friendRequests});
   }
   else {
     const habitQuery = 'SELECT * FROM habits WHERE habit_id = $1';
