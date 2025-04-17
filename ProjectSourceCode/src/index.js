@@ -188,6 +188,7 @@ app.get('/dashboard', async (req, res) => {
   //**
   //Check if there are habits and send all the data to the page
   //**
+  console.log("User has these habits registered: " + habits);
   if (!habit_id.length) {
     console.log("No habits!");
     res.render('pages/dashboard', { hideNav: false, user: req.session.user, friendCount, friendRequests});
@@ -198,6 +199,12 @@ app.get('/dashboard', async (req, res) => {
 
     res.render('pages/dashboard', { hideNav: false, user: req.session.user, habits, friendCount, friendRequests});
   };
+
+});
+
+//Set habit completed
+app.post('/dashboard', async (req, res) => {
+
 
 });
 
