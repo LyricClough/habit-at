@@ -178,7 +178,7 @@ app.get('/dashboard', async (req, res) => {
   if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
   //temporary add habit code
-  const { habitName, habitDescription, habitWeekday, habitTime } = {habitName: "Brush my teeth", habitDescription: "Brush my teeth with a toothbrush", habitWeekday: 2, habitTime: 3};
+  const { habitName, habitDescription, habitWeekday, habitTime } = {habitName: "Brush my teeth", habitDescription: "Brush my teeth with a toothbrush", habitWeekday: 5, habitTime: 3};
   try {
     const newHabit = await db.one(`
       INSERT INTO habits (habit_name, description, weekday, time_slot)
