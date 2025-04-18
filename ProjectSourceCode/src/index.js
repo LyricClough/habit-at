@@ -225,7 +225,7 @@ app.get('/dashboard', async (req, res) => {
   const habitsQuery = `
     WITH 
       allHabits AS (
-        SELECT h.habit_id, h.habit_name, h.description, h.weekday, h.time_slot
+        SELECT h.habit_id, h.habit_name, h.description, h.weekday, h.time_slot, h.counter
         FROM habits h
         JOIN users_to_habits uh ON h.habit_id = uh.habit_id
         WHERE uh.user_id = $1
@@ -250,9 +250,20 @@ app.get('/dashboard', async (req, res) => {
 });
 
 //Set habit completed
-app.post('/dashboard', async (req, res) => {
+app.post('/completedHabit', async (req, res) => {
+  const habitId = req.body.habitId;
 
+  //Add 1 to counter
+  const habitsQ = `UPDATE habits SET counter=(counter+1) WHERE habit_id = $1`;
+  const habit = await db.any(habitsQ, [habitId]);
 
+  //Make new history
+  const historyQ = await db.one(`INSERT INTO history (date) VALUES (CURRENT_DATE) RETURNING history_id`);
+
+  //Link history to habit
+  await db.any(`INSERT INTO habits_to_history (habit_id, history_id) VALUES ($1, $2)`, [habitId, historyQ.history_id]);
+
+  res.redirect("/dashboard");
 });
 
 // Logout route: destroy session and redirect to /login

@@ -214,8 +214,9 @@
 
     <tr class="shadow-md" style="background-color: #f7f7f7;">
       <td class="p-3 rounded-l-lg bg-white" style="width: 5%;">
-        <form>
-          <input type="checkbox"></input>
+        <form action="/completedHabit" method="POST">
+          <input onChange="this.form.submit()" type="checkbox"></input>
+          <input type="hidden" name="habitId" value={{habit_id}}>
         </form>
       </td>
       <td class="p-3 bg-white font-sans">
@@ -224,7 +225,7 @@
         <span class="text-sm font-normal text-gray-500">{{description}}, {{weekday}}, {{time_slot}}</span>
       </td>
       <td class="p-3 rounded-r-lg bg-white font-sans">
-        <span class="p-1 rounded-xl text-sm bg-green-200 text-lime-800 font-semibold">{{counter}}15 Day Streak</span>
+        <span class="p-1 rounded-xl text-sm bg-green-200 text-lime-800 font-semibold float-end">{{counter}} Day Streak</span>
       </td>
     </tr>
 
