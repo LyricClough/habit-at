@@ -178,7 +178,7 @@ app.get('/dashboard', async (req, res) => {
   if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
   //temporary add habit code
-  const { habitName, habitDescription, habitWeekday, habitTime } = {habitName: "Brush my teeth", habitDescription: "Brush my teeth with a toothbrush", habitWeekday: 2, habitTime: 3};
+  const { habitName, habitDescription, habitWeekday, habitTime } = {habitName: "Brush my teeth", habitDescription: "Brush my teeth with a toothbrush", habitWeekday: 5, habitTime: 3};
   try {
     const newHabit = await db.one(`
       INSERT INTO habits (habit_name, description, weekday, time_slot)
@@ -212,14 +212,23 @@ app.get('/dashboard', async (req, res) => {
 
   /***HABITS***/
 
-  // Query to get all habits for the user
+  // Query to get all habits for the user, for today only
   const habitsQuery = `
-    SELECT h.habit_id, h.habit_name, h.description, h.weekday, h.time_slot
-    FROM habits h
-    JOIN users_to_habits uh ON h.habit_id = uh.habit_id
-    WHERE uh.user_id = $1
+    WITH 
+      allHabits AS (
+        SELECT h.habit_id, h.habit_name, h.description, h.weekday, h.time_slot
+        FROM habits h
+        JOIN users_to_habits uh ON h.habit_id = uh.habit_id
+        WHERE uh.user_id = $1
+      )
+    SELECT *
+    FROM allHabits
+    WHERE weekday = $2
   `;
-  const habits = await db.any(habitsQuery, [userId]);
+
+  const d = new Date();
+  const dayOfWeek = d.getDay();
+  const habits = await db.any(habitsQuery, [userId, dayOfWeek]);
 
   //Check if there are habits and send all the data to the page
   if (!habits.length) {
