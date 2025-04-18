@@ -178,7 +178,7 @@ app.get('/dashboard', async (req, res) => {
   if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
   //temporary add habit code
-  const { habitName, habitDescription, habitWeekday, habitTime } = {habitName: "Brush my teeth", habitDescription: "Brush my teeth with a toothbrush", habitWeekday: 5, habitTime: 3};
+  const { habitName, habitDescription, habitWeekday, habitTime } = {habitName: "Brush my teeth", habitDescription: "Brush my teeth with a toothbrush", habitWeekday: 2, habitTime: 3};
   try {
     const newHabit = await db.one(`
       INSERT INTO habits (habit_name, description, weekday, time_slot)
@@ -212,6 +212,15 @@ app.get('/dashboard', async (req, res) => {
 
   /***HABITS***/
 
+  //Query all habits, for use in statistics
+  const allHabitsQ = `
+    SELECT h.habit_id, h.habit_name, h.description, h.weekday, h.time_slot
+    FROM habits h
+    JOIN users_to_habits uh ON h.habit_id = uh.habit_id
+    WHERE uh.user_id = $1
+  `;
+  const allHabits = await db.any(allHabitsQ, [userId]);
+
   // Query to get all habits for the user, for today only
   const habitsQuery = `
     WITH 
@@ -225,7 +234,6 @@ app.get('/dashboard', async (req, res) => {
     FROM allHabits
     WHERE weekday = $2
   `;
-
   const d = new Date();
   const dayOfWeek = d.getDay();
   const habits = await db.any(habitsQuery, [userId, dayOfWeek]);
@@ -236,7 +244,7 @@ app.get('/dashboard', async (req, res) => {
     res.render('pages/dashboard', { hideNav: false, user: req.session.user, friendCount, friendRequests});
   }
   else {
-    res.render('pages/dashboard', { hideNav: false, user: req.session.user, habits, friendCount, friendRequests});
+    res.render('pages/dashboard', { hideNav: false, user: req.session.user, habits, allHabits, friendCount, friendRequests});
   };
 
 });

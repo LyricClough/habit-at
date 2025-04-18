@@ -8,6 +8,9 @@
       }
     </style>
 
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <!--TAILWIND CDN-->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   </head>
@@ -83,7 +86,7 @@
         </div>
         <!--Icon-->
       </div>
-      <p class="text-xl font-bold text-black dark:text-white">{{#if habits}} {{habits.length}} {{else}} 0 {{/if}}</p>
+      <p class="text-xl font-bold text-black dark:text-white">{{#if allHabits}} {{allHabits.length}} {{else}} 0 {{/if}}</p>
       <p class="text-gray-500 dark:text-gray-400">2 New This Month</p>
     </div>
 
@@ -150,7 +153,7 @@
 
   <!--List of Habits-->
 
-  <table class="table table-hover" style="border-radius: 10px">
+  {{!-- <table class="table table-hover" style="border-radius: 10px">
 
     {{#if habits}}
 
@@ -203,7 +206,37 @@
     {{/if}}
 
 
+  </table> --}}
+
+  <table class="table table-hover table-fixed">
+    {{#if habits}}
+    {{#each habits}}
+
+    <tr class="shadow-md" style="background-color: #f7f7f7;">
+      <td class="p-3 rounded-l-lg bg-white" style="width: 5%;">
+        <form>
+          <input type="checkbox"></input>
+        </form>
+      </td>
+      <td class="p-3 bg-white font-sans">
+        <span class="font-semibold">{{habit_name}}</span>
+        <br>
+        <span class="text-sm font-normal text-gray-500">{{description}}, {{weekday}}, {{time_slot}}</span>
+      </td>
+      <td class="p-3 rounded-r-lg bg-white font-sans">
+        <span class="p-1 rounded-xl text-sm bg-green-200 text-lime-800 font-semibold">{{counter}}15 Day Streak</span>
+      </td>
+    </tr>
+
+    {{/each}}
+    {{else}}
+      <center>
+      <br>
+      <p class="italic font-semibold">You have no habit's today!</p>
+      </center>
+    {{/if}}
   </table>
+
 
   {{!-- <div class="checkbox-wrapper-12">
   <div class="cbx">
@@ -225,7 +258,7 @@
     </svg>
   </div> --}}
 
-<style>
+{{!-- <style>
   .checkbox-wrapper-12 {
     position: relative;
   }
@@ -341,7 +374,7 @@
       box-shadow: 0 -36px 0 -10px transparent, 32px -16px 0 -10px transparent, 32px 16px 0 -10px transparent, 0 36px 0 -10px transparent, -32px 16px 0 -10px transparent, -32px -16px 0 -10px transparent;
     }
   }
-</style>
+</style> --}}
 
   </body>
 </html>
