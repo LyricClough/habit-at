@@ -14,6 +14,15 @@ const hbs = handlebars.create({
   partialsDir: path.join(__dirname, 'views', 'partials'),
 });
 
+//Handlebars helper functions
+hbs.handlebars.registerHelper("greaterThanZero", function (value) {
+  return value > 0;
+});
+
+hbs.handlebars.registerHelper("ifZero", function (value) {
+  return value == 0;
+});
+
 const dbConfig = {
   host: 'db', 
   port: 5432,
@@ -162,57 +171,6 @@ const auth = (req, res, next) => {
 
 app.use(auth);
 
-// POST add-habit
-app.post('/add-habit', async (req, res) => {
-  const { habitName, habitDescription, habitWeekday, habitTime } = req.body;
-  const userId = req.session.user?.user_id;
-
-  if (!userId) return res.status(401).json({ message: 'Unauthorized' });
-
-  try {
-    const newHabit = await db.one(`
-      INSERT INTO habits (habit_name, description, weekday, time_slot)
-      VALUES ($1, $2, $3, $4)
-      RETURNING habit_id
-    `, [habitName, habitDescription, habitWeekday, habitTime]);
-
-    await db.none(`
-      INSERT INTO users_to_habits (user_id, habit_id)
-      VALUES ($1, $2)
-    `, [userId, newHabit.habit_id]);
-
-    res.json({ message: 'Habit added successfully!' });
-  } catch (error) {
-    console.error('Error adding habit:', error);
-    res.status(500).json({ message: 'Error adding habit' });
-  }
-});
-
-app.get('/api/habits', async (req, res) => {
-  const userId = req.session.user?.user_id;
-
-  if (!userId) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
-
-  try {
-    // Query to get all habits for the user
-    const habitsQuery = `
-      SELECT h.habit_id, h.habit_name, h.description, h.weekday, h.time_slot
-      FROM habits h
-      JOIN users_to_habits uh ON h.habit_id = uh.habit_id
-      WHERE uh.user_id = $1
-    `;
-    const habits = await db.any(habitsQuery, [userId]);
-
-    // Return the habits as a JSON response
-    return res.json(habits);
-  } catch (error) {
-    console.error('Error fetching habits:', error);
-    return res.status(500).json({ message: 'Error fetching habits' });
-  }
-});
-
 // Dashboard route – ensure you have a corresponding view at views/pages/dashboard.hbs
 app.get('/dashboard', async (req, res) => {
 
@@ -220,7 +178,7 @@ app.get('/dashboard', async (req, res) => {
   if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
   //temporary add habit code
-  const { habitName, habitDescription, habitWeekday, habitTime } = {habitName: "the", habitDescription: "the2", habitWeekday: 2, habitTime: 3};
+  const { habitName, habitDescription, habitWeekday, habitTime } = {habitName: "Brush my teeth", habitDescription: "Brush my teeth with a toothbrush", habitWeekday: 2, habitTime: 3};
   try {
     const newHabit = await db.one(`
       INSERT INTO habits (habit_name, description, weekday, time_slot)
@@ -244,11 +202,13 @@ app.get('/dashboard', async (req, res) => {
   const friendQuery = 'SELECT count(*) FROM friends WHERE Sender = $1 AND Mutual = TRUE';
   let friendCount = await db.any(friendQuery, [userId]);
   friendCount = friendCount.length;
+  friendCount--;
 
   //Get number of friend requests
   const friendRequestsQuery = 'SELECT count(*) FROM friends WHERE Receiver = $1 AND Mutual = FALSE';
   let friendRequests = await db.any(friendRequestsQuery, [userId]);
   friendRequests = friendRequests.length;
+  friendRequests--;
 
   /***HABITS***/
 

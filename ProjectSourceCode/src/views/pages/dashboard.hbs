@@ -102,7 +102,7 @@
         <!--Icon-->
       </div>
       <p class="text-xl font-bold text-black dark:text-white">...</p>
-      <p class="text-gray-500 dark:text-gray-400">Read</p>
+      <p class="text-gray-500 dark:text-gray-400"></p>
     </div>
 
   </div>
@@ -120,7 +120,7 @@
         <!--Icon-->
       </div>
       <p class="text-xl font-bold text-black dark:text-white">{{friendCount}}</p>
-      <p class="text-gray-500 dark:text-gray-400 text-green-600">^ {{friendRequests}} new request</p>
+      <p class="text-gray-500 dark:text-gray-400 text-green-600">{{#if (greaterThanZero friendRequests)}}^ {{friendRequests}} new requests {{/if}} {{#if (ifZero friendRequests)}} <a style="text-decoration: none;" href="friends">Add a friend! +</a> {{/if}}</p>
     </div>
     
   </div>
@@ -134,7 +134,7 @@
       <b>Today's Habits</b>
     </h5>
 
-    <button type="button" class="btn btn-dark">
+    <button type="button" class="btn btn-dark" onclick="location.href = 'calendar'";>
       <span style="display: flex; justify-content: center; align-items: center; color: #fff; font-weight: 600;">
         <svg height="24" width="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path d="M0 0h24v24H0z" fill="none"></path>
@@ -183,7 +183,8 @@
       <td style="border-radius: 0px 0px 10px 10px; padding: 20px;">
         <div class="form-check form-switch">
           <label class="form-check-label" for="flexSwitchCheckDefault">{{habit_name}}</label>
-          <small id="date" class="text-body-secondary">{{description}}</small>
+          <br>
+          <small id="date" class="text-body-secondary">{{description}}, {{weekday}}</small>
         </div>
       </td>
 
