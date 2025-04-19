@@ -68,8 +68,8 @@
         </div>
         <!--Icon-->
       </div>
-      <p class="text-xl font-bold text-black dark:text-white">{{#if habits}} {{habits.length}} {{else}} 100% {{/if}}</p>
-      <p class="text-gray-500 dark:text-gray-400 text-green-600">+ Up 25% from last week</p>
+      <p class="text-xl font-bold text-black dark:text-white">{{#if habits}} {{completionPerc}}% {{else}} N/A{{/if}}</p>
+      <p class="text-gray-500 dark:text-gray-400 text-green-600">+ {{completedHabits.length}} completed</p>
     </div>
 
   </div>
@@ -155,9 +155,40 @@
 
   <table class="table table-hover table-fixed">
     {{#if habits}}
-    {{#each habits}}
+    {{#each incompleteHabits}}
 
     <tr class="shadow-md" style="background-color: #f7f7f7;">
+      <td class="p-3 rounded-l-lg bg-white" style="width: 47px;">
+        
+        <!--Original checkbox-->
+        {{!-- <form action="/completedHabit" method="POST">
+          <input class="" onChange="handleCheckboxChange(this)" type="checkbox" {{#if (greaterThanZero counter)}} checked disabled {{/if}}></input>
+          <input type="hidden" name="habitId" value={{habit_id}}>
+        </form> --}}
+
+        <!--Fancy Checkbox-->
+        <form action="/completedHabit" method="POST" class="habit-form">
+          <label class="checkbox-container">
+            <input class="checkbox-input" onChange="handleCheckboxChange(this)" type="checkbox" {{#if (greaterThanZero counter)}} checked disabled {{/if}}>
+            <span class="checkmark"></span>
+          </label>
+          <input type="hidden" name="habitId" value={{habit_id}}>
+        </form>
+      </td>
+      <td class="p-3 bg-white font-sans">
+        <span class="font-semibold {{#if (greaterThanZero counter)}} line-through {{/if}}" id="habit_title">{{habit_name}}</span>
+        <br>
+        <span class="text-sm font-normal text-gray-500">{{description}}, {{weekday}}, {{time_slot}}</span>
+      </td>
+      <td class="p-3 rounded-r-lg bg-white font-sans">
+        <span class="p-1 rounded-xl text-sm bg-green-200 text-lime-800 font-semibold float-end">{{counter}} Day Streak</span>
+      </td>
+    </tr>
+
+    {{/each}}
+    {{#each completedHabits}}
+
+      <tr class="shadow-md" style="background-color: #f7f7f7;">
       <td class="p-3 rounded-l-lg bg-white" style="width: 47px;">
         
         <!--Original checkbox-->
