@@ -203,8 +203,6 @@ app.get('/dashboard', async (req, res) => {
     const userId = req.session.user?.user_id;
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
-    addAHabit(userId);
-
     //Get number of friends
     const friendQuery = 'SELECT count(*) FROM friends WHERE Sender = $1 AND Mutual = TRUE';
     let friendCount = await db.any(friendQuery, [userId]);
@@ -277,6 +275,10 @@ app.get('/dashboard', async (req, res) => {
     const completionPerc = (((completedHabits.length) / (habits.length)) * 100) | 0;
     const numCompleted = completedHabits.length;
 
+    if (!(allHabits.length > 3)) {
+      addAHabit(userId);
+    }
+
     //Check if there are habits and send all the data to the page
     if (!habits.length) {
       console.log("No habits!");
@@ -305,6 +307,32 @@ app.post('/completedHabit', async (req, res) => {
 
   //Link history to habit
   await db.any(`INSERT INTO habits_to_history (habit_id, history_id) VALUES ($1, $2)`, [habitId, historyQ.history_id]);
+
+  res.redirect("/dashboard");
+});
+
+//remove habit completed
+app.post('/decrementHabit', async (req, res) => {
+  const habitId = req.body.habitId;
+
+  //Add 1 to counter
+  const habitsQ = `UPDATE habits SET counter=(counter-1) WHERE habit_id = $1`;
+  const habit = await db.any(habitsQ, [habitId]);
+
+  const historyId = `
+        SELECT history_id 
+        FROM habits_to_history 
+        WHERE habit_id = $1
+  `;
+
+  const history_id = await db.one(historyId, [habitId]);
+  console.log(history_id.history_id);
+
+  //Make new history
+  await db.any(`DELETE FROM history WHERE history_id = $1`, [history_id.history_id]);
+
+  //Link history to habit
+  await db.any(`DELETE FROM habits_to_history WHERE history_id = $1`, [history_id.history_id]);
 
   res.redirect("/dashboard");
 });

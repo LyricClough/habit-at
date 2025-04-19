@@ -169,14 +169,14 @@
         <!--Fancy Checkbox-->
         <form action="/completedHabit" method="POST" class="habit-form">
           <label class="checkbox-container">
-            <input class="checkbox-input" onChange="handleCheckboxChange(this)" type="checkbox" {{#if (greaterThanZero counter)}} checked disabled {{/if}}>
+            <input class="checkbox-input" onChange="handleCheckboxChange(this)" type="checkbox">
             <span class="checkmark"></span>
           </label>
           <input type="hidden" name="habitId" value={{habit_id}}>
         </form>
       </td>
       <td class="p-3 bg-white font-sans">
-        <span class="font-semibold {{#if (greaterThanZero counter)}} line-through {{/if}}" id="habit_title">{{habit_name}}</span>
+        <span class="font-semibold" id="habit_title">{{habit_name}}</span>
         <br>
         <span class="text-sm font-normal text-gray-500">{{description}}, {{weekday}}, {{time_slot}}</span>
       </td>
@@ -198,16 +198,16 @@
         </form> --}}
 
         <!--Fancy Checkbox-->
-        <form action="/completedHabit" method="POST" class="habit-form">
+        <form action="/decrementHabit" method="POST" class="habit-form">
           <label class="checkbox-container">
-            <input class="checkbox-input" onChange="handleCheckboxChange(this)" type="checkbox" {{#if (greaterThanZero counter)}} checked disabled {{/if}}>
+            <input class="checkbox-input" onChange="handleCheckboxChange(this)" type="checkbox" checked>
             <span class="checkmark"></span>
           </label>
           <input type="hidden" name="habitId" value={{habit_id}}>
         </form>
       </td>
       <td class="p-3 bg-white font-sans">
-        <span class="font-semibold {{#if (greaterThanZero counter)}} line-through {{/if}}" id="habit_title">{{habit_name}}</span>
+        <span class="font-semibold line-through" id="habit_title">{{habit_name}}</span>
         <br>
         <span class="text-sm font-normal text-gray-500">{{description}}, {{weekday}}, {{time_slot}}</span>
       </td>
