@@ -171,14 +171,10 @@ const auth = (req, res, next) => {
 
 app.use(auth);
 
-// Dashboard route – ensure you have a corresponding view at views/pages/dashboard.hbs
-app.get('/dashboard', async (req, res) => {
-
-  const userId = req.session.user?.user_id;
-  if (!userId) return res.status(401).json({ message: 'Unauthorized' });
-
+//temporary!!!!!!!!!!!!!!!!!!!!!!!!!
+async function addAHabit(userId) {
   //temporary add habit code
-  const { habitName, habitDescription, habitWeekday, habitTime } = {habitName: "Brush my teeth", habitDescription: "Brush my teeth with a toothbrush", habitWeekday: 5, habitTime: 3};
+  const { habitName, habitDescription, habitWeekday, habitTime } = {habitName: "Brush my teeth", habitDescription: "Brush my teeth with a toothbrush", habitWeekday: 6, habitTime: 3};
   try {
     const newHabit = await db.one(`
       INSERT INTO habits (habit_name, description, weekday, time_slot)
@@ -197,6 +193,16 @@ app.get('/dashboard', async (req, res) => {
     res.status(500).json({ message: 'Error adding habit' });
   }
   //end temp add habit code
+}
+
+// Dashboard route – ensure you have a corresponding view at views/pages/dashboard.hbs
+app.get('/dashboard', async (req, res) => {
+
+  //get user id
+  const userId = req.session.user?.user_id;
+  if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+  addAHabit(userId);
 
   //Get number of friends
   const friendQuery = 'SELECT count(*) FROM friends WHERE Sender = $1 AND Mutual = TRUE';
