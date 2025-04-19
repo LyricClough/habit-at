@@ -197,39 +197,45 @@ app.get('/dashboard', (req, res) => {
 });
 //#######################
 
-app.get('/friends', (req, res) => {
+app.get('/friends', async (req, res) => {
+  
  
-  var userId = req.session.userInfo.userId;
+  const userId = req.session.user?.userId;
+
+  if (!userId) return res.redirect('/login');
+
+
  
   var query = 'SELECT friends.sender, friends.receiver FROM friends WHERE (sender = $1 OR receiver = $1) AND mutual = true';
  
   var pendingREquest = 'SELECT friends.sender FROM friends WHERE reciever = $1 AND mutual = false';
+  var friends = [];
+  var pending = [];
+  try {
+    const friendslist = await( db.any(query, [userId]));
+  } catch (error) {
+    console.error('Error fetching friends:', error);
+  }
+  try{
+    const pendinglist = await( db.any(pendingREquest, [userId]));
+  }
+  catch (error) {
+    console.error('Error fetching pending requests:', error);
+  }
+  friendslist.forEach(friend =>{
+    friends[friend.sender][friend.receiver][friend.mutual] = friend;
+  })
+  pendinglist.forEach(pendingRequest =>{
+    pending[pendingRequest.sender] = pendingRequest;
+  }
+  )
  
-  db.any(query, [userId])
- 
-    .then(friends => {
- 
-      db.any(pendingREquest, [userId])
- 
-        .then(pending => {
- 
-          friends.forEach(friend => {
- 
-            friend.mutual = true;
- 
-          });
- 
-          return friends;
- 
-        })
- 
-        .then(friends => {
- 
-          res.render('pages/friends', { friends }, {pending});
- 
-        });
- 
-      res.render('pages/friends', friends);
+  
+  res.render('pages/friends', {
+    user: req.session.user,
+    friends: friends,
+    pending: pending
+
  
     })
  
@@ -245,12 +251,12 @@ app.get('/friends', (req, res) => {
  
 
  
-app.post('/friends', (req, res) => {
+app.post('/send-friend-request', (req, res) => {
  
   const { friendId } = req.body;
  
-  const userId = req.session.userInfo.userId;
- 
+  const userId = req.session.user.id;
+  
   const query = `
  
     INSERT INTO friends (sender, receiver, mutual)

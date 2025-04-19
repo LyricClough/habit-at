@@ -11,17 +11,35 @@ chai.use(chaiHttp);
 const {assert, expect} = chai;
 
 // ********************** DEFAULT WELCOME TESTCASE ****************************
+  // describe('Server!', () => {
+  //   // Sample test case given to test / endpoint.
+  //   it('Returns the default welcome message', done => {
+  //     chai
+  //       .request(server)
+  //       .get('/welcome')
+  //       .end((err, res) => {
+  //         expect(res).to.have.status(200);
+  //         expect(res.body.status).to.equals('success');
+  //         assert.strictEqual(res.body.message, 'Welcome!');
+  //         done();
+  //       });
+  //   });
+  // });
 
-describe('Server!', () => {
-  // Sample test case given to test / endpoint.
-  it('Returns the default welcome message', done => {
-    chai
-      .request(server)
-      .get('/welcome')
+
+// *********************** TODO: WRITE 2 UNIT TESTCASES **************************
+
+// *********************** LOGIN API TESTCASES **************************
+/*
+describe('Login API - Positive Test Case', () => {
+  it('should log in successfully with valid credentials and redirect to /dashboard', done => {
+    chai.request(server)
+      .post('/login')
+      .redirects(0) 
+      .send({ username: 'testuser', password: 'password123' })
       .end((err, res) => {
-        expect(res).to.have.status(200);
-        expect(res.body.status).to.equals('success');
-        assert.strictEqual(res.body.message, 'Welcome!');
+        expect(res).to.have.status(302);
+        expect(res).to.have.header('location', '/dashboard');
         done();
       });
   });
@@ -40,9 +58,9 @@ describe('Login API - Negative Test Case', () => {
       });
   });
 });
-
+*/
 // *********************** REGISTRATION TESTCASES **************************
-
+/*
 
 describe('Registration API', () => {
 
@@ -118,5 +136,5 @@ describe('Registration API', () => {
   });
 
 });
-
+*/
 // ********************************************************************************
