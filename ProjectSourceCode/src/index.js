@@ -274,7 +274,7 @@ app.get('/dashboard', async (req, res) => {
     const incompleteHabits = await db.any(incompleteQuery, [userId, dayOfWeek, today]);
     /* GENERATIVE AI WAS USED TO HELP CRAFT completedHabits and incompleteHabits QUERIES */
 
-    const completionPerc = ((completedHabits.length) / (habits.length)) * 100;
+    const completionPerc = (((completedHabits.length) / (habits.length)) * 100) | 0;
     const numCompleted = completedHabits.length;
 
     //Check if there are habits and send all the data to the page

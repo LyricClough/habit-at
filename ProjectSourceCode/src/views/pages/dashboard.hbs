@@ -69,7 +69,7 @@
         <!--Icon-->
       </div>
       <p class="text-xl font-bold text-black dark:text-white">{{#if habits}} {{completionPerc}}% {{else}} N/A{{/if}}</p>
-      <p class="text-gray-500 dark:text-gray-400 text-green-600">+ {{completedHabits.length}} completed</p>
+      <p class="text-gray-500 dark:text-gray-400 text-green-600">+ {{completedHabits.length}} completed today</p>
     </div>
 
   </div>
@@ -87,7 +87,7 @@
         <!--Icon-->
       </div>
       <p class="text-xl font-bold text-black dark:text-white">{{#if allHabits}} {{allHabits.length}} {{else}} 0 {{/if}}</p>
-      <p class="text-gray-500 dark:text-gray-400">2 New This Month</p>
+      <p class="text-gray-500 dark:text-gray-400"><!--2 New This Month--></p>
     </div>
 
   </div>
@@ -181,7 +181,7 @@
         <span class="text-sm font-normal text-gray-500">{{description}}, {{weekday}}, {{time_slot}}</span>
       </td>
       <td class="p-3 rounded-r-lg bg-white font-sans">
-        <span class="p-1 rounded-xl text-sm bg-green-200 text-lime-800 font-semibold float-end">{{counter}} Day Streak</span>
+        <span class="p-1 rounded-xl text-sm bg-green-200 text-lime-800 font-semibold float-end">Completed {{counter}} Times</span>
       </td>
     </tr>
 
@@ -212,7 +212,7 @@
         <span class="text-sm font-normal text-gray-500">{{description}}, {{weekday}}, {{time_slot}}</span>
       </td>
       <td class="p-3 rounded-r-lg bg-white font-sans">
-        <span class="p-1 rounded-xl text-sm bg-green-200 text-lime-800 font-semibold float-end">{{counter}} Day Streak</span>
+        <span class="p-1 rounded-xl text-sm bg-green-200 text-lime-800 font-semibold float-end">Completed {{counter}} Times</span>
       </td>
     </tr>
 
