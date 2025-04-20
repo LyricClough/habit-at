@@ -9,7 +9,7 @@ const bcrypt = require('bcryptjs');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Create Handlebars instance
 const hbs = handlebars.create({
@@ -124,6 +124,7 @@ app.post('/register', async (req, res) => {
 app.get('/login', (req, res) => {
   res.render('pages/login', { hideNav: true });
 });
+
 app.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -196,8 +197,6 @@ app.get('/logout', (req, res) => {
     return res.redirect('/login');
   });
 });
-
-
 
 // Routes for settings.hbs
 
