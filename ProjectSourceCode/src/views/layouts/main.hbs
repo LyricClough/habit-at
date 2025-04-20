@@ -1,21 +1,17 @@
+<!-- src/views/layouts/main.hbs -->
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-white">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Habit‑@</title>
-
-  <!-- point to the built Tailwind file -->
-  <link href="/css/output.css" rel="stylesheet"/>
+  {{> head}}
 </head>
-<body class="h-full">
-
-  {{!-- only show the sidebar when hideNav is false --}}
+<body class="h-full flex">
+  {{!-- Sidebar/nav --}}
   {{#unless hideNav}}
-    {{> nav}}
-  {{/unless}}
+  {{> nav}}
+{{/unless}}
 
-  <main class="flex-1 overflow-y-auto">
+  {{!-- Main content area --}}
+  <main class="flex-1 overflow-y-auto p-6">
     {{{body}}}
   </main>
 </body>
