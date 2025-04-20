@@ -1,40 +1,6 @@
-<h1>Friends</h1>
-
-
-<table>
-    <tr>
-        <th> My Friends</th><th></th>
-    </tr>
-    {{#each friends}}
-    {{if this.sender == user.username}}
-    <tr>
-        <td>{{this.sender}}</td> <td><button class="btn btn-secondary mt-3">Remove friend</button></td>
-    </tr>
-    {{else}}
-    <tr>
-        <td>{{this.receiver}}</td> <td><button class="btn btn-secondary mt-3">Remove friend</button></td>
-    </tr>
-    {{/if}} 
-    {{/each}}
-</table>
-
-<table>
-    <tr>
-        <th> Pending Request</th><th></th>
-    </tr>
-    {{#each pending}}
-    
-    <tr>
-        <form action="/accept-friend" method="POST" id="data-form"></form>
-        <td>{{this.sender}}</td> <td><button class="btn btn-secondary mt-3" type="submit">Accept Friend Request</button></td>
-        </form>
-    </tr>
-    {{/each}}
-</table>
-
-
-
-<div class="modal fade" id="friendrequest" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="friendrequest" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" style="margin-right:20px;">
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#friendrequest">
+        Send Friend Request
     <div class="modal-dialog">
         <div class="modal-content">
             <div>
@@ -53,3 +19,42 @@
     </div>
 
 </div>
+
+<h1>Friends</h1>
+
+<div style="margin-left: 20px;">
+    
+<table>
+    <tr>
+        <th> My Friends</th><th></th>
+    </tr>
+    {{#each friends}}
+    {{if this.sender == user.username}}
+    <tr>
+        <td>{{this.sender}}</td> <td><button class="btn btn-secondary mt-3">Remove friend</button></td>
+    </tr>
+    {{else}}
+    <tr>
+        <td>{{this.receiver}}</td> <td><button class="btn btn-secondary mt-3">Remove friend</button></td>
+    </tr>
+    {{/if}} 
+    {{/each}}
+</table>
+</div>
+<div style="margin-right: 20px;">
+<table>
+    <tr>
+        <th> Pending Requests</th><th></th>
+    </tr>
+    {{#each pending}}
+    
+    <tr>
+        <form action="/accept-friend" method="POST" id="data-form"></form>
+        <td>{{this.sender}}</td> <td><button class="btn btn-secondary mt-3" type="submit">Accept Friend Request</button></td>
+        </form>
+    </tr>
+    {{/each}}
+</table>
+</div>
+
+

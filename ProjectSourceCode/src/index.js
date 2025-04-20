@@ -200,9 +200,9 @@ app.get('/dashboard', (req, res) => {
 app.get('/friends', async (req, res) => {
   
  
-  const userId = req.session.user?.userId;
+  const user = req.session.user;
 
-  if (!userId) return res.redirect('/login');
+  if (user) return res.redirect('/login');
 
 
  
