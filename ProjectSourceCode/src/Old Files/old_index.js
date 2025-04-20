@@ -72,7 +72,7 @@ app.post('/register', async (req, res) => {
       RETURNING username, email;
     `;
     await db.one(insertQuery, [username, email, hash]);
-    return res.redirect('/login'); // Success: redirect with implicit 302
+    return res.redirect('/login');
   } catch (error) {
     console.log(error);
     // Check for duplicate key error (unique constraint violation)
@@ -83,13 +83,13 @@ app.post('/register', async (req, res) => {
       } else if (error.constraint === 'users_email_key') {
         message = 'An account with this email already exists.';
       }
-      return res.status(400).render('pages/register', {
+      return res.render('pages/register', {
         hideNav: true,
         message,
         error: true,
       });
     }
-    return res.status(400).render('pages/register', {
+    return res.render('pages/register', {
       hideNav: true,
       message: 'Could not register, try again.',
       error: true,
@@ -98,39 +98,30 @@ app.post('/register', async (req, res) => {
 });
 
 
+
 // Render the login page (with nav hidden)
 app.get('/login', (req, res) => {
   res.render('pages/login', { hideNav: true });
 });
+
+
 app.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-    console.log("Login attempt for username:", username);
     const user = await db.oneOrNone('SELECT * FROM users WHERE username = $1', [username]);
-    console.log("User found:", user);
     if (!user) {
-      const errorResponse = { message: 'Incorrect username or password.' };
-      // If running tests, return JSON; otherwise render view.
-      if (process.env.NODE_ENV === 'test') {
-        return res.status(400).json(errorResponse);
-      }
-      return res.status(400).render('pages/login', {
+      return res.render('pages/login', {
         hideNav: true,
-        ...errorResponse,
-        error: true
+        message: 'Incorrect username or password.',
+        error: true,
       });
     }
     const match = await bcrypt.compare(password, user.password);
-    console.log("Password match:", match);
     if (!match) {
-      const errorResponse = { message: 'Incorrect username or password.' };
-      if (process.env.NODE_ENV === 'test') {
-        return res.status(400).json(errorResponse);
-      }
-      return res.status(400).render('pages/login', {
+      return res.render('pages/login', {
         hideNav: true,
-        ...errorResponse,
-        error: true
+        message: 'Incorrect username or password.',
+        error: true,
       });
     }
     req.session.user = user;
@@ -139,14 +130,10 @@ app.post('/login', async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    const errorResponse = { message: 'Something went wrong. Try again.' };
-    if (process.env.NODE_ENV === 'test') {
-      return res.status(400).json(errorResponse);
-    }
-    return res.status(400).render('pages/login', {
+    return res.render('pages/login', {
       hideNav: true,
-      ...errorResponse,
-      error: true
+      message: 'Something went wrong. Try again.',
+      error: true,
     });
   }
 });
@@ -175,22 +162,20 @@ app.get('/logout', (req, res) => {
   });
 });
 
-
-
 // Routes for settings.hbs
 
 app.get('/Settings', (req, res) => {
   res.render('pages/settings', { user: req.session.user, hideNav: true });
 });
 
-app.post('/settings/profile', async (req, res) => {
-  const { username, email, phone } = req.body;
+app.post('/Settings', async (req, res) => {
+  const { username, email, phone, currentPassword, newPassword, confirmPassword } = req.body;
   const userId = req.session.user.id;
 
   try {
     const user = await db.one('SELECT * FROM users WHERE id = $1', [userId]);
 
-    // Username update
+    // Update username if changed (should throw error if duplicate username)
     if (username && username !== user.username) {
       const existingUser = await db.oneOrNone('SELECT id FROM users WHERE username = $1', [username]);
       if (existingUser && existingUser.id !== userId) {
@@ -205,7 +190,7 @@ app.post('/settings/profile', async (req, res) => {
       req.session.user.username = username;
     }
 
-    // Email update
+    // Update email if changed (should throw error if duplicate email)
     if (email && email !== user.email) {
       const existingEmail = await db.oneOrNone('SELECT id FROM users WHERE email = $1', [email]);
       if (existingEmail && existingEmail.id !== userId) {
@@ -220,9 +205,9 @@ app.post('/settings/profile', async (req, res) => {
       req.session.user.email = email;
     }
 
-    // Phone update
+    // Update phone number if changed
     if (phone) {
-      const cleanedPhone = phone.replace(/[^\d]/g, '');
+      const cleanedPhone = phone.replace(/[^\d]/g, ''); // Remove non-digit characters
       if (cleanedPhone.length !== 10) {
         return res.render('pages/settings', {
           hideNav: true,
@@ -235,35 +220,13 @@ app.post('/settings/profile', async (req, res) => {
         await db.none('UPDATE users SET phone = $1 WHERE id = $2', [cleanedPhone, userId]);
         req.session.user.phone = cleanedPhone;
       }
-    }
+    }   
 
-    res.render('pages/settings', {
-      hideNav: true,
-      message: 'Profile updated successfully.',
-      success: true,
-      user: req.session.user
-    });
-  } catch (error) {
-    console.log(error);
-    res.render('pages/settings', {
-      hideNav: true,
-      message: 'Error updating profile.',
-      error: true,
-      user: req.session.user
-    });
-  }
-});
-
-app.post('/settings/preferences', async (req, res) => {
-  const userId = req.session.user.id;
-  const emailNotif = req.body.email_notif === 'on';
-  const phoneNotif = req.body.phone_notif === 'on';
-  const showProfile = req.body.show_profile === 'on';
-  const darkMode = req.body.dark_mode === 'on';
-
-  try {
-    const user = await db.one('SELECT * FROM users WHERE id = $1', [userId]);
-
+    const emailNotif = req.body.email_notif === 'on';
+    const phoneNotif = req.body.phone_notif === 'on';
+    const showProfile = req.body.show_profile === 'on';
+    const darkMode = req.body.dark_mode === 'on';
+    
     if (emailNotif !== user.email_notif) {
       await db.none('UPDATE users SET email_notif = $1 WHERE id = $2', [emailNotif, userId]);
       req.session.user.email_notif = emailNotif;
@@ -284,82 +247,47 @@ app.post('/settings/preferences', async (req, res) => {
       req.session.user.dark_mode = darkMode;
     }
 
-    res.render('pages/settings', {
+
+
+    // Handle password change if all fields are provided
+    if (currentPassword && newPassword && confirmPassword) {
+      const match = await bcrypt.compare(currentPassword, user.password);
+      if (!match) {
+        return res.render('pages/settings', { 
+          hideNav: true, 
+          message: 'Current password is incorrect.', 
+          error: true 
+        });
+      }
+      if (newPassword !== confirmPassword) {
+        return res.render('pages/settings', { 
+          hideNav: true,
+          message: 'New passwords do not match.', 
+          error: true 
+        });
+      }
+      const hash = await bcrypt.hash(newPassword, 10);
+      await db.none('UPDATE users SET password = $1 WHERE id = $2', [hash, userId]);
+    }
+
+    res.render('pages/settings', { 
       hideNav: true,
-      message: 'Preferences updated successfully.',
-      success: true,
-      user: req.session.user
+      message: 'Changes saved successfully.', 
+      success: true, user: req.session.user 
     });
   } catch (error) {
     console.log(error);
     res.render('pages/settings', {
-      hideNav: true,
-      message: 'Error updating preferences.',
-      error: true,
-      user: req.session.user
+      hideNav: true, 
+      message: 'Error saving changes.', 
+      error: true 
     });
   }
 });
 
-app.post('/settings/password', async (req, res) => {
-  const { currentPassword, newPassword, confirmPassword } = req.body;
-  const userId = req.session.user.id;
-
-  try {
-    const user = await db.one('SELECT * FROM users WHERE id = $1', [userId]);
-
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      return res.render('pages/settings', {
-        hideNav: true,
-        message: 'All password fields are required.',
-        error: true,
-        user: req.session.user
-      });
-    }
-
-    const match = await bcrypt.compare(currentPassword, user.password);
-    if (!match) {
-      return res.render('pages/settings', {
-        hideNav: true,
-        message: 'Current password is incorrect.',
-        error: true,
-        user: req.session.user
-      });
-    }
-
-    if (newPassword !== confirmPassword) {
-      return res.render('pages/settings', {
-        hideNav: true,
-        message: 'New passwords do not match.',
-        error: true,
-        user: req.session.user
-      });
-    }
-
-    const hash = await bcrypt.hash(newPassword, 10);
-    await db.none('UPDATE users SET password = $1 WHERE id = $2', [hash, userId]);
-
-    res.render('pages/settings', {
-      hideNav: true,
-      message: 'Password updated successfully.',
-      success: true,
-      user: req.session.user
-    });
-  } catch (error) {
-    console.log(error);
-    res.render('pages/settings', {
-      hideNav: true,
-      message: 'Error updating password.',
-      error: true,
-      user: req.session.user
-    });
-  }
-});
 
 // Start the server on port 3000 (or change the host port mapping in your docker-compose file if needed)
 const PORT = process.env.PORT || 3000;
 module.exports = app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
-
-
