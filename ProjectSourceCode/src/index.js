@@ -183,30 +183,6 @@ const auth = (req, res, next) => {
 
 app.use(auth);
 
-//temporary!!!!!!!!!!!!!!!!!!!!!!!!!
-async function addAHabit(userId) {
-  //temporary add habit code
-  const { habitName, habitDescription, habitWeekday, habitTime } = {habitName: "Brush my teeth", habitDescription: "Brush my teeth with a toothbrush", habitWeekday: 0, habitTime: 23};
-  try {
-    const newHabit = await db.one(`
-      INSERT INTO habits (habit_name, description, weekday, time_slot)
-      VALUES ($1, $2, $3, $4)
-      RETURNING habit_id
-    `, [habitName, habitDescription, habitWeekday, habitTime]);
-
-    await db.none(`
-      INSERT INTO users_to_habits (user_id, habit_id)
-      VALUES ($1, $2)
-    `, [userId, newHabit.habit_id]);
-
-    //res.json({ message: 'Habit added successfully!' });
-  } catch (error) {
-    console.error('Error adding habit:', error);
-    res.status(500).json({ message: 'Error adding habit' });
-  }
-  //end temp add habit code
-}
-
 // Dashboard route – ensure you have a corresponding view at views/pages/dashboard.hbs
 app.get('/dashboard', async (req, res) => {
 
@@ -229,7 +205,7 @@ app.get('/dashboard', async (req, res) => {
 
     /***HABITS***/
 
-    //Query all habits, for use in statistics
+    //Query all habits for a given user, for use in statistics
     const allHabitsQ = `
       SELECT h.habit_id, h.habit_name, h.description, h.weekday, h.time_slot
       FROM habits h
@@ -255,7 +231,7 @@ app.get('/dashboard', async (req, res) => {
     const dayOfWeek = d.getDay();
     const habits = await db.any(habitsQuery, [userId, dayOfWeek]);
 
-    // Completed habits today (with full habit data)
+    // Completed habits today
     const today = new Date().toISOString().split('T')[0]; // format YYYY-MM-DD
     const completedQuery = `
       SELECT h.habit_id, h.habit_name, h.description, h.weekday, h.time_slot, h.counter
@@ -267,6 +243,7 @@ app.get('/dashboard', async (req, res) => {
     `;
     const completedHabits = await db.any(completedQuery, [today, userId]);
 
+    // Incomplete habits today
     const incompleteQuery = `
       SELECT h.habit_id, h.habit_name, h.description, h.weekday, h.time_slot, h.counter
       FROM habits h
@@ -282,10 +259,9 @@ app.get('/dashboard', async (req, res) => {
     `;
     const incompleteHabits = await db.any(incompleteQuery, [userId, dayOfWeek, today]);
 
+    //Generate percentage of completed habits for the day
     const completionPerc = (((completedHabits.length) / (habits.length)) * 100) | 0;
     const numCompleted = completedHabits.length;
-
-    addAHabit(userId);
 
     //Check if there are habits and send all the data to the page
     if (!habits.length) {
@@ -304,45 +280,55 @@ app.get('/dashboard', async (req, res) => {
 
 //Set habit completed
 app.post('/completedHabit', async (req, res) => {
-  const habitId = req.body.habitId;
+  try {
+    const habitId = req.body.habitId;
 
-  //Add 1 to counter
-  const habitsQ = `UPDATE habits SET counter=(counter+1) WHERE habit_id = $1`;
-  const habit = await db.any(habitsQ, [habitId]);
+    //Add 1 to counter
+    const habitsQ = `UPDATE habits SET counter=(counter+1) WHERE habit_id = $1`;
+    const habit = await db.any(habitsQ, [habitId]);
 
-  //Make new history
-  const historyQ = await db.one(`INSERT INTO history (date) VALUES (CURRENT_DATE) RETURNING history_id`);
+    //Make new history
+    const historyQ = await db.one(`INSERT INTO history (date) VALUES (CURRENT_DATE) RETURNING history_id`);
 
-  //Link history to habit
-  await db.any(`INSERT INTO habits_to_history (habit_id, history_id) VALUES ($1, $2)`, [habitId, historyQ.history_id]);
+    //Link history to habit
+    await db.any(`INSERT INTO habits_to_history (habit_id, history_id) VALUES ($1, $2)`, [habitId, historyQ.history_id]);
 
-  res.redirect("/dashboard");
+    res.redirect("/dashboard");
+  }
+  catch (err) {
+    console.log(err);
+  }
 });
 
 //remove habit completed
 app.post('/decrementHabit', async (req, res) => {
-  const habitId = req.body.habitId;
+  try {
+    const habitId = req.body.habitId;
 
-  //Add 1 to counter
-  const habitsQ = `UPDATE habits SET counter=(counter-1) WHERE habit_id = $1`;
-  const habit = await db.any(habitsQ, [habitId]);
+    //Add 1 to counter
+    const habitsQ = `UPDATE habits SET counter=(counter-1) WHERE habit_id = $1`;
+    const habit = await db.any(habitsQ, [habitId]);
 
-  const historyId = `
-        SELECT history_id 
-        FROM habits_to_history 
-        WHERE habit_id = $1
-  `;
+    const historyId = `
+          SELECT history_id 
+          FROM habits_to_history 
+          WHERE habit_id = $1
+    `;
 
-  const history_id = await db.one(historyId, [habitId]);
-  console.log(history_id.history_id);
+    const history_id = await db.one(historyId, [habitId]);
+    console.log(history_id.history_id);
 
-  //Make new history
-  await db.any(`DELETE FROM history WHERE history_id = $1`, [history_id.history_id]);
+    //Make new history
+    await db.any(`DELETE FROM history WHERE history_id = $1`, [history_id.history_id]);
 
-  //Link history to habit
-  await db.any(`DELETE FROM habits_to_history WHERE history_id = $1`, [history_id.history_id]);
+    //Link history to habit
+    await db.any(`DELETE FROM habits_to_history WHERE history_id = $1`, [history_id.history_id]);
 
-  res.redirect("/dashboard");
+    res.redirect("/dashboard");
+  }
+  catch (err) {
+    console.log(err);
+  }
 });
 
 // Logout route: destroy session and redirect to /login
