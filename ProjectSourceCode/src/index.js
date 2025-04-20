@@ -18,6 +18,18 @@ const hbs = handlebars.create({
   partialsDir: path.join(__dirname, 'views', 'partials'),
 });
 
+// ── REGISTER ifActive ─────────────────────────────────────────────────────
+hbs.handlebars.registerHelper('ifActive', function(currentPath, linkPath, options) {
+  // both should be normalized, e.g. '/dashboard' vs 'dashboard'
+  const active = currentPath.replace(/\/$/, '') === `/${linkPath}`;
+  return active
+    ? options.fn(this)
+    : options.inverse(this);
+});
+
+app.engine('hbs', hbs.engine);
+app.set('view engine', 'hbs');
+
 const dbConfig = {
   host: 'db', 
   port: 5432,
@@ -55,6 +67,12 @@ app.use(
     resave: false,
   })
 );
+
+app.use((req, res, next) => {
+  res.locals.currentPath = req.path;  
+  next();
+});
+
 
 // Redirect root to /login
 app.get('/', (req, res) => {
