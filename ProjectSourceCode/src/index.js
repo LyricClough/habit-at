@@ -7,6 +7,10 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+
 // Create Handlebars instance
 const hbs = handlebars.create({
   extname: 'hbs',
@@ -175,6 +179,20 @@ app.get('/logout', (req, res) => {
   });
 });
 
+
+// Import your notification service
+const { sendEmailNotification } = require('./notificationService');
+
+app.post('/send-test-email', (req, res) => {
+  const { recipient, subject, message } = req.body;
+  const testRecipient = recipient || 'habitat044@gmail.com';
+  const testSubject = subject || 'Test Email from Postman';
+  const testMessage = message || 'This is a test email sent via Gmail using Nodemailer.';
+  sendEmailNotification(testRecipient, testSubject, testMessage);
+  res.status(200).json({ message: 'Test email sent. Check your inbox!' });
+});
+
+
 // Start the server on port 3000 (or change the host port mapping in your docker-compose file if needed)
 const PORT = process.env.PORT || 3000;
 module.exports = app.listen(PORT, () => {
@@ -196,4 +214,3 @@ app.get('/dashboard', (req, res) => {
   res.render('pages/dashboard');
 });
 //#######################
-
