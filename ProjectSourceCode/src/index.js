@@ -23,6 +23,18 @@ hbs.handlebars.registerHelper("ifZero", function (value) {
   return value == 0;
 });
 
+hbs.handlebars.registerHelper("printTime", function (value) {
+  if (value > 11) {
+    value = value - 11;
+    return value + " pm";
+  }
+  else {
+    return value + " am"
+  }
+
+  return value == 0;
+});
+
 const dbConfig = {
   host: 'db', 
   port: 5432,
@@ -174,7 +186,7 @@ app.use(auth);
 //temporary!!!!!!!!!!!!!!!!!!!!!!!!!
 async function addAHabit(userId) {
   //temporary add habit code
-  const { habitName, habitDescription, habitWeekday, habitTime } = {habitName: "Brush my teeth", habitDescription: "Brush my teeth with a toothbrush", habitWeekday: 6, habitTime: 3};
+  const { habitName, habitDescription, habitWeekday, habitTime } = {habitName: "Brush my teeth", habitDescription: "Brush my teeth with a toothbrush", habitWeekday: 0, habitTime: 23};
   try {
     const newHabit = await db.one(`
       INSERT INTO habits (habit_name, description, weekday, time_slot)
@@ -243,7 +255,6 @@ app.get('/dashboard', async (req, res) => {
     const dayOfWeek = d.getDay();
     const habits = await db.any(habitsQuery, [userId, dayOfWeek]);
 
-    /* GENERATIVE AI WAS USED TO HELP CRAFT completedHabits and incompleteHabits QUERIES */
     // Completed habits today (with full habit data)
     const today = new Date().toISOString().split('T')[0]; // format YYYY-MM-DD
     const completedQuery = `
@@ -270,19 +281,16 @@ app.get('/dashboard', async (req, res) => {
         )
     `;
     const incompleteHabits = await db.any(incompleteQuery, [userId, dayOfWeek, today]);
-    /* GENERATIVE AI WAS USED TO HELP CRAFT completedHabits and incompleteHabits QUERIES */
 
     const completionPerc = (((completedHabits.length) / (habits.length)) * 100) | 0;
     const numCompleted = completedHabits.length;
 
-    if (!(allHabits.length > 3)) {
-      addAHabit(userId);
-    }
+    addAHabit(userId);
 
     //Check if there are habits and send all the data to the page
     if (!habits.length) {
       console.log("No habits!");
-      res.render('pages/dashboard', { hideNav: false, user: req.session.user, friendCount, friendRequests});
+      res.render('pages/dashboard', { hideNav: false, user: req.session.user, allHabits, friendCount, friendRequests});
     }
     else {
       res.render('pages/dashboard', { hideNav: false, user: req.session.user, habits, allHabits, completedHabits, numCompleted, incompleteHabits, completionPerc, friendCount, friendRequests});
