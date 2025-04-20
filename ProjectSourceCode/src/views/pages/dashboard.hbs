@@ -1,289 +1,185 @@
-<!doctype html>
-<html lang="en">
-  
-  <head>
-    <style>
-      body {
-        background-color: #f7f7f7;
-      }
-    </style>
+<!-- src/views/pages/dashboard.hbs -->
+<div class="space-y-6">
 
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <!--TAILWIND CDN-->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  </head>
-
-  <body style="padding: 15px;">
-
-  <!--TITLE-->
-  <h4>
-    {{#if user.username}}
-    <b>Welcome back {{user.username}}!</b>
-    {{else}}
-    <b>Welcome back, User!</b>
-    {{/if}}
-    <br>
-    <small id="date" class="text-body-secondary">Current Date</small>
-    <span class="bg-blue-200 text-blue-800 rounded-xl" style="width: fit-content; padding: 5px; font-size: 15px; font-weight: bold;">... Day Streak</span>
-
-    <!--Script to get the date-->
-    <script>
-    // Create a new Date object
-    const date = new Date();
-
-    // Array of days of the week
-    const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
-    // Get the day of the week
-    const dayOfWeek = daysOfWeek[date.getDay()];
-
-    // Get the full date components
-    const day = date.getDate();
-    const month = date.toLocaleString('default', { month: 'long' }); // Full month name
-    const year = date.getFullYear();
-
-    // Format the full date
-    const fullDate = `${dayOfWeek}, ${month} ${day}, ${year}`;
-
-    document.getElementById('date').innerHTML = (fullDate);
-    </script>
-  </h4>
-  <!--TITLE-->
-
-
-<!--Statistics Info-->
-<div class="flex space-x-4">
-
-  <div class="rounded-xl bg-white p-6 shadow-md outline outline-black/5 dark:bg-slate-800 dark:shadow-none dark:-outline-offset-1 dark:outline-white/10" style="width: 100%; margin: 10px;">
-    <div>
-      <div class="text-gray-500 dark:text-gray-400" style="display: flex; justify-content: space-between">
-        Completion
-        <!--Icon-->
-        <div class="bg-blue-200 rounded-xl" style="padding: 5px; width: fit-content;">
-          <span>
-            <svg height="24" width="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>poll</title><path d="M3,22V8H7V22H3M10,22V2H14V22H10M17,22V14H21V22H17Z" /></svg>
-          </span>
-        </div>
-        <!--Icon-->
-      </div>
-      <p class="text-xl font-bold text-black dark:text-white">{{#if habits}} {{completionPerc}}% {{else}} N/A{{/if}}</p>
-      <p class="text-gray-500 dark:text-gray-400 text-green-600">+ {{completedHabits.length}} completed today</p>
-    </div>
-
-  </div>
-
-  <div class="rounded-xl bg-white p-6 shadow-md outline outline-black/5 dark:bg-slate-800 dark:shadow-none dark:-outline-offset-1 dark:outline-white/10" style="width: 100%; margin: 10px;">
-    <div>
-      <div class="text-gray-500 dark:text-gray-400" style="display: flex; justify-content: space-between">
-        Habits
-        <!--Icon-->
-        <div class="bg-green-200 rounded-xl" style="padding: 5px; width: fit-content;">
-          <span>
-            <svg height="24" width="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>pencil</title><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" /></svg>
-          </span>
-        </div>
-        <!--Icon-->
-      </div>
-      <p class="text-xl font-bold text-black dark:text-white">{{#if allHabits}} {{allHabits.length}} {{else}} 0 {{/if}}</p>
-      <p class="text-gray-500 dark:text-gray-400"><!--2 New This Month--></p>
-    </div>
-
-  </div>
-
-  <div class="rounded-xl bg-white p-6 shadow-md outline outline-black/5 dark:bg-slate-800 dark:shadow-none dark:-outline-offset-1 dark:outline-white/10" style="width: 100%; margin: 10px;">
-    <div>
-      <div class="text-gray-500 dark:text-gray-400" style="display: flex; justify-content: space-between">
-        Longest Streak
-        <!--Icon-->
-        <div class="bg-yellow-200 rounded-xl" style="padding: 5px; width: fit-content;">
-          <span>
-            <svg height="24" width="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>fire</title><path d="M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C16.22 9.78 15.46 9.35 14.82 8.72C13.33 7.26 13 4.85 13.95 3C13 3.23 12.17 3.75 11.46 4.32C8.87 6.4 7.85 10.07 9.07 13.22C9.11 13.32 9.15 13.42 9.15 13.55C9.15 13.77 9 13.97 8.8 14.05C8.57 14.15 8.33 14.09 8.14 13.93C8.08 13.88 8.04 13.83 8 13.76C6.87 12.33 6.69 10.28 7.45 8.64C5.78 10 4.87 12.3 5 14.47C5.06 14.97 5.12 15.47 5.29 15.97C5.43 16.57 5.7 17.17 6 17.7C7.08 19.43 8.95 20.67 10.96 20.92C13.1 21.19 15.39 20.8 17.03 19.32C18.86 17.66 19.5 15 18.56 12.72L18.43 12.46C18.22 12 17.66 11.2 17.66 11.2M14.5 17.5C14.22 17.74 13.76 18 13.4 18.1C12.28 18.5 11.16 17.94 10.5 17.28C11.69 17 12.4 16.12 12.61 15.23C12.78 14.43 12.46 13.77 12.33 13C12.21 12.26 12.23 11.63 12.5 10.94C12.69 11.32 12.89 11.7 13.13 12C13.9 13 15.11 13.44 15.37 14.8C15.41 14.94 15.43 15.08 15.43 15.23C15.46 16.05 15.1 16.95 14.5 17.5H14.5Z" /></svg>
-          </span>
-        </div>
-        <!--Icon-->
-      </div>
-      <p class="text-xl font-bold text-black dark:text-white">...</p>
-      <p class="text-gray-500 dark:text-gray-400"></p>
-    </div>
-
-  </div>
-
-  <div class="rounded-xl bg-white p-6 shadow-md outline outline-black/5 dark:bg-slate-800 dark:shadow-none dark:-outline-offset-1 dark:outline-white/10" style="width: 100%; margin: 10px;">
-    <div>
-      <div class="text-gray-500 dark:text-gray-400" style="display: flex; justify-content: space-between">
-        Friends
-        <!--Icon-->
-        <div class="bg-purple-200 rounded-xl" style="padding: 5px; width: fit-content;">
-          <span>
-            <svg height="24" width="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>account</title><path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" /></svg>
-          </span>
-        </div>
-        <!--Icon-->
-      </div>
-      <p class="text-xl font-bold text-black dark:text-white">{{friendCount}}</p>
-      <p class="text-gray-500 dark:text-gray-400 text-green-600">{{#if (greaterThanZero friendRequests)}}^ {{friendRequests}} new requests {{/if}} {{#if (ifZero friendRequests)}} <a style="text-decoration: none;" href="friends">Add a friend! +</a> {{/if}}</p>
-    </div>
-    
-  </div>
-
-</div>
-<!--Statistics Info-->
-
-  <!--Habits Header-->
-  <div style="padding-bottom: 10px; padding-top: 20px; display: flex; justify-content: space-between; align-items: center;">
-    <h5>
-      <b>Today's Habits</b>
-    </h5>
-
-    <button type="button" class="btn btn-dark" onclick="location.href = 'calendar'";>
-      <span style="display: flex; justify-content: center; align-items: center; color: #fff; font-weight: 600;">
-        <svg height="24" width="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M0 0h24v24H0z" fill="none"></path>
-          <path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2z" fill="currentColor"></path>
-        </svg>
-      New Habit
+  <!-- HEADER -->
+  <div>
+    <h1 class="text-3xl font-bold">
+      Welcome back, {{#if user.username}}{{user.username}}{{else}}User{{/if}}!
+    </h1>
+    <div class="mt-2 flex items-center">
+      <p id="date" class="text-gray-600"></p>
+      <span
+        class="ml-4 inline-block bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full text-sm font-medium">
+        {{#if streak}}{{streak}} Day Streak{{else}}Day Streak{{/if}}
       </span>
-    </button> 
-
+    </div>
   </div>
-  <!--Habits Header-->
-  
 
-  <!--List of Habits-->
+  <!-- STATS GRID -->
+  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    <!-- Completion -->
+    <div class="bg-white rounded-lg shadow p-6 flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-gray-500">Completion</span>
+        <span class="bg-blue-100 text-blue-800 p-2 rounded-full">
+          <!-- poll icon -->
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 22V8h4v14M10 22V2h4v20M17 22v-8h4v8" />
+          </svg>
+        </span>
+      </div>
+      <p class="text-2xl font-bold">
+        {{#if habits}}{{completionPerc}}%{{else}}N/A{{/if}}
+      </p>
+      <p class="mt-2 text-sm text-gray-500">
+        + {{completedHabits.length}} completed today
+      </p>
+    </div>
 
-  <table class="table table-hover table-fixed">
-    {{#if habits}}
-    {{#each incompleteHabits}}
+    <!-- Habits -->
+    <div class="bg-white rounded-lg shadow p-6 flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-gray-500">Habits</span>
+        <span class="bg-green-100 text-green-800 p-2 rounded-full">
+          <!-- pencil icon -->
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15.232 5.232l3.536 3.536M4 20h4l10-10-4-4L4 16v4z" />
+          </svg>
+        </span>
+      </div>
+      <p class="text-2xl font-bold">
+        {{#if allHabits}}{{allHabits.length}}{{else}}0{{/if}}
+      </p>
+      <p class="mt-2 text-sm text-gray-500"><!-- e.g. “2 New This Month” --></p>
+    </div>
 
-    <tr class="shadow-md" style="background-color: #f7f7f7;">
-      <td class="p-3 rounded-l-lg bg-white" style="width: 47px;">
-        
-        <!--Original checkbox-->
-        {{!-- <form action="/completedHabit" method="POST">
-          <input class="" onChange="handleCheckboxChange(this)" type="checkbox" {{#if (greaterThanZero counter)}} checked disabled {{/if}}></input>
-          <input type="hidden" name="habitId" value={{habit_id}}>
-        </form> --}}
+    <!-- Longest Streak -->
+    <div class="bg-white rounded-lg shadow p-6 flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-gray-500">Longest Streak</span>
+        <span class="bg-yellow-100 text-yellow-800 p-2 rounded-full">
+          <!-- fire icon -->
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 2C8 8 6 12 12 22c6-10 4-14 0-20z" />
+          </svg>
+        </span>
+      </div>
+      <p class="text-2xl font-bold">…</p>
+      <p class="mt-2 text-sm text-gray-500"></p>
+    </div>
 
-        <!--Fancy Checkbox-->
-        <form action="/completedHabit" method="POST" class="habit-form">
-          <label class="checkbox-container">
-            <input class="checkbox-input" onChange="handleCheckboxChange(this)" type="checkbox">
-            <span class="checkmark"></span>
-          </label>
-          <input type="hidden" name="habitId" value={{habit_id}}>
-        </form>
-      </td>
-      <td class="p-3 bg-white font-sans">
-        <span class="font-semibold" id="habit_title">{{habit_name}}</span>
-        <br>
-        <span class="text-sm font-normal text-gray-500">{{description}}, {{printTime time_slot}}</span>
-      </td>
-      <td class="p-3 rounded-r-lg bg-white font-sans">
-        <span class="p-1 rounded-xl text-sm bg-green-200 text-lime-800 font-semibold float-end">Completed {{counter}} Times</span>
-      </td>
-    </tr>
+    <!-- Friends -->
+    <div class="bg-white rounded-lg shadow p-6 flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-gray-500">Friends</span>
+        <span class="bg-purple-100 text-purple-800 p-2 rounded-full">
+          <!-- user icon -->
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M16 14a4 4 0 01-8 0 4 4 0 018 0zM12 2a10 10 0 100 20 10 10 0 000-20z" />
+          </svg>
+        </span>
+      </div>
+      <p class="text-2xl font-bold">{{friendCount}}</p>
+      <p class="mt-2 text-sm text-gray-500">
+        {{!-- {{#if (greaterThanZero friendRequests)}}^ {{friendRequests}} new requests{{else}}
+          <a href="/friends" class="text-indigo-600 hover:underline">Add a friend +</a>
+        {{/if}} --}}
+      </p>
+    </div>
+  </div>
 
-    {{/each}}
-    {{#each completedHabits}}
+  <!-- TODAY’S HABITS HEADER -->
+  <div class="flex items-center justify-between">
+    <h2 class="text-xl font-semibold">Today's Habits</h2>
+    <button onclick="location.href='/calendar'"
+            class="flex items-center bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-500">
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 4v16m8-8H4" />
+      </svg>
+      New Habit
+    </button>
+  </div>
 
-      <tr class="shadow-md" style="background-color: #f7f7f7;">
-      <td class="p-3 rounded-l-lg bg-white" style="width: 47px;">
-        
-        <!--Original checkbox-->
-        {{!-- <form action="/completedHabit" method="POST">
-          <input class="" onChange="handleCheckboxChange(this)" type="checkbox" {{#if (greaterThanZero counter)}} checked disabled {{/if}}></input>
-          <input type="hidden" name="habitId" value={{habit_id}}>
-        </form> --}}
+  <!-- HABITS TABLE -->
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200 table-auto">
+      <tbody class="bg-gray-50 divide-y divide-gray-200">
 
-        <!--Fancy Checkbox-->
-        <form action="/decrementHabit" method="POST" class="habit-form">
-          <label class="checkbox-container">
-            <input class="checkbox-input" onChange="handleCheckboxChange(this)" type="checkbox" checked>
-            <span class="checkmark"></span>
-          </label>
-          <input type="hidden" name="habitId" value={{habit_id}}>
-        </form>
-      </td>
-      <td class="p-3 bg-white font-sans">
-        <span class="font-semibold line-through" id="habit_title">{{habit_name}}</span>
-        <br>
-        <span class="text-sm font-normal text-gray-500">{{description}}, {{printTime time_slot}}</span>
-      </td>
-      <td class="p-3 rounded-r-lg bg-white font-sans">
-        <span class="p-1 rounded-xl text-sm bg-green-200 text-lime-800 font-semibold float-end">Completed {{counter}} Times</span>
-      </td>
-    </tr>
+        {{#if habits}}
+          {{#each incompleteHabits}}
+            <tr>
+              <td class="px-4 py-3 bg-white">
+                <form action="/completedHabit" method="POST">
+                  <input type="hidden" name="habitId" value="{{habit_id}}">
+                  <input type="checkbox"
+                         onChange="this.form.submit()"
+                         class="h-5 w-5 text-indigo-600 border-gray-300 rounded"
+                         {{#if (greaterThanZero counter)}}checked disabled{{/if}} />
+                </form>
+              </td>
+              <td class="px-4 py-3 bg-white">
+                <p class="font-medium">{{habit_name}}</p>
+                <p class="text-sm text-gray-500">{{description}}, {{printTime time_slot}}</p>
+              </td>
+              <td class="px-4 py-3 bg-white text-right">
+                <span
+                  class="inline-block bg-green-100 text-green-800 text-sm px-2 py-1 rounded-full font-semibold">
+                  Completed {{counter}} Times
+                </span>
+              </td>
+            </tr>
+          {{/each}}
 
-    {{/each}}
-    {{else}}
-      <center>
-      <br>
-      <p class="italic font-semibold">You have no habit's today!</p>
-      </center>
-    {{/if}}
-  </table>
+          {{#each completedHabits}}
+            <tr>
+              <td class="px-4 py-3 bg-white">
+                <form action="/decrementHabit" method="POST">
+                  <input type="hidden" name="habitId" value="{{habit_id}}">
+                  <input type="checkbox"
+                         onChange="this.form.submit()"
+                         class="h-5 w-5 text-indigo-600 border-gray-300 rounded"
+                         checked />
+                </form>
+              </td>
+              <td class="px-4 py-3 bg-white">
+                <p class="font-medium line-through">{{habit_name}}</p>
+                <p class="text-sm text-gray-500">{{description}}, {{printTime time_slot}}</p>
+              </td>
+              <td class="px-4 py-3 bg-white text-right">
+                <span
+                  class="inline-block bg-green-100 text-green-800 text-sm px-2 py-1 rounded-full font-semibold">
+                  Completed {{counter}} Times
+                </span>
+              </td>
+            </tr>
+          {{/each}}
 
-  <script>
-    //Handle when a checkbox is clicked
-    //this is unecessary but i kept it in case it was needed
-    function handleCheckboxChange(checkbox) {
+        {{else}}
+          <tr>
+            <td colspan="3" class="py-8 text-center text-gray-500 italic">
+              You have no habits today!
+            </td>
+          </tr>
+        {{/if}}
 
-      checkbox.form.submit();
-    }
-  </script>
+      </tbody>
+    </table>
+  </div>
+</div>
 
-<style>
-  .habit-form {
-  display: inline-block;
-}
-
-.checkbox-container {
-  position: relative;
-  display: inline-block;
-  width: 34px; /* Adjust width as needed */
-  height: 34px; /* Adjust height as needed */
-  border-radius: 25px; /* Makes it rounded */
-  background-color: transparent; /* Initial background */
-  cursor: pointer;
-  transition: background-color 0.3s;
-  border: solid 3px black;
-}
-
-.checkbox-input {
-  opacity: 0; /* Hide the default checkbox */
-  position: absolute;
-}
-
-.checkmark {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 25px; /* Makes it rounded */
-  background-color: white; /* Background color when not checked */
-  transition: background-color 0.3s;
-}
-
-.checkbox-input:checked + .checkmark {
-  background-color: black; /* Background color when checked */
-}
-
-.checkbox-input:checked + .checkmark::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 7px; /* Adjust size of checkmark */
-  height: 15px; /* Adjust size of checkmark */
-  border: solid white; /* Checkmark color */
-  border-width: 0 3px 3px 0; /* Checkmark shape */
-  transform: translate(-50%, -50%) rotate(45deg); /* Center and rotate */
-}
-
-</style>
-
-  </body>
-</html>
+<script>
+  // client‑side date injection
+  const dateEl = document.getElementById('date');
+  if (dateEl) {
+    const d = new Date();
+    const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    dateEl.textContent = `${days[d.getDay()]}, ${
+      d.toLocaleString('default',{ month:'long' })
+    } ${d.getDate()}, ${d.getFullYear()}`;
+  }
+</script>
