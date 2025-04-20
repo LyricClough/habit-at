@@ -1,4 +1,9 @@
 {{> head}}
+{{#if message}}
+<script>
+  alert("{{message}}");
+</script>
+{{/if}}
 <div class="container mt-5">
   <h1 class="mb-4">Register</h1>
   <form action="/register" method="POST">
