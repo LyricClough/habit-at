@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings Page</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom toggle switch styling */
+    .toggle-checkbox:checked {
+      right: 0;
+      background-color: #1a202c;
+      border-color: #1a202c;
+    }
+    .toggle-checkbox:checked + .toggle-label {
+      background-color: #4a5568;
+    }
+    body {
+    transition: background-color 0.3s, color 0.3s;
+    }
+  </style>
+</head>
+<body class="bg-white">
+  <div class="max-w-3xl mx-auto py-8 px-4">
+    <h1 class="text-3xl font-bold mb-8 text-center">{{user.username}}'s Settings</h1>
+
+    <div class="w-full mb-8">
+      <div class="grid grid-cols-3 w-full">
+        <button id="personal-tab" class="py-2 px-4 bg-white font-medium border-b-2 border-black">
+          Personal Information
+        </button>
+        <button id="preferences-tab" class="py-2 px-4 bg-gray-50 text-gray-600 font-medium">
+          Preferences
+        </button>
+        <button id="password-tab" class="py-2 px-4 bg-gray-50 text-gray-600 font-medium">
+          Password Settings
+        </button>
+      </div>
+
+      <div id="personal-content" class="border rounded-lg p-6 mt-4">
+        <form method="POST" action="/settings/profile">
+          <div class="space-y-6">
+            <div class="space-y-2">
+              <label for="username" class="text-sm font-medium">Username</label>
+              <input 
+                id="username" 
+                name="username" 
+                class="w-full px-3 py-2 border rounded-md" 
+                value={{user.username}}
+              />
+              <p class="text-sm text-gray-500">This is the name that will be displayed to other users.</p>
+            </div>
+
+            <div class="space-y-2">
+              <label for="email" class="text-sm font-medium">Email</label>
+              <input 
+                id="email" 
+                name="email" 
+                type="email" 
+                class="w-full px-3 py-2 border rounded-md" 
+                value={{user.email}}
+              />
+              <p class="text-sm text-gray-500">
+                This is the email that will be used for notifications and login.
+              </p>
+            </div>
+
+            <div class="space-y-2">
+              <label for="phone" class="text-sm font-medium">Phone Number</label>
+              <input 
+                id="phone" 
+                name="phone" 
+                type="tel" 
+                class="w-full px-3 py-2 border rounded-md" 
+                value={{user.phone}}
+              />
+              <p class="text-sm text-gray-500">
+                This is the phone number that will be used for notifications.
+              </p>
+            </div>
+
+            <button type="submit" class="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800">
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div id="preferences-content" class="border rounded-lg p-6 mt-4 hidden">
+        <form method="POST" action="/settings/preferences">
+          <div class="space-y-6">
+            <h2 class="text-xl font-semibold">Notification Settings</h2>
+            
+            <div class="space-y-4">
+              <div class="flex items-center">
+                <input 
+                  type="checkbox" 
+                  id="email-notifications" 
+                  name="email_notif" 
+                  class="h-4 w-4 rounded border-gray-300"
+                  {{#if user.email_notif}}checked{{/if}}
+                />
+                <label for="email-notifications" class="ml-2 text-sm font-medium">
+                  Receive email notifications
+                </label>
+              </div>
+              
+              <div class="flex items-center">
+                <input 
+                  type="checkbox" 
+                  id="phone-notifications" 
+                  name="phone_notif" 
+                  class="h-4 w-4 rounded border-gray-300"
+                  {{#if user.phone_notif}}checked{{/if}}
+                />
+                <label for="phone-notifications" class="ml-2 text-sm font-medium">
+                  Receive phone notifications
+                </label>
+              </div>
+            </div>
+            
+            <hr class="my-6" />
+            
+            <h2 class="text-xl font-semibold">Privacy & Display</h2>
+            
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <label for="profile-visible" class="text-sm font-medium">
+                  Profile is visible to others
+                </label>
+                <div class="relative inline-block w-12 h-6">
+                  <input 
+                    type="checkbox"
+                    id="profile-visible" 
+                    name="show_profile" 
+                    class="toggle-checkbox absolute w-6 h-6 rounded-full bg-white border-2 border-gray-300 appearance-none cursor-pointer"
+                    {{#if user.show_profile}}checked{{/if}}
+                  />
+                  <label 
+                    for="profile-visible"
+                    class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
+                  ></label>
+                </div>
+              </div>
+              
+              <div class="flex items-center justify-between">
+                <label for="dark-mode" class="text-sm font-medium">
+                  Dark Mode
+                </label>
+                <div class="relative inline-block w-12 h-6">
+                  <input 
+                    type="checkbox"
+                    id="dark-mode" 
+                    name="dark_mode" 
+                    class="toggle-checkbox absolute w-6 h-6 rounded-full bg-white border-2 border-gray-300 appearance-none cursor-pointer"
+                    {{#if user.dark_mode}}checked{{/if}}
+                  />
+                  <label 
+                    for="dark-mode"
+                    class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
+                  ></label>
+                </div>
+              </div>
+            </div>
+            
+            <button type="submit" class="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 mt-4">
+              Save Preferences
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div id="password-content" class="border rounded-lg p-6 mt-4 hidden">
+        <form method="POST" action="/settings/preferences">
+          <div class="space-y-6">
+            <h2 class="text-xl font-semibold">Change Password</h2>
+
+            <div class="space-y-2">
+              <label for="current-password" class="text-sm font-medium">Current Password</label>
+              <input
+                id="current-password" 
+                name="currentPassword" 
+                type="password"
+                class="w-full px-3 py-2 border rounded-md"
+              />
+            </div>
+            
+            <div class="space-y-2">
+              <label for="new-password" class="text-sm font-medium">New Password</label>
+              <input
+                id="new-password" 
+                name="newPassword" 
+                type="password"
+                class="w-full px-3 py-2 border rounded-md"
+              />
+            </div>
+            
+            <div class="space-y-2">
+              <label for="confirm-password" class="text-sm font-medium">Confirm Password</label>
+              <input
+                id="confirm-password" 
+                name="confirmPassword" 
+                type="password"
+                class="w-full px-3 py-2 border rounded-md"
+              />
+            </div>
+            
+            <button type="submit" class="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800">
+              Update Password
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Make sure the DOM is fully loaded before attaching event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      // Tab functionality
+      const personalTab = document.getElementById('personal-tab');
+      const preferencesTab = document.getElementById('preferences-tab');
+      const personalContent = document.getElementById('personal-content');
+      const preferencesContent = document.getElementById('preferences-content');
+      
+      if (personalTab && preferencesTab && personalContent && preferencesContent) {
+        personalTab.addEventListener('click', function() {
+          // Update tab styling
+          personalTab.classList.remove('bg-gray-50', 'text-gray-600');
+          personalTab.classList.add('bg-white', 'border-b-2', 'border-black');
+          preferencesTab.classList.remove('bg-white', 'border-b-2', 'border-black');
+          preferencesTab.classList.add('bg-gray-50', 'text-gray-600');
+          
+          // Show/hide content
+          personalContent.classList.remove('hidden');
+          preferencesContent.classList.add('hidden');
+        });
+        
+        preferencesTab.addEventListener('click', function() {
+          // Update tab styling
+          preferencesTab.classList.remove('bg-gray-50', 'text-gray-600');
+          preferencesTab.classList.add('bg-white', 'border-b-2', 'border-black');
+          personalTab.classList.remove('bg-white', 'border-b-2', 'border-black');
+          personalTab.classList.add('bg-gray-50', 'text-gray-600');
+          
+          // Show/hide content
+          preferencesContent.classList.remove('hidden');
+          personalContent.classList.add('hidden');
+        });
+      }
+    });
+  
+    document.addEventListener('DOMContentLoaded', function() {
+      const tabs = {
+        personal: {
+          tab: document.getElementById('personal-tab'),
+          content: document.getElementById('personal-content')
+        },
+        preferences: {
+          tab: document.getElementById('preferences-tab'),
+          content: document.getElementById('preferences-content')
+        },
+        password: {
+          tab: document.getElementById('password-tab'),
+          content: document.getElementById('password-content')
+        }
+      };
+  
+      function resetTabs() {
+        for (const key in tabs) {
+          tabs[key].tab.classList.add('bg-gray-50', 'text-gray-600');
+          tabs[key].tab.classList.remove('bg-white', 'border-b-2', 'border-black');
+          tabs[key].content.classList.add('hidden');
+        }
+      }
+  
+      function activateTab(name) {
+        resetTabs();
+        const tab = tabs[name];
+        tab.tab.classList.remove('bg-gray-50', 'text-gray-600');
+        tab.tab.classList.add('bg-white', 'border-b-2', 'border-black');
+        tab.content.classList.remove('hidden');
+        localStorage.setItem('activeTab', name);
+      }
+  
+      for (const key in tabs) {
+        tabs[key].tab.addEventListener('click', () => activateTab(key));
+      }
+  
+      // Load the saved tab or default to 'personal'
+      const savedTab = localStorage.getItem('activeTab') || 'personal';
+      activateTab(savedTab);
+    });
+  </script>
+</body>
+</html>

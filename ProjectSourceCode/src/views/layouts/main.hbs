@@ -1,6 +1,18 @@
-{{> head}}
-{{#unless hideNav}}
+<!-- src/views/layouts/main.hbs -->
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-white">
+<head>
+  {{> head}}
+</head>
+<body class="h-full flex">
+  {{!-- Sidebar/nav --}}
+  {{#unless hideNav}}
   {{> nav}}
 {{/unless}}
-{{{body}}}
-{{> footer}}
+
+  {{!-- Main content area --}}
+  <main class="flex-1 overflow-y-auto p-6">
+    {{{body}}}
+  </main>
+</body>
+</html>

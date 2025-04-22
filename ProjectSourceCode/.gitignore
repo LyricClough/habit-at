@@ -1,5 +1,4 @@
 package-lock.json
 node_modules
 .env
-.DS_Store
-Wireframes/.DS_Store
+.DS_Store/*

@@ -30,7 +30,6 @@ const {assert, expect} = chai;
 // *********************** TODO: WRITE 2 UNIT TESTCASES **************************
 
 // *********************** LOGIN API TESTCASES **************************
-
 /*
 describe('Login API - Positive Test Case', () => {
   it('should log in successfully with valid credentials and redirect to /dashboard', done => {
@@ -137,6 +136,5 @@ describe('Registration API', () => {
   });
 
 });
-
-// ********************************************************************************
 */
+// ********************************************************************************
