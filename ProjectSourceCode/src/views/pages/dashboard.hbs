@@ -300,15 +300,4 @@
       d.toLocaleString('default',{ month:'long' })
     } ${d.getDate()}, ${d.getFullYear()}`;
   }
-  
-  // Helper function for handlebars
-  Handlebars.registerHelper('calculateProgress', function(counter) {
-    // Simple calculation - could be more sophisticated
-    const maxCount = 10; // Arbitrary max for progress bar
-    return Math.min(100, (counter / maxCount) * 100);
-  });
-  
-  Handlebars.registerHelper('equals', function(a, b) {
-    return parseInt(a) === parseInt(b);
-  });
 </script>

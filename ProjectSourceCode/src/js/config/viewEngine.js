@@ -30,6 +30,15 @@ module.exports = function(app) {
     return new hbs.handlebars.SafeString(val);
   });
 
+  // Helper for debugging - stringify any value for display
+  hbs.handlebars.registerHelper('stringify', function(value) {
+    try {
+      return JSON.stringify(value, null, 2) || 'null';
+    } catch (error) {
+      return `Error stringifying: ${error.message}`;
+    }
+  });
+
   hbs.handlebars.registerHelper('ifActive', (currentPath, linkPath, opts) => {
     const active = currentPath.replace(/\/$/, '') === `/${linkPath}`;
     return active ? opts.fn(this) : opts.inverse(this);

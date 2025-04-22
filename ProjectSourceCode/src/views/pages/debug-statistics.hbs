@@ -1,0 +1,66 @@
+<!-- src/views/pages/debug-statistics.hbs -->
+<div class="p-6 bg-white rounded-xl shadow-sm">
+  <h1 class="text-2xl font-bold mb-4">Debug Statistics Data</h1>
+  
+  <div class="space-y-4">
+    <div class="bg-gray-100 p-4 rounded-lg">
+      <h2 class="font-semibold">completionRate</h2>
+      <pre class="whitespace-pre-wrap">{{completionRate}}</pre>
+    </div>
+    
+    <div class="bg-gray-100 p-4 rounded-lg">
+      <h2 class="font-semibold">dailyCompletionData</h2>
+      <h3>labels</h3>
+      <pre class="whitespace-pre-wrap">{{#if dailyCompletionData.labels}}{{stringify dailyCompletionData.labels}}{{else}}No data{{/if}}</pre>
+      <h3>counts</h3>
+      <pre class="whitespace-pre-wrap">{{#if dailyCompletionData.counts}}{{stringify dailyCompletionData.counts}}{{else}}No data{{/if}}</pre>
+      <h3>rates</h3>
+      <pre class="whitespace-pre-wrap">{{#if dailyCompletionData.rates}}{{stringify dailyCompletionData.rates}}{{else}}No data{{/if}}</pre>
+    </div>
+    
+    <div class="bg-gray-100 p-4 rounded-lg">
+      <h2 class="font-semibold">weeklyData</h2>
+      <pre class="whitespace-pre-wrap">{{stringify weeklyData}}</pre>
+    </div>
+    
+    <div class="bg-gray-100 p-4 rounded-lg">
+      <h2 class="font-semibold">monthlyData</h2>
+      <pre class="whitespace-pre-wrap">{{stringify monthlyData}}</pre>
+    </div>
+    
+    <div class="bg-gray-100 p-4 rounded-lg">
+      <h2 class="font-semibold">monthLabels</h2>
+      <pre class="whitespace-pre-wrap">{{stringify monthLabels}}</pre>
+    </div>
+    
+    <div class="bg-gray-100 p-4 rounded-lg">
+      <h2 class="font-semibold">categoryData</h2>
+      <pre class="whitespace-pre-wrap">{{stringify categoryData}}</pre>
+    </div>
+    
+    <div class="bg-gray-100 p-4 rounded-lg">
+      <h2 class="font-semibold">categoryLabels</h2>
+      <pre class="whitespace-pre-wrap">{{stringify categoryLabels}}</pre>
+    </div>
+    
+    <div class="bg-gray-100 p-4 rounded-lg">
+      <h2 class="font-semibold">categoryColors</h2>
+      <pre class="whitespace-pre-wrap">{{stringify categoryColors}}</pre>
+    </div>
+    
+    <div class="bg-gray-100 p-4 rounded-lg">
+      <h2 class="font-semibold">heatmapData</h2>
+      <pre class="whitespace-pre-wrap">{{stringify heatmapData}}</pre>
+    </div>
+    
+    <div class="bg-gray-100 p-4 rounded-lg">
+      <h2 class="font-semibold">topHabits</h2>
+      <pre class="whitespace-pre-wrap">{{stringify topHabits}}</pre>
+    </div>
+    
+    <div class="bg-gray-100 p-4 rounded-lg">
+      <h2 class="font-semibold">challengeHabits</h2>
+      <pre class="whitespace-pre-wrap">{{stringify challengeHabits}}</pre>
+    </div>
+  </div>
+</div> 

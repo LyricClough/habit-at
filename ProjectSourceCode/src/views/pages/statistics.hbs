@@ -118,7 +118,9 @@
         <button id="showRates" class="text-xs px-3 py-1 rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">Rates (%)</button>
       </div>
     </div>
-    <div id="dailyChart" class="h-64"></div>
+    <div class="chart-container" style="position: relative; height: 240px; max-height: 240px; width: 100%; max-width: 100%;">
+      <canvas id="dailyChart" class="h-48"></canvas>
+    </div>
   </div>
 
   <!-- COMPLETION HEATMAP with animated border -->
@@ -134,7 +136,9 @@
         <button class="text-xs px-3 py-1 rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">Last 3 Months</button>
       </div>
     </div>
-    <div id="heatmap" class="h-56"></div>
+    <div class="chart-container" style="position: relative; height: 180px; max-height: 180px; width: 100%; max-width: 100%; overflow: hidden;">
+      <div id="heatmap" class="h-40"></div>
+    </div>
   </div>
 
   <!-- TREND CHARTS SECTION with tabs -->
@@ -158,7 +162,9 @@
             {{calculateWeeklyAverage}} avg
           </div>
         </div>
-        <div id="weeklyTrend" class="h-72"></div>
+        <div class="chart-container" style="position: relative; height: 200px; max-height: 200px; width: 100%; max-width: 100%;">
+          <canvas id="weeklyTrend" class="h-48"></canvas>
+        </div>
       </div>
       
       <!-- Monthly Tab Content -->
@@ -172,7 +178,9 @@
             {{calculateMonthlyGrowth}}% growth
           </div>
         </div>
-        <div id="monthlyTrend" class="h-72"></div>
+        <div class="chart-container" style="position: relative; height: 200px; max-height: 200px; width: 100%; max-width: 100%;">
+          <canvas id="monthlyTrend" class="h-48"></canvas>
+        </div>
       </div>
 
       <!-- Category Tab Content -->
@@ -183,7 +191,9 @@
             <div class="text-sm text-gray-500 mt-1">See which types of habits you complete most consistently</div>
           </div>
         </div>
-        <div id="categoryChart" class="h-72"></div>
+        <div class="chart-container" style="position: relative; height: 200px; max-height: 200px; width: 100%; max-width: 100%;">
+          <canvas id="categoryChart" class="h-48"></canvas>
+        </div>
       </div>
     </div>
   </div>
@@ -330,30 +340,53 @@
   <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.0.0/dist/cal-heatmap.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cal-heatmap@4.0.0/dist/cal-heatmap.css">
 
-  {{!-- Sparkline.js for sparklines in habit cards --}}
-  <script src="https://cdn.jsdelivr.net/npm/jquery-sparkline@2.1.3/jquery.sparkline.min.js"></script>
+  {{!-- jQuery required for sparklines --}}
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  {{!-- Sparkline.js for sparklines in habit cards (local version) --}}
+  <script src="/js/jquery.sparkline.min.js"></script>
 
   {{!-- Pass statistics data to the client --}}
   <script>
-    window.statisticsData = {
-      completionRate: {{completionRate}},
-      dailyCompletionData: {
-        labels: {{{json dailyCompletionData.labels}}},
-        counts: {{{json dailyCompletionData.counts}}},
-        rates: {{{json dailyCompletionData.rates}}}
-      },
-      weeklyData: {{{json weeklyData}}},
-      monthlyData: {{{json monthlyData}}},
-      monthLabels: {{{json monthLabels}}},
-      categoryData: {{{json categoryData}}},
-      categoryLabels: {{{json categoryLabels}}},
-      categoryColors: {{{json categoryColors}}},
-      heatmapData: {{{json heatmapData}}},
-      topHabits: {{{json topHabits}}},
-      challengeHabits: {{{json challengeHabits}}}
-    };
+    // Initialize statistics data with defensive fallbacks
+    try {
+      window.statisticsData = {
+        completionRate: {{completionRate}} || 0,
+        dailyCompletionData: {
+          labels: {{{json dailyCompletionData.labels}}} || [],
+          counts: {{{json dailyCompletionData.counts}}} || [],
+          rates: {{{json dailyCompletionData.rates}}} || []
+        },
+        weeklyData: {{{json weeklyData}}} || [],
+        monthlyData: {{{json monthlyData}}} || [],
+        monthLabels: {{{json monthLabels}}} || [],
+        categoryData: {{{json categoryData}}} || [],
+        categoryLabels: {{{json categoryLabels}}} || [],
+        categoryColors: {{{json categoryColors}}} || [],
+        heatmapData: {{{json heatmapData}}} || {},
+        topHabits: {{{json topHabits}}} || [],
+        challengeHabits: {{{json challengeHabits}}} || []
+      };
+      console.log("Statistics data loaded successfully");
+    } catch (error) {
+      console.error("Error initializing statistics data:", error);
+      // Fallback to empty dataset
+      window.statisticsData = {
+        completionRate: 0,
+        dailyCompletionData: { labels: [], counts: [], rates: [] },
+        weeklyData: [],
+        monthlyData: [],
+        monthLabels: [],
+        categoryData: [],
+        categoryLabels: [],
+        categoryColors: [],
+        heatmapData: {},
+        topHabits: [],
+        challengeHabits: []
+      };
+    }
   </script>
 
   {{!-- Load our statistics JavaScript files --}}
-  <script src="/js/statistics.js" type="module"></script>
+  <script src="/js/visualizations.js"></script>
+  <script src="/js/statistics.js"></script> 
 {{/section}}

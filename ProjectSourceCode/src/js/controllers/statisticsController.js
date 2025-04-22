@@ -3,8 +3,14 @@ const db = require('../config/db');
 /**
  * Renders the statistics page with habit completion data
  */
-exports.getStatisticsPage = async (req, res) => {
+exports.getStatisticsPage = async (req, res, customView) => {
   try {
+    // Ensure customView is a string or undefined, not a function
+    if (typeof customView === 'function') {
+      console.warn('getStatisticsPage received a function as customView parameter. Ignoring it.');
+      customView = undefined;
+    }
+    
     const userId = req.session.user.user_id;
     const today = new Date();
     const todayISO = today.toISOString().slice(0, 10);
@@ -177,23 +183,26 @@ exports.getStatisticsPage = async (req, res) => {
       );
     }
 
-    res.render('pages/statistics', {
+    // Ensure view is a string
+    const viewToRender = typeof customView === 'string' ? customView : 'pages/statistics';
+    
+    res.render(viewToRender, {
       hideNav: false,
       user: req.session.user,
       completionRate,
       streak: streakData.current_streak,
       longestStreak: streakData.longest_streak,
       totalCompletions,
-      weeklyData: JSON.stringify(weeklyData),
-      monthlyData: JSON.stringify(monthlyData),
-      monthLabels: JSON.stringify(monthLabels),
-      dailyCompletionData: JSON.stringify(dailyCompletionData),
-      heatmapData: JSON.stringify(heatmapData),
+      weeklyData,
+      monthlyData,
+      monthLabels,
+      dailyCompletionData,
+      heatmapData,
       topHabits,
       challengeHabits,
-      categoryData: JSON.stringify(categoryData.data),
-      categoryLabels: JSON.stringify(categoryData.labels),
-      categoryColors: JSON.stringify(categoryData.colors),
+      categoryData: categoryData.data,
+      categoryLabels: categoryData.labels,
+      categoryColors: categoryData.colors,
       calculateWeeklyAverage,
       calculateMonthlyGrowth
     });
