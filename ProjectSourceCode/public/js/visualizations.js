@@ -183,24 +183,6 @@ class VisualizationManager {
           ? '#facc15' // Yellow for medium completion
           : '#4ade80'; // Green for high completion
       
-      // Add text in the center of the doughnut - must register plugin before creating chart
-      Chart.register({
-        id: 'gaugeText',
-        beforeDraw: function(chart) {
-          const width = chart.width;
-          const height = chart.height;
-          const ctx = chart.ctx;
-          
-          ctx.restore();
-          ctx.font = 'bold 18px Inter, system-ui, sans-serif';
-          ctx.textBaseline = 'middle';
-          ctx.textAlign = 'center';
-          ctx.fillStyle = '#1e293b';
-          ctx.fillText(`${completionRate}%`, width/2, height/2);
-          ctx.save();
-        }
-      });
-      
       // Create the gauge chart using Chart.js
       this.charts.gauge = new Chart(ctx, {
         type: 'doughnut',
@@ -217,7 +199,14 @@ class VisualizationManager {
           maintainAspectRatio: false,
           plugins: {
             legend: { display: false },
-            tooltip: { enabled: false }
+            tooltip: { enabled: false },
+            // Add the center text plugin just for this chart
+            gaugeText: {
+              enabled: true,
+              text: `${completionRate}%`,
+              font: 'bold 18px Inter, system-ui, sans-serif',
+              color: '#1e293b'
+            }
           },
           animation: {
             animateRotate: true,
@@ -225,7 +214,28 @@ class VisualizationManager {
             duration: 1000,
             easing: 'easeOutQuart'
           }
-        }
+        },
+        plugins: [{
+          id: 'gaugeText',
+          beforeDraw: function(chart) {
+            if (chart.config.options.plugins.gaugeText && chart.config.options.plugins.gaugeText.enabled) {
+              const width = chart.width;
+              const height = chart.height;
+              const ctx = chart.ctx;
+              const text = chart.config.options.plugins.gaugeText.text;
+              const font = chart.config.options.plugins.gaugeText.font;
+              const color = chart.config.options.plugins.gaugeText.color;
+              
+              ctx.restore();
+              ctx.font = font;
+              ctx.textBaseline = 'middle';
+              ctx.textAlign = 'center';
+              ctx.fillStyle = color;
+              ctx.fillText(text, width/2, height/2);
+              ctx.save();
+            }
+          }
+        }]
       });
     } catch (error) {
       console.error('Error initializing completion gauge:', error);
@@ -782,7 +792,9 @@ class VisualizationManager {
             gutter: 3
           },
           date: {
-            start: new Date(new Date().setDate(new Date().getDate() - 365))
+            start: new Date(new Date().setDate(new Date().getDate() - 365)),
+            // Use a more current end date to ensure today's data is shown
+            end: new Date()
           },
           data: {
             source: formattedData,
@@ -795,8 +807,36 @@ class VisualizationManager {
               range: ['#e0f2fe', '#3b82f6'],
               domain: [1, 10]
             }
+          },
+          // Add a tooltip to show the actual count value on hover
+          tooltip: {
+            enabled: true,
+            text: function(date, value) {
+              const formattedDate = new Intl.DateTimeFormat('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+              }).format(date);
+              return value ? `${formattedDate}: ${value} ${value === 1 ? 'habit' : 'habits'} completed` : `${formattedDate}: No habits completed`;
+            }
           }
         });
+
+        // Store the heatmap instance for potential updates
+        this.heatmapInstance = cal;
+        
+        // Add a refresh button for the heatmap
+        const refreshButton = document.createElement('button');
+        refreshButton.className = 'mt-4 ml-2 px-3 py-1 text-xs rounded-full bg-indigo-100 text-indigo-800 hover:bg-indigo-200 transition-colors';
+        refreshButton.textContent = 'Refresh Heatmap';
+        refreshButton.addEventListener('click', () => this.refreshHeatmap());
+        
+        const heatmapParent = heatmapElement.parentNode;
+        const buttonContainer = heatmapParent.querySelector('.flex.space-x-2');
+        if (buttonContainer) {
+          buttonContainer.appendChild(refreshButton);
+        }
+        
       } catch (innerError) {
         console.error('Error formatting heatmap data:', innerError);
         heatmapElement.innerHTML = '<div class="text-center py-5 text-gray-500">Error loading calendar heatmap data</div>';
@@ -807,6 +847,57 @@ class VisualizationManager {
         heatmapElement.innerHTML = '<div class="text-center py-5 text-gray-500">Error loading calendar heatmap</div>';
       }
     }
+  }
+
+  /**
+   * Refresh the heatmap data from the server
+   */
+  refreshHeatmap() {
+    console.log('Refreshing heatmap data');
+    
+    // Get the current URL
+    const url = window.location.href;
+    
+    // Make an AJAX request to get fresh data
+    fetch(`${url}?refresh=true`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.text();
+      })
+      .then(html => {
+        // Extract the heatmap data script from the response
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        
+        const scriptContent = Array.from(tempDiv.querySelectorAll('script'))
+          .find(script => script.textContent.includes('window.statisticsData'))?.textContent;
+        
+        if (scriptContent) {
+          // Evaluate the script to extract the data
+          const dataMatch = scriptContent.match(/window\.statisticsData\s*=\s*({[\s\S]*?});/);
+          if (dataMatch && dataMatch[1]) {
+            try {
+              const freshData = new Function(`return ${dataMatch[1]}`)();
+              if (freshData && freshData.heatmapData) {
+                // Update the global statisticsData
+                window.statisticsData.heatmapData = freshData.heatmapData;
+                
+                // Reinitialize the heatmap with fresh data
+                this.initHeatmap(freshData.heatmapData);
+                
+                console.log('Heatmap refreshed successfully');
+              }
+            } catch (error) {
+              console.error('Error parsing fresh heatmap data:', error);
+            }
+          }
+        }
+      })
+      .catch(error => {
+        console.error('Error refreshing heatmap:', error);
+      });
   }
 
   /**
