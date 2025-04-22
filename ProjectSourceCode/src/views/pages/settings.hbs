@@ -72,8 +72,12 @@
                 name="phone" 
                 type="tel" 
                 class="w-full px-3 py-2 border rounded-md" 
-                value={{user.phone}}
+                value="{{user.phone}}"
               />
+              <p id="phone-length-error" class="text-sm text-red-600 hidden">
+                Your phone number must contain 10 digits. Do not include your extension. <br>
+                Only US phone numbers are currently supported.
+              </p>
               <p class="text-sm text-gray-500">
                 This is the phone number that will be used for notifications.
               </p>
@@ -117,6 +121,9 @@
                   Receive phone notifications
                 </label>
               </div>
+              <p id="phone-error" class="mt-1 text-sm text-red-600 hidden">
+                Please add a phone number to enable this option.
+              </p>
             </div>
             
             <hr class="my-6" />
@@ -171,9 +178,12 @@
       </div>
 
       <div id="password-content" class="border rounded-lg p-6 mt-4 hidden">
-        <form method="POST" action="/settings/preferences">
+        <form method="POST" action="/settings/password">
           <div class="space-y-6">
             <h2 class="text-xl font-semibold">Change Password</h2>
+            <p class="text-sm text-gray-600">
+              Your password will only be changed if you enter it correctly, and the new passwords match.
+            </p>
 
             <div class="space-y-2">
               <label for="current-password" class="text-sm font-medium">Current Password</label>
@@ -291,6 +301,35 @@
       const savedTab = localStorage.getItem('activeTab') || 'personal';
       activateTab(savedTab);
     });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const checkbox = document.getElementById("phone-notifications");
+      const error = document.getElementById("phone-error");
+      const hasPhone = {{#if user.phone}}true{{else}}false{{/if}};
+
+      checkbox.addEventListener("click", function (e) {
+        if (!hasPhone) {
+          e.preventDefault();
+          error.classList.remove("hidden");
+        } else {
+          error.classList.add("hidden");
+        }
+      });
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+    const phoneInput = document.getElementById("phone");
+    const error = document.getElementById("phone-length-error");
+
+    phoneInput.addEventListener("blur", function () {
+      const digitsOnly = phoneInput.value.replace(/\D/g, "");
+      if (digitsOnly.length !== 10) {
+        error.classList.remove("hidden");
+      } else {
+        error.classList.add("hidden");
+      }
+    });
+  });
   </script>
 </body>
 </html>
