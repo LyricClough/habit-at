@@ -134,18 +134,21 @@ exports.getStatisticsPage = async (req, res) => {
     
     // Calculate monthly completion trends
     const { monthlyData, monthLabels } = await calculateMonthlyData(userId);
+
+    // Generate daily completion data for line chart (last 30 days)
+    const dailyCompletionData = await generateDailyCompletionData(userId);
     
     // Generate heatmap data for calendar visualization
     const heatmapData = generateHeatmapData(historyData);
     
-    // Get top performing habits
-    const topHabits = calculateTopHabits(allHabits, historyData);
+    // Get top performing habits with sparkline data
+    const topHabits = await calculateTopHabitsWithSparklines(userId, allHabits, historyData);
     
     // Get habits that need improvement
     const challengeHabits = calculateChallengeHabits(allHabits, historyData);
     
-    // Get category breakdown data
-    const { categoryData, categoryLabels } = await generateCategoryData(userId);
+    // Get category breakdown data for doughnut chart
+    const categoryData = await generateCategoryData(userId);
     
     // Calculate growth metrics
     const calculateWeeklyAverage = Math.round(weeklyData.reduce((a, b) => a + b, 0) / 7) + '%';
@@ -184,11 +187,13 @@ exports.getStatisticsPage = async (req, res) => {
       weeklyData: JSON.stringify(weeklyData),
       monthlyData: JSON.stringify(monthlyData),
       monthLabels: JSON.stringify(monthLabels),
+      dailyCompletionData: JSON.stringify(dailyCompletionData),
       heatmapData: JSON.stringify(heatmapData),
       topHabits,
       challengeHabits,
-      categoryData: JSON.stringify(categoryData),
-      categoryLabels: JSON.stringify(categoryLabels),
+      categoryData: JSON.stringify(categoryData.data),
+      categoryLabels: JSON.stringify(categoryData.labels),
+      categoryColors: JSON.stringify(categoryData.colors),
       calculateWeeklyAverage,
       calculateMonthlyGrowth
     });
@@ -197,6 +202,142 @@ exports.getStatisticsPage = async (req, res) => {
     res.status(500).send('Server error');
   }
 };
+
+/**
+ * Generate daily completion data for the last 30 days line chart
+ */
+async function generateDailyCompletionData(userId) {
+  try {
+    const data = {
+      labels: [],
+      counts: [],
+      rates: []
+    };
+    
+    // Generate dates for the last 30 days
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const formattedDate = date.toISOString().slice(0, 10);
+      
+      data.labels.push(formattedDate.slice(5)); // Just show MM-DD
+      
+      // Get completions for this date
+      const completions = await db.oneOrNone(
+        `SELECT COUNT(*) as count
+         FROM habits_to_history hth
+         JOIN history hi ON hth.history_id = hi.history_id
+         JOIN habits h ON hth.habit_id = h.habit_id
+         JOIN users_to_habits uh ON h.habit_id = uh.habit_id
+         WHERE uh.user_id = $1 AND hi.date = $2`,
+        [userId, formattedDate]
+      );
+      
+      // Get scheduled habits for this date's weekday
+      const weekday = date.getDay();
+      const scheduled = await db.oneOrNone(
+        `SELECT COUNT(*) as count
+         FROM habits h
+         JOIN users_to_habits uh ON h.habit_id = uh.habit_id
+         WHERE uh.user_id = $1 AND h.weekday = $2 AND h.status != 0`,
+        [userId, weekday]
+      );
+      
+      // Calculate completion count and rate
+      const count = completions ? parseInt(completions.count) : 0;
+      let rate = 0;
+      
+      if (scheduled && parseInt(scheduled.count) > 0) {
+        rate = Math.min(100, Math.round((count / parseInt(scheduled.count)) * 100));
+      }
+      
+      data.counts.push(count);
+      data.rates.push(rate);
+    }
+    
+    return data;
+  } catch (err) {
+    console.error('Error generating daily completion data:', err);
+    return { labels: [], counts: [], rates: [] };
+  }
+}
+
+/**
+ * Calculate top performing habits with sparkline data
+ */
+async function calculateTopHabitsWithSparklines(userId, allHabits, historyData) {
+  try {
+    if (allHabits.length === 0) {
+      return [];
+    }
+    
+    // Calculate basic metrics for each habit
+    const habitMetrics = allHabits.map(habit => {
+      // Count completions for this habit
+      const completions = historyData.filter(record => record.habit_id === habit.habit_id);
+      
+      // Calculate completion rate
+      const estimatedWeeks = 13; // ~90 days
+      const expectedCompletions = estimatedWeeks; // One per week
+      
+      const completion_rate = Math.min(
+        Math.round((habit.counter / Math.max(expectedCompletions, 1)) * 100), 
+        100
+      );
+      
+      // Calculate streak days (simplified)
+      const streak = Math.min(habit.counter, 30); // Cap at 30 for display purposes
+      
+      return {
+        habit_id: habit.habit_id,
+        habit_name: habit.habit_name,
+        description: habit.description || '',
+        category: habit.category_name || 'Uncategorized',
+        color: habit.color || '#4F46E5',
+        counter: habit.counter,
+        completion_rate,
+        streak,
+        status: habit.status
+      };
+    });
+    
+    // Sort by completion rate (descending)
+    const sortedHabits = habitMetrics.sort((a, b) => b.completion_rate - a.completion_rate);
+    
+    // Get top 6 habits
+    const topHabits = sortedHabits.slice(0, 6);
+    
+    // Add sparkline data for the last 14 days
+    for (const habit of topHabits) {
+      const sparklineData = [];
+      
+      // Get the last 14 days
+      for (let i = 13; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const formattedDate = date.toISOString().slice(0, 10);
+        
+        // Check if this habit was completed on this date
+        const completed = await db.oneOrNone(
+          `SELECT COUNT(*) as count
+           FROM habits_to_history hth
+           JOIN history hi ON hth.history_id = hi.history_id
+           WHERE hth.habit_id = $1 AND hi.date = $2`,
+          [habit.habit_id, formattedDate]
+        );
+        
+        sparklineData.push(completed && parseInt(completed.count) > 0 ? 1 : 0);
+      }
+      
+      habit.sparklineData = JSON.stringify(sparklineData);
+    }
+    
+    return topHabits;
+  } catch (err) {
+    console.error('Error calculating top habits with sparklines:', err);
+    return [];
+  }
+}
 
 /**
  * Export statistics data as JSON
@@ -659,13 +800,13 @@ async function generateCategoryData(userId) {
   try {
     // Get categories with completion counts
     const categories = await db.any(
-      `SELECT c.category_name, COUNT(hth.habit_id) as completions
+      `SELECT c.category_id, c.category_name, c.color, COUNT(hth.habit_id) as completions
        FROM habit_categories c
        JOIN habits h ON c.category_id = h.category_id
        JOIN habits_to_history hth ON h.habit_id = hth.habit_id
        JOIN users_to_habits uh ON h.habit_id = uh.habit_id
        WHERE uh.user_id = $1
-       GROUP BY c.category_name
+       GROUP BY c.category_id, c.category_name, c.color
        ORDER BY completions DESC`,
       [userId]
     );
@@ -681,29 +822,33 @@ async function generateCategoryData(userId) {
     );
     
     // Build category data arrays
-    const categoryData = categories.map(cat => parseInt(cat.completions));
-    const categoryLabels = categories.map(cat => cat.category_name);
+    const data = categories.map(cat => parseInt(cat.completions));
+    const labels = categories.map(cat => cat.category_name);
+    const colors = categories.map(cat => cat.color || '#4F46E5');
     
     // Add uncategorized if it exists
     if (uncategorized && parseInt(uncategorized.completions) > 0) {
-      categoryData.push(parseInt(uncategorized.completions));
-      categoryLabels.push('Uncategorized');
+      data.push(parseInt(uncategorized.completions));
+      labels.push('Uncategorized');
+      colors.push('#94A3B8'); // Slate-400 color for uncategorized
     }
     
     // If no categories at all, return defaults
-    if (categoryData.length === 0) {
+    if (data.length === 0) {
       return {
-        categoryData: [0, 0, 0, 0, 0],
-        categoryLabels: ['Health', 'Productivity', 'Learning', 'Fitness', 'Mindfulness']
+        data: [0, 0, 0, 0, 0],
+        labels: ['Health', 'Productivity', 'Learning', 'Fitness', 'Mindfulness'],
+        colors: ['#4ADE80', '#3B82F6', '#8B5CF6', '#EF4444', '#EC4899']
       };
     }
     
-    return { categoryData, categoryLabels };
+    return { data, labels, colors };
   } catch (err) {
     console.error('Error generating category data:', err);
     return {
-      categoryData: [0, 0, 0, 0, 0],
-      categoryLabels: ['Health', 'Productivity', 'Learning', 'Fitness', 'Mindfulness']
+      data: [0, 0, 0, 0, 0],
+      labels: ['Health', 'Productivity', 'Learning', 'Fitness', 'Mindfulness'],
+      colors: ['#4ADE80', '#3B82F6', '#8B5CF6', '#EF4444', '#EC4899']
     };
   }
 } 

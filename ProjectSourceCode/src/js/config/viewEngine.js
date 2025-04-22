@@ -9,6 +9,27 @@ module.exports = function(app) {
     partialsDir: path.join(__dirname, '..','..','views','partials'),
   });
 
+  // Store for sections content
+  const _sections = {};
+  
+  // Section helper for defining content sections
+  hbs.handlebars.registerHelper('section', function(name, options) {
+    if (!_sections[name]) {
+      _sections[name] = [];
+    }
+    
+    _sections[name].push(options.fn(this));
+    return null;
+  });
+  
+  // Block helper for retrieving and rendering sections
+  hbs.handlebars.registerHelper('block', function(name) {
+    const val = (_sections[name] || []).join('\n');
+    // Clear the section after retrieval
+    _sections[name] = [];
+    return new hbs.handlebars.SafeString(val);
+  });
+
   hbs.handlebars.registerHelper('ifActive', (currentPath, linkPath, opts) => {
     const active = currentPath.replace(/\/$/, '') === `/${linkPath}`;
     return active ? opts.fn(this) : opts.inverse(this);
@@ -70,6 +91,11 @@ module.exports = function(app) {
     // Target is arbitrary - could be set to a user goal
     const target = 100;
     return Math.min(100, (total / target) * 100);
+  });
+  
+  // Helper for JSON stringification in templates
+  hbs.handlebars.registerHelper('json', function(context) {
+    return JSON.stringify(context);
   });
 
   app.engine('hbs', hbs.engine);

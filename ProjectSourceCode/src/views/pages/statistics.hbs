@@ -21,7 +21,7 @@
 
   <!-- OVERALL STATS CARDS - With hover animations and glassmorphism -->
   <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-    <!-- Overall Completion Rate -->
+    <!-- Overall Completion Rate with Gauge -->
     <div class="group bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 p-6 flex flex-col justify-between border border-gray-100 relative overflow-hidden">
       <div class="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       <div class="relative">
@@ -33,11 +33,11 @@
             </svg>
           </span>
         </div>
-        <p class="text-3xl font-bold tracking-tight">{{completionRate}}%</p>
-        <p class="mt-2 text-sm text-gray-500">Last 30 days</p>
-      </div>
-      <div class="mt-4 w-full bg-gray-100 h-1 rounded-full overflow-hidden">
-        <div class="bg-blue-500 h-1 rounded-full" style="width: {{completionRate}}%"></div>
+        <div class="flex items-center justify-center mb-2">
+          <canvas id="completionGauge" width="100" height="100"></canvas>
+        </div>
+        <p class="text-3xl font-bold tracking-tight text-center">{{completionRate}}%</p>
+        <p class="mt-2 text-sm text-gray-500 text-center">Last 30 days</p>
       </div>
     </div>
 
@@ -104,6 +104,21 @@
         <div class="bg-purple-500 h-1 rounded-full" style="width: {{calculateTotalCompletionsPercentage totalCompletions}}%"></div>
       </div>
     </div>
+  </div>
+
+  <!-- DAILY LINE CHART (last 30 days) -->
+  <div class="bg-white rounded-xl shadow-sm p-6 border border-transparent hover:border-indigo-100 transition-colors duration-300">
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h2 class="text-xl font-semibold">Daily Activity</h2>
+        <div class="text-sm text-gray-500 mt-1">Your habit completion trend over the last 30 days</div>
+      </div>
+      <div class="flex space-x-2">
+        <button id="showCounts" class="text-xs px-3 py-1 rounded-full bg-indigo-100 text-indigo-800 hover:bg-indigo-200 transition-colors">Completions</button>
+        <button id="showRates" class="text-xs px-3 py-1 rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">Rates (%)</button>
+      </div>
+    </div>
+    <div id="dailyChart" class="h-64"></div>
   </div>
 
   <!-- COMPLETION HEATMAP with animated border -->
@@ -213,19 +228,14 @@
                 <div class="bg-indigo-600 h-1.5 rounded-full group-hover:bg-indigo-500 transition-colors" style="width: {{completion_rate}}%"></div>
               </div>
               
-              <div class="flex justify-between">
+              <div class="flex justify-between items-center">
                 <div class="flex items-center">
                   <svg class="w-4 h-4 text-yellow-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                   </svg>
                   <span class="text-sm">{{streak}} day streak</span>
                 </div>
-                <button class="text-indigo-600 hover:text-indigo-800 text-sm font-medium focus:outline-none flex items-center">
-                  View details
-                  <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
+                <div class="sparkline" data-sparkline="{{sparklineData}}"></div>
               </div>
             </div>
           </div>
@@ -311,336 +321,39 @@
   </div>
 </div>
 
-<!-- Load Chart.js and CalHeatmap libraries -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://d3js.org/d3.v7.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/cal-heatmap"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cal-heatmap/cal-heatmap.css" />
+{{#section 'scripts'}}
+  {{!-- Chart.js for line, bar, and doughnut charts --}}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
-<!-- Custom animation library (inspired by Aceternity UI) -->
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Tab functionality
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    const tabContents = document.querySelectorAll('.tab-content');
-    
-    tabBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        // Remove active state from all tabs
-        tabBtns.forEach(tab => {
-          tab.classList.remove('border-indigo-500', 'text-indigo-600');
-          tab.classList.add('text-gray-500');
-        });
-        
-        // Add active state to clicked tab
-        btn.classList.add('border-indigo-500', 'text-indigo-600');
-        btn.classList.remove('text-gray-500');
-        
-        // Show the corresponding content
-        const contentId = btn.id.replace('-tab', '-content');
-        tabContents.forEach(content => {
-          content.classList.add('hidden');
-        });
-        document.getElementById(contentId).classList.remove('hidden');
-        
-        // Trigger chart resize if needed
-        window.dispatchEvent(new Event('resize'));
-      });
-    });
+  {{!-- Cal-Heatmap for the calendar heatmap --}}
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.0.0/dist/cal-heatmap.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cal-heatmap@4.0.0/dist/cal-heatmap.css">
 
-    // Weekly Trends Chart with animation
-    const weeklyCtx = document.getElementById('weeklyTrend').getContext('2d');
-    const weeklyChart = new Chart(weeklyCtx, {
-      type: 'bar',
-      data: {
-        labels: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-        datasets: [{
-          label: 'Completion Rate (%)',
-          data: {{weeklyData}},
-          backgroundColor: [
-            'rgba(99, 102, 241, 0.6)',
-            'rgba(99, 102, 241, 0.6)',
-            'rgba(99, 102, 241, 0.6)',
-            'rgba(99, 102, 241, 0.6)',
-            'rgba(99, 102, 241, 0.6)',
-            'rgba(99, 102, 241, 0.6)',
-            'rgba(99, 102, 241, 0.6)'
-          ],
-          borderColor: [
-            'rgb(99, 102, 241)',
-            'rgb(99, 102, 241)',
-            'rgb(99, 102, 241)',
-            'rgb(99, 102, 241)',
-            'rgb(99, 102, 241)',
-            'rgb(99, 102, 241)',
-            'rgb(99, 102, 241)'
-          ],
-          borderWidth: 1,
-          borderRadius: 6
-        }]
+  {{!-- Sparkline.js for sparklines in habit cards --}}
+  <script src="https://cdn.jsdelivr.net/npm/jquery-sparkline@2.1.3/jquery.sparkline.min.js"></script>
+
+  {{!-- Pass statistics data to the client --}}
+  <script>
+    window.statisticsData = {
+      completionRate: {{completionRate}},
+      dailyCompletionData: {
+        labels: {{{json dailyCompletionData.labels}}},
+        counts: {{{json dailyCompletionData.counts}}},
+        rates: {{{json dailyCompletionData.rates}}}
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: {
-          duration: 1000,
-          easing: 'easeOutQuart'
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            max: 100,
-            grid: {
-              display: true,
-              drawBorder: false,
-              color: 'rgba(226, 232, 240, 0.6)'
-            },
-            ticks: {
-              callback: function(value) {
-                return value + '%';
-              }
-            }
-          },
-          x: {
-            grid: {
-              display: false
-            }
-          }
-        },
-        plugins: {
-          legend: {
-            display: false
-          },
-          tooltip: {
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            titleColor: '#1e293b',
-            bodyColor: '#334155',
-            titleFont: {
-              size: 12,
-              weight: 'bold'
-            },
-            bodyFont: {
-              size: 12
-            },
-            padding: 12,
-            borderColor: 'rgba(226, 232, 240, 1)',
-            borderWidth: 1,
-            displayColors: false,
-            callbacks: {
-              label: function(context) {
-                return context.parsed.y + '% completion rate';
-              }
-            }
-          }
-        }
-      }
-    });
+      weeklyData: {{{json weeklyData}}},
+      monthlyData: {{{json monthlyData}}},
+      monthLabels: {{{json monthLabels}}},
+      categoryData: {{{json categoryData}}},
+      categoryLabels: {{{json categoryLabels}}},
+      categoryColors: {{{json categoryColors}}},
+      heatmapData: {{{json heatmapData}}},
+      topHabits: {{{json topHabits}}},
+      challengeHabits: {{{json challengeHabits}}}
+    };
+  </script>
 
-    // Monthly Trends Chart with smoother line
-    const monthlyCtx = document.getElementById('monthlyTrend').getContext('2d');
-    const monthlyChart = new Chart(monthlyCtx, {
-      type: 'line',
-      data: {
-        labels: {{monthLabels}},
-        datasets: [{
-          label: 'Total Completions',
-          data: {{monthlyData}},
-          fill: {
-            target: 'origin',
-            above: 'rgba(34, 197, 94, 0.05)'
-          },
-          borderColor: 'rgb(34, 197, 94)',
-          borderWidth: 2,
-          pointBackgroundColor: 'rgb(34, 197, 94)',
-          pointBorderColor: '#fff',
-          pointBorderWidth: 1,
-          pointRadius: 4,
-          pointHoverRadius: 6,
-          tension: 0.3
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: {
-          duration: 1000,
-          easing: 'easeOutQuart'
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            grid: {
-              display: true,
-              drawBorder: false,
-              color: 'rgba(226, 232, 240, 0.6)'
-            }
-          },
-          x: {
-            grid: {
-              display: false
-            }
-          }
-        },
-        plugins: {
-          legend: {
-            display: false
-          },
-          tooltip: {
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            titleColor: '#1e293b',
-            bodyColor: '#334155',
-            titleFont: {
-              size: 12,
-              weight: 'bold'
-            },
-            bodyFont: {
-              size: 12
-            },
-            padding: 12,
-            borderColor: 'rgba(226, 232, 240, 1)',
-            borderWidth: 1,
-            displayColors: false
-          }
-        }
-      }
-    });
-
-    // Category Chart (Doughnut)
-    if (document.getElementById('categoryChart')) {
-      const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-      const categoryData = {{categoryData}};
-      const categoryLabels = {{categoryLabels}};
-      const categoryColors = [
-        'rgba(99, 102, 241, 0.8)',
-        'rgba(34, 197, 94, 0.8)',
-        'rgba(245, 158, 11, 0.8)',
-        'rgba(239, 68, 68, 0.8)',
-        'rgba(139, 92, 246, 0.8)',
-        'rgba(236, 72, 153, 0.8)'
-      ];
-      
-      const categoryChart = new Chart(categoryCtx, {
-        type: 'doughnut',
-        data: {
-          labels: categoryLabels,
-          datasets: [{
-            data: categoryData,
-            backgroundColor: categoryColors,
-            borderColor: '#ffffff',
-            borderWidth: 2,
-            hoverOffset: 10
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: {
-            animateRotate: true,
-            animateScale: true
-          },
-          layout: {
-            padding: 20
-          },
-          plugins: {
-            legend: {
-              position: 'right',
-              labels: {
-                padding: 20,
-                boxWidth: 12,
-                boxHeight: 12
-              }
-            },
-            tooltip: {
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              titleColor: '#1e293b',
-              bodyColor: '#334155',
-              titleFont: {
-                size: 12,
-                weight: 'bold'
-              },
-              bodyFont: {
-                size: 12
-              },
-              padding: 12,
-              borderColor: 'rgba(226, 232, 240, 1)',
-              borderWidth: 1,
-              displayColors: false
-            }
-          }
-        }
-      });
-    }
-
-    // Heatmap for habit completion with improved visuals
-    const cal = new CalHeatmap();
-    cal.init({
-      itemSelector: '#heatmap',
-      domain: 'month',
-      subDomain: 'day',
-      range: 12,
-      cellSize: 13,
-      cellPadding: 3,
-      domainGutter: 15,
-      domainMargin: [0, 0, 0, 0],
-      data: {{heatmapData}},
-      start: new Date(new Date().setDate(new Date().getDate() - 365)),
-      legend: [1, 3, 5, 7, 10],
-      legendColors: {
-        empty: '#f8fafc',
-        min: '#e0f2fe',
-        max: '#3b82f6'
-      },
-      tooltip: true,
-      displayLegend: true,
-      itemName: ['completion', 'completions']
-    });
-    
-    // Add subtle animations to cards
-    const cards = document.querySelectorAll('.group');
-    cards.forEach(card => {
-      card.addEventListener('mouseenter', () => {
-        card.classList.add('transform', 'translate-y-[-2px]');
-      });
-      
-      card.addEventListener('mouseleave', () => {
-        card.classList.remove('transform', 'translate-y-[-2px]');
-      });
-    });
-  });
-  
-  // Helper functions for Handlebars
-  Handlebars.registerHelper('calculateProgress', function(counter) {
-    const maxCount = 10; // Arbitrary max for progress bar
-    return Math.min(100, (counter / maxCount) * 100);
-  });
-  
-  Handlebars.registerHelper('calculateTotalCompletionsPercentage', function(total) {
-    // Target is arbitrary - could be set to a user goal
-    const target = 100;
-    return Math.min(100, (total / target) * 100);
-  });
-  
-  Handlebars.registerHelper('equals', function(a, b) {
-    return parseInt(a) === parseInt(b);
-  });
-  
-  Handlebars.registerHelper('lessThan', function(a, b) {
-    return parseInt(a) < parseInt(b);
-  });
-  
-  Handlebars.registerHelper('lessThanOrEqual', function(a, b) {
-    return parseInt(a) <= parseInt(b);
-  });
-  
-  Handlebars.registerHelper('greaterThan', function(a, b) {
-    return parseInt(a) > parseInt(b);
-  });
-  
-  Handlebars.registerHelper('range', function(n) {
-    const result = [];
-    for (let i = 0; i < n; i++) {
-      result.push(i);
-    }
-    return result;
-  });
-</script>
+  {{!-- Load our statistics JavaScript files --}}
+  <script src="/js/statistics.js" type="module"></script>
+{{/section}}
