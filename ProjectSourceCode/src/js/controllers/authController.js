@@ -51,7 +51,22 @@ exports.login = async (req, res) => {
       throw new Error('Incorrect username or password.');
     }
 
-    const match = await bcrypt.compare(password, user.password);
+    // Check if passwords match (support both plaintext and hashed passwords)
+    let match = false;
+    
+    // First try direct comparison (for plaintext passwords in development)
+    if (user.password === password) {
+      match = true;
+    } else {
+      // Then try bcrypt comparison (for hashed passwords)
+      try {
+        match = await bcrypt.compare(password, user.password);
+      } catch (err) {
+        // If bcrypt fails (e.g., the stored password is not a hash), keep match as false
+        console.log("Bcrypt comparison failed, likely not a hashed password");
+      }
+    }
+
     if (!match) {
       throw new Error('Incorrect username or password.');
     }

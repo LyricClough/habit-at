@@ -1,0 +1,232 @@
+<!-- src/views/partials/habitModal.hbs -->
+<div id="habit-modal" class="fixed inset-0 z-50 hidden">
+  <!-- Backdrop -->
+  <div class="absolute inset-0 bg-black/50" id="habit-modal-backdrop"></div>
+  
+  <!-- Modal Content -->
+  <div class="fixed inset-0 flex items-center justify-center p-4">
+    <div class="relative w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
+      <!-- Modal Header -->
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="text-xl font-semibold" id="habit-modal-title">Edit Habit</h2>
+        <button type="button" class="text-gray-400 hover:text-gray-500" id="habit-modal-close">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Form -->
+      <form id="habit-form" method="POST">
+        <input type="hidden" id="habit-id" name="habitId">
+        <input type="hidden" id="form-action" name="action" value="update">
+        
+        <!-- Habit Name -->
+        <div class="mb-4">
+          <label for="habit-name" class="mb-2 block text-sm font-medium text-gray-700">Habit Name</label>
+          <input type="text" id="habit-name" name="habitName" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+        </div>
+        
+        <!-- Habit Description -->
+        <div class="mb-4">
+          <label for="habit-description" class="mb-2 block text-sm font-medium text-gray-700">Description</label>
+          <textarea id="habit-description" name="description" rows="2" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
+        </div>
+        
+        <!-- Day of Week -->
+        <div class="mb-4">
+          <label class="mb-2 block text-sm font-medium text-gray-700">Repeat on</label>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" data-day="0" class="day-button rounded-full px-3 py-1 text-sm font-medium border border-gray-300 hover:bg-indigo-50">Sun</button>
+            <button type="button" data-day="1" class="day-button rounded-full px-3 py-1 text-sm font-medium border border-gray-300 hover:bg-indigo-50">Mon</button>
+            <button type="button" data-day="2" class="day-button rounded-full px-3 py-1 text-sm font-medium border border-gray-300 hover:bg-indigo-50">Tue</button>
+            <button type="button" data-day="3" class="day-button rounded-full px-3 py-1 text-sm font-medium border border-gray-300 hover:bg-indigo-50">Wed</button>
+            <button type="button" data-day="4" class="day-button rounded-full px-3 py-1 text-sm font-medium border border-gray-300 hover:bg-indigo-50">Thu</button>
+            <button type="button" data-day="5" class="day-button rounded-full px-3 py-1 text-sm font-medium border border-gray-300 hover:bg-indigo-50">Fri</button>
+            <button type="button" data-day="6" class="day-button rounded-full px-3 py-1 text-sm font-medium border border-gray-300 hover:bg-indigo-50">Sat</button>
+          </div>
+          <input type="hidden" id="selected-days" name="weekdays">
+        </div>
+        
+        <!-- Time Slot -->
+        <div class="mb-4">
+          <label for="time-slot" class="mb-2 block text-sm font-medium text-gray-700">Time of Day</label>
+          <select id="time-slot" name="timeSlot" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <option value="5">Early Morning (5 AM)</option>
+            <option value="8">Morning (8 AM)</option>
+            <option value="12">Midday (12 PM)</option>
+            <option value="15">Afternoon (3 PM)</option>
+            <option value="18">Evening (6 PM)</option>
+            <option value="21">Night (9 PM)</option>
+          </select>
+        </div>
+        
+        <!-- Status -->
+        <div class="mb-6">
+          <label class="mb-2 block text-sm font-medium text-gray-700">Status</label>
+          <div class="flex items-center space-x-4">
+            <label class="flex items-center">
+              <input type="radio" name="status" value="active" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500" checked>
+              <span class="ml-2 text-sm text-gray-700">Active</span>
+            </label>
+            <label class="flex items-center">
+              <input type="radio" name="status" value="in-progress" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+              <span class="ml-2 text-sm text-gray-700">In Progress</span>
+            </label>
+            <label class="flex items-center">
+              <input type="radio" name="status" value="inactive" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+              <span class="ml-2 text-sm text-gray-700">Inactive</span>
+            </label>
+            <label class="flex items-center">
+              <input type="radio" name="status" value="complete" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+              <span class="ml-2 text-sm text-gray-700">Complete</span>
+            </label>
+          </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="flex items-center justify-between">
+          <button type="button" id="delete-habit" class="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">
+            Delete Habit
+          </button>
+          <div class="space-x-2">
+            <button type="button" id="habit-modal-cancel" class="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+              Cancel
+            </button>
+            <button type="submit" class="rounded bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Modal elements
+    const modal = document.getElementById('habit-modal');
+    const backdrop = document.getElementById('habit-modal-backdrop');
+    const closeBtn = document.getElementById('habit-modal-close');
+    const cancelBtn = document.getElementById('habit-modal-cancel');
+    const deleteBtn = document.getElementById('delete-habit');
+    const form = document.getElementById('habit-form');
+    const dayButtons = document.querySelectorAll('.day-button');
+    const selectedDaysInput = document.getElementById('selected-days');
+    
+    // Open modal function
+    window.openHabitModal = function(habitData = null) {
+      // Reset form
+      form.reset();
+      
+      // Reset day buttons
+      dayButtons.forEach(btn => btn.classList.remove('bg-indigo-600', 'text-white'));
+      
+      if (habitData) {
+        // Edit mode
+        document.getElementById('habit-modal-title').textContent = 'Edit Habit';
+        document.getElementById('habit-id').value = habitData.habit_id;
+        document.getElementById('habit-name').value = habitData.habit_name;
+        document.getElementById('habit-description').value = habitData.description;
+        document.getElementById('form-action').value = 'update';
+        
+        // Set time slot
+        document.getElementById('time-slot').value = habitData.time_slot;
+        
+        // Set weekday(s) - for now just handling single day
+        if (habitData.weekday !== undefined) {
+          const dayBtn = document.querySelector(`[data-day="${habitData.weekday}"]`);
+          if (dayBtn) {
+            dayBtn.classList.add('bg-indigo-600', 'text-white');
+            selectedDaysInput.value = habitData.weekday;
+          }
+        }
+        
+        // Status
+        const statusMap = {
+          0: 'inactive',
+          1: 'active',
+          2: 'in-progress',
+          3: 'complete'
+        };
+        
+        if (habitData.status !== undefined) {
+          const statusRadio = document.querySelector(`input[name="status"][value="${statusMap[habitData.status] || 'active'}"]`);
+          if (statusRadio) statusRadio.checked = true;
+        }
+        
+        // Show delete button in edit mode
+        deleteBtn.classList.remove('hidden');
+      } else {
+        // Create mode
+        document.getElementById('habit-modal-title').textContent = 'New Habit';
+        document.getElementById('habit-id').value = '';
+        document.getElementById('form-action').value = 'create';
+        
+        // Hide delete button in create mode
+        deleteBtn.classList.add('hidden');
+      }
+      
+      // Show modal
+      modal.classList.remove('hidden');
+    };
+    
+    // Close modal function
+    function closeModal() {
+      modal.classList.add('hidden');
+    }
+    
+    // Event listeners
+    backdrop.addEventListener('click', closeModal);
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+    
+    // Day selection
+    dayButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Toggle active class
+        btn.classList.toggle('bg-indigo-600');
+        btn.classList.toggle('text-white');
+        
+        // Update hidden input with selected days
+        const selectedDays = [];
+        dayButtons.forEach(dayBtn => {
+          if (dayBtn.classList.contains('bg-indigo-600')) {
+            selectedDays.push(dayBtn.dataset.day);
+          }
+        });
+        selectedDaysInput.value = selectedDays.join(',');
+      });
+    });
+    
+    // Delete button
+    deleteBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (confirm('Are you sure you want to delete this habit?')) {
+        document.getElementById('form-action').value = 'delete';
+        form.submit();
+      }
+    });
+    
+    // Form submission
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      // Simple validation
+      if (!form.reportValidity()) return;
+      
+      const action = document.getElementById('form-action').value;
+      
+      if (action === 'create') {
+        form.action = '/habits/create';
+      } else if (action === 'update') {
+        form.action = '/habits/update';
+      } else if (action === 'delete') {
+        form.action = '/habits/delete';
+      }
+      
+      form.submit();
+    });
+  });
+</script> 

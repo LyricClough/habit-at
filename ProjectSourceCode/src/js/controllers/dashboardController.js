@@ -9,14 +9,14 @@ exports.dashboard = async (req, res) => {
 
     // friends count
     const friends = await db.any(
-      'SELECT * FROM friends WHERE Sender = $1 AND Mutual = TRUE',
+      'SELECT * FROM friends WHERE sender = $1 AND mutual = TRUE',
       [userId]
     );
     const friendCount = friends.length;
 
     // friend requests
     const requests = await db.any(
-      'SELECT * FROM friends WHERE Receiver = $1 AND Mutual = FALSE',
+      'SELECT * FROM friends WHERE receiver = $1 AND mutual = FALSE',
       [userId]
     );
     const friendRequests = requests.length;
@@ -73,6 +73,22 @@ exports.dashboard = async (req, res) => {
       ? Math.floor((completedHabits.length / habits.length) * 100)
       : 0;
 
+    // Get current streak and longest streak (for statistics preview)
+    const { currentStreak, longestStreak } = await calculateStreak(userId);
+
+    // Get weekly completion rates (for statistics preview)
+    const weeklyData = await calculateWeeklyData(userId);
+
+    // Get total habit completions
+    const totalCompletions = await db.one(
+      `SELECT COUNT(*) as total
+       FROM habits_to_history hth
+       JOIN habits h ON hth.habit_id = h.habit_id
+       JOIN users_to_habits uh ON h.habit_id = uh.habit_id
+       WHERE uh.user_id = $1`,
+      [userId]
+    );
+
     res.render('pages/dashboard', {
       hideNav: false,
       user: req.session.user,
@@ -83,6 +99,10 @@ exports.dashboard = async (req, res) => {
       completionPerc,
       friendCount,
       friendRequests,
+      streak: currentStreak,
+      longestStreak,
+      weeklyData: JSON.stringify(weeklyData),
+      totalCompletions: totalCompletions.total
     });
   } catch (err) {
     console.error(err);
@@ -138,3 +158,139 @@ exports.decrementHabit = async (req, res) => {
     res.redirect('/dashboard');
   }
 };
+
+/**
+ * Calculate current and longest streak of habit completions
+ */
+async function calculateStreak(userId) {
+  try {
+    // Get all dates with completed habits
+    const dates = await db.any(
+      `SELECT DISTINCT hi.date
+       FROM history hi
+       JOIN habits_to_history hth ON hi.history_id = hth.history_id
+       JOIN habits h ON hth.habit_id = h.habit_id
+       JOIN users_to_habits uh ON h.habit_id = uh.habit_id
+       WHERE uh.user_id = $1
+       ORDER BY hi.date DESC`,
+      [userId]
+    );
+
+    if (dates.length === 0) {
+      return { currentStreak: 0, longestStreak: 0 };
+    }
+
+    // Calculate current streak
+    let currentStreak = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    // Check if there's a completion for today
+    const hasCompletionToday = dates.some(d => {
+      const date = new Date(d.date);
+      return date.toISOString().slice(0, 10) === today.toISOString().slice(0, 10);
+    });
+    
+    // Start checking from today or yesterday depending on if there's a completion today
+    let checkDate = hasCompletionToday ? today : yesterday;
+    
+    for (let i = 0; i < dates.length; i++) {
+      const date = new Date(dates[i].date);
+      date.setHours(0, 0, 0, 0);
+      
+      const diff = Math.round((checkDate - date) / (1000 * 60 * 60 * 24));
+      
+      if (diff <= currentStreak) {
+        // Already counted this date
+        continue;
+      } else if (diff === currentStreak + 1) {
+        // Consecutive day
+        currentStreak++;
+        checkDate = date;
+      } else {
+        // Streak broken
+        break;
+      }
+    }
+    
+    // Calculate longest streak
+    let longestStreak = 0;
+    let currentLongest = 0;
+    
+    for (let i = 0; i < dates.length - 1; i++) {
+      const currentDate = new Date(dates[i].date);
+      const nextDate = new Date(dates[i + 1].date);
+      
+      const diff = Math.round((currentDate - nextDate) / (1000 * 60 * 60 * 24));
+      
+      if (diff === 1) {
+        // Consecutive day
+        currentLongest++;
+      } else {
+        // Reset streak count
+        longestStreak = Math.max(longestStreak, currentLongest);
+        currentLongest = 0;
+      }
+    }
+    
+    longestStreak = Math.max(longestStreak, currentLongest) + 1; // +1 to count the first day
+    
+    return {
+      currentStreak: hasCompletionToday ? currentStreak : currentStreak > 0 ? currentStreak : 0,
+      longestStreak
+    };
+  } catch (err) {
+    console.error('Error calculating streak:', err);
+    return { currentStreak: 0, longestStreak: 0 };
+  }
+}
+
+/**
+ * Calculate weekly completion data by day of week
+ */
+async function calculateWeeklyData(userId) {
+  try {
+    const weekDays = [0, 1, 2, 3, 4, 5, 6]; // Sunday to Saturday
+    const result = [];
+    
+    for (const day of weekDays) {
+      // Get total scheduled habits for this weekday
+      const scheduled = await db.any(
+        `SELECT COUNT(*) as total
+         FROM habits h
+         JOIN users_to_habits uh ON h.habit_id = uh.habit_id
+         WHERE uh.user_id = $1 AND h.weekday = $2`,
+        [userId, day]
+      );
+      
+      // Get total completions by day of week
+      const completed = await db.any(
+        `SELECT COUNT(*) as total
+         FROM habits_to_history hth
+         JOIN history hi ON hth.history_id = hi.history_id
+         JOIN habits h ON hth.habit_id = h.habit_id
+         JOIN users_to_habits uh ON h.habit_id = uh.habit_id
+         WHERE uh.user_id = $1 AND h.weekday = $2 AND hi.date >= NOW() - INTERVAL '90 days'`,
+        [userId, day]
+      );
+      
+      // Calculate completion rate
+      let rate = 0;
+      if (scheduled[0].total > 0) {
+        // Approximate rate based on last 90 days (about 13 of each weekday)
+        rate = Math.round((completed[0].total / (scheduled[0].total * 13)) * 100);
+        rate = Math.min(rate, 100); // Cap at 100%
+      }
+      
+      result.push(rate);
+    }
+    
+    return result;
+  } catch (err) {
+    console.error('Error calculating weekly data:', err);
+    return [0, 0, 0, 0, 0, 0, 0];
+  }
+}
