@@ -1,0 +1,646 @@
+<!-- src/views/pages/statistics.hbs -->
+<div class="space-y-8">
+  <!-- HEADER with gradient text -->
+  <div class="relative">
+    <div class="absolute inset-0 bg-gradient-to-r from-indigo-100 to-indigo-50 rounded-xl opacity-50"></div>
+    <div class="relative p-6 rounded-xl">
+      <div class="flex justify-between items-center">
+        <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+          Habit Statistics
+        </h1>
+        <a href="/statistics/export" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 shadow-sm transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Export Data
+        </a>
+      </div>
+      <p class="mt-2 text-gray-600">Track your progress and visualize your growth journey</p>
+    </div>
+  </div>
+
+  <!-- OVERALL STATS CARDS - With hover animations and glassmorphism -->
+  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    <!-- Overall Completion Rate -->
+    <div class="group bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 p-6 flex flex-col justify-between border border-gray-100 relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+      <div class="relative">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-gray-500 font-medium">Completion Rate</span>
+          <span class="bg-blue-100 text-blue-800 p-2 rounded-full group-hover:scale-110 transition-transform duration-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </span>
+        </div>
+        <p class="text-3xl font-bold tracking-tight">{{completionRate}}%</p>
+        <p class="mt-2 text-sm text-gray-500">Last 30 days</p>
+      </div>
+      <div class="mt-4 w-full bg-gray-100 h-1 rounded-full overflow-hidden">
+        <div class="bg-blue-500 h-1 rounded-full" style="width: {{completionRate}}%"></div>
+      </div>
+    </div>
+
+    <!-- Current Streak -->
+    <div class="group bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 p-6 flex flex-col justify-between border border-gray-100 relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-br from-yellow-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+      <div class="relative">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-gray-500 font-medium">Current Streak</span>
+          <span class="bg-yellow-100 text-yellow-800 p-2 rounded-full group-hover:scale-110 transition-transform duration-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C8 8 6 12 12 22c6-10 4-14 0-20z" />
+            </svg>
+          </span>
+        </div>
+        <p class="text-3xl font-bold tracking-tight">{{streak}} <span class="text-lg font-medium text-gray-400">days</span></p>
+        <p class="mt-2 text-sm text-gray-500">{{#if streak}}Keep it up!{{else}}Start today!{{/if}}</p>
+      </div>
+      <div class="mt-4 flex space-x-1">
+        {{#each (range 5)}}
+          <div class="h-1 flex-1 rounded-full {{#if (lessThanOrEqual this ../streak)}}bg-yellow-400{{else}}bg-gray-100{{/if}}"></div>
+        {{/each}}
+      </div>
+    </div>
+
+    <!-- Longest Streak -->
+    <div class="group bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 p-6 flex flex-col justify-between border border-gray-100 relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+      <div class="relative">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-gray-500 font-medium">Longest Streak</span>
+          <span class="bg-green-100 text-green-800 p-2 rounded-full group-hover:scale-110 transition-transform duration-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </span>
+        </div>
+        <p class="text-3xl font-bold tracking-tight">{{longestStreak}} <span class="text-lg font-medium text-gray-400">days</span></p>
+        <p class="mt-2 text-sm text-gray-500">All time best</p>
+      </div>
+      <div class="mt-4 flex space-x-1">
+        {{#each (range 5)}}
+          <div class="h-1 flex-1 rounded-full {{#if (lessThanOrEqual this ../longestStreak)}}bg-green-400{{else}}bg-gray-100{{/if}}"></div>
+        {{/each}}
+      </div>
+    </div>
+
+    <!-- Total Habits Completed -->
+    <div class="group bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 p-6 flex flex-col justify-between border border-gray-100 relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+      <div class="relative">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-gray-500 font-medium">Total Completed</span>
+          <span class="bg-purple-100 text-purple-800 p-2 rounded-full group-hover:scale-110 transition-transform duration-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </span>
+        </div>
+        <p class="text-3xl font-bold tracking-tight">{{totalCompletions}}</p>
+        <p class="mt-2 text-sm text-gray-500">All time</p>
+      </div>
+      <div class="mt-4 w-full bg-gray-100 h-1 rounded-full overflow-hidden">
+        <div class="bg-purple-500 h-1 rounded-full" style="width: {{calculateTotalCompletionsPercentage totalCompletions}}%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPLETION HEATMAP with animated border -->
+  <div class="bg-white rounded-xl shadow-sm p-6 border border-transparent hover:border-indigo-100 transition-colors duration-300">
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h2 class="text-xl font-semibold">Habit Completion Heatmap</h2>
+        <div class="text-sm text-gray-500 mt-1">Your daily habit completion activity for the past year</div>
+      </div>
+      <div class="flex space-x-2">
+        <button class="text-xs px-3 py-1 rounded-full bg-indigo-100 text-indigo-800 hover:bg-indigo-200 transition-colors">Last Year</button>
+        <button class="text-xs px-3 py-1 rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">Last 6 Months</button>
+        <button class="text-xs px-3 py-1 rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">Last 3 Months</button>
+      </div>
+    </div>
+    <div id="heatmap" class="h-56"></div>
+  </div>
+
+  <!-- TREND CHARTS SECTION with tabs -->
+  <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+    <div class="border-b border-gray-200">
+      <div class="flex">
+        <button id="weekly-tab" class="tab-btn px-6 py-4 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600 active">Weekly Analysis</button>
+        <button id="monthly-tab" class="tab-btn px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700">Monthly Progress</button>
+        <button id="category-tab" class="tab-btn px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700">Category Breakdown</button>
+      </div>
+    </div>
+    <div class="p-6">
+      <!-- Weekly Tab Content -->
+      <div id="weekly-content" class="tab-content">
+        <div class="flex justify-between items-center mb-6">
+          <div>
+            <h2 class="text-lg font-semibold">Weekly Completion Rate</h2>
+            <div class="text-sm text-gray-500 mt-1">See how your habit consistency changes through the week</div>
+          </div>
+          <div class="bg-indigo-50 text-indigo-700 text-sm py-1 px-3 rounded-lg font-medium">
+            {{calculateWeeklyAverage}} avg
+          </div>
+        </div>
+        <div id="weeklyTrend" class="h-72"></div>
+      </div>
+      
+      <!-- Monthly Tab Content -->
+      <div id="monthly-content" class="tab-content hidden">
+        <div class="flex justify-between items-center mb-6">
+          <div>
+            <h2 class="text-lg font-semibold">Monthly Progress</h2>
+            <div class="text-sm text-gray-500 mt-1">Track your monthly habit completion progress</div>
+          </div>
+          <div class="bg-green-50 text-green-700 text-sm py-1 px-3 rounded-lg font-medium">
+            {{calculateMonthlyGrowth}}% growth
+          </div>
+        </div>
+        <div id="monthlyTrend" class="h-72"></div>
+      </div>
+
+      <!-- Category Tab Content -->
+      <div id="category-content" class="tab-content hidden">
+        <div class="flex justify-between items-center mb-6">
+          <div>
+            <h2 class="text-lg font-semibold">Category Breakdown</h2>
+            <div class="text-sm text-gray-500 mt-1">See which types of habits you complete most consistently</div>
+          </div>
+        </div>
+        <div id="categoryChart" class="h-72"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOP HABITS with interactive cards -->
+  <div class="bg-white rounded-xl shadow-sm p-6">
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h2 class="text-xl font-semibold">Top Performing Habits</h2>
+        <div class="text-sm text-gray-500 mt-1">These are your most consistently completed habits</div>
+      </div>
+      <div>
+        <select class="bg-white border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2.5">
+          <option value="completion">Sort by completion rate</option>
+          <option value="streak">Sort by current streak</option>
+          <option value="total">Sort by total completions</option>
+        </select>
+      </div>
+    </div>
+    
+    {{#if topHabits}}
+      <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        {{#each topHabits}}
+          <div class="group bg-white rounded-xl border border-gray-200 hover:border-indigo-200 transition-colors duration-200 shadow-sm hover:shadow-md overflow-hidden">
+            <div class="p-5">
+              <div class="flex justify-between items-start mb-3">
+                <h3 class="font-medium text-lg">{{habit_name}}</h3>
+                <span class="px-2.5 py-1 text-xs rounded-full bg-green-100 text-green-800 flex items-center">
+                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  {{completion_rate}}%
+                </span>
+              </div>
+              <p class="text-sm text-gray-600 mb-4">{{description}}</p>
+              
+              <div class="flex justify-between items-center text-xs text-gray-500 mb-2">
+                <span>Progress</span>
+                <span>{{counter}} completions</span>
+              </div>
+              <div class="w-full bg-gray-100 rounded-full h-1.5 mb-4 overflow-hidden">
+                <div class="bg-indigo-600 h-1.5 rounded-full group-hover:bg-indigo-500 transition-colors" style="width: {{completion_rate}}%"></div>
+              </div>
+              
+              <div class="flex justify-between">
+                <div class="flex items-center">
+                  <svg class="w-4 h-4 text-yellow-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                  </svg>
+                  <span class="text-sm">{{streak}} day streak</span>
+                </div>
+                <button class="text-indigo-600 hover:text-indigo-800 text-sm font-medium focus:outline-none flex items-center">
+                  View details
+                  <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <div class="rounded-lg bg-gray-50 p-8 text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">No habits yet</h3>
+        <p class="mt-1 text-sm text-gray-500">Start completing habits to see your top performers here.</p>
+        <div class="mt-6">
+          <a href="/habits" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Add a new habit
+          </a>
+        </div>
+      </div>
+    {{/if}}
+  </div>
+
+  <!-- CHALLENGES SECTION with animated cards -->
+  <div class="bg-white rounded-xl shadow-sm p-6">
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h2 class="text-xl font-semibold">Challenges & Improvement Areas</h2>
+        <div class="text-sm text-gray-500 mt-1">Habits that need more consistency</div>
+      </div>
+    </div>
+    
+    {{#if challengeHabits}}
+      <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        {{#each challengeHabits}}
+          <div class="group bg-white rounded-xl border border-gray-200 hover:border-yellow-200 transition-all duration-300 hover:shadow-md">
+            <div class="p-5">
+              <div class="flex justify-between items-start">
+                <h3 class="font-medium text-lg">{{habit_name}}</h3>
+                <span class="px-2.5 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 flex items-center">
+                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  {{completion_rate}}%
+                </span>
+              </div>
+              <p class="text-sm text-gray-600 mt-2 mb-4">{{description}}</p>
+              
+              <div class="w-full bg-gray-100 rounded-full h-1.5 mb-3 overflow-hidden">
+                <div class="bg-yellow-400 h-1.5 rounded-full group-hover:bg-yellow-500 transition-colors" style="width: {{completion_rate}}%"></div>
+              </div>
+              
+              <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-1 text-xs">
+                  {{#each (range 3)}}
+                    <div class="rounded-full h-2 w-2 {{#if (lessThan ../completion_rate 33)}}bg-red-400{{else if (lessThan ../completion_rate 66)}}bg-yellow-400{{else}}bg-green-400{{/if}}"></div>
+                  {{/each}}
+                  <span class="ml-1 text-gray-500">Needs improvement</span>
+                </div>
+                <a href="/habits" class="text-sm font-medium text-indigo-600 hover:text-indigo-800 group-hover:underline flex items-center transition-all">
+                  Focus on this habit
+                  <svg class="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <div class="rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 p-8 text-center">
+        <div class="mx-auto h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+          <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h3 class="mt-3 text-sm font-medium text-gray-900">Great job!</h3>
+        <p class="mt-1 text-sm text-gray-500">No habits identified as challenges. You're maintaining good consistency!</p>
+      </div>
+    {{/if}}
+  </div>
+</div>
+
+<!-- Load Chart.js and CalHeatmap libraries -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cal-heatmap"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cal-heatmap/cal-heatmap.css" />
+
+<!-- Custom animation library (inspired by Aceternity UI) -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Tab functionality
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Remove active state from all tabs
+        tabBtns.forEach(tab => {
+          tab.classList.remove('border-indigo-500', 'text-indigo-600');
+          tab.classList.add('text-gray-500');
+        });
+        
+        // Add active state to clicked tab
+        btn.classList.add('border-indigo-500', 'text-indigo-600');
+        btn.classList.remove('text-gray-500');
+        
+        // Show the corresponding content
+        const contentId = btn.id.replace('-tab', '-content');
+        tabContents.forEach(content => {
+          content.classList.add('hidden');
+        });
+        document.getElementById(contentId).classList.remove('hidden');
+        
+        // Trigger chart resize if needed
+        window.dispatchEvent(new Event('resize'));
+      });
+    });
+
+    // Weekly Trends Chart with animation
+    const weeklyCtx = document.getElementById('weeklyTrend').getContext('2d');
+    const weeklyChart = new Chart(weeklyCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+        datasets: [{
+          label: 'Completion Rate (%)',
+          data: {{weeklyData}},
+          backgroundColor: [
+            'rgba(99, 102, 241, 0.6)',
+            'rgba(99, 102, 241, 0.6)',
+            'rgba(99, 102, 241, 0.6)',
+            'rgba(99, 102, 241, 0.6)',
+            'rgba(99, 102, 241, 0.6)',
+            'rgba(99, 102, 241, 0.6)',
+            'rgba(99, 102, 241, 0.6)'
+          ],
+          borderColor: [
+            'rgb(99, 102, 241)',
+            'rgb(99, 102, 241)',
+            'rgb(99, 102, 241)',
+            'rgb(99, 102, 241)',
+            'rgb(99, 102, 241)',
+            'rgb(99, 102, 241)',
+            'rgb(99, 102, 241)'
+          ],
+          borderWidth: 1,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+          duration: 1000,
+          easing: 'easeOutQuart'
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            grid: {
+              display: true,
+              drawBorder: false,
+              color: 'rgba(226, 232, 240, 0.6)'
+            },
+            ticks: {
+              callback: function(value) {
+                return value + '%';
+              }
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            titleColor: '#1e293b',
+            bodyColor: '#334155',
+            titleFont: {
+              size: 12,
+              weight: 'bold'
+            },
+            bodyFont: {
+              size: 12
+            },
+            padding: 12,
+            borderColor: 'rgba(226, 232, 240, 1)',
+            borderWidth: 1,
+            displayColors: false,
+            callbacks: {
+              label: function(context) {
+                return context.parsed.y + '% completion rate';
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // Monthly Trends Chart with smoother line
+    const monthlyCtx = document.getElementById('monthlyTrend').getContext('2d');
+    const monthlyChart = new Chart(monthlyCtx, {
+      type: 'line',
+      data: {
+        labels: {{monthLabels}},
+        datasets: [{
+          label: 'Total Completions',
+          data: {{monthlyData}},
+          fill: {
+            target: 'origin',
+            above: 'rgba(34, 197, 94, 0.05)'
+          },
+          borderColor: 'rgb(34, 197, 94)',
+          borderWidth: 2,
+          pointBackgroundColor: 'rgb(34, 197, 94)',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 1,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+          duration: 1000,
+          easing: 'easeOutQuart'
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              display: true,
+              drawBorder: false,
+              color: 'rgba(226, 232, 240, 0.6)'
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            titleColor: '#1e293b',
+            bodyColor: '#334155',
+            titleFont: {
+              size: 12,
+              weight: 'bold'
+            },
+            bodyFont: {
+              size: 12
+            },
+            padding: 12,
+            borderColor: 'rgba(226, 232, 240, 1)',
+            borderWidth: 1,
+            displayColors: false
+          }
+        }
+      }
+    });
+
+    // Category Chart (Doughnut)
+    if (document.getElementById('categoryChart')) {
+      const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+      const categoryData = {{categoryData}};
+      const categoryLabels = {{categoryLabels}};
+      const categoryColors = [
+        'rgba(99, 102, 241, 0.8)',
+        'rgba(34, 197, 94, 0.8)',
+        'rgba(245, 158, 11, 0.8)',
+        'rgba(239, 68, 68, 0.8)',
+        'rgba(139, 92, 246, 0.8)',
+        'rgba(236, 72, 153, 0.8)'
+      ];
+      
+      const categoryChart = new Chart(categoryCtx, {
+        type: 'doughnut',
+        data: {
+          labels: categoryLabels,
+          datasets: [{
+            data: categoryData,
+            backgroundColor: categoryColors,
+            borderColor: '#ffffff',
+            borderWidth: 2,
+            hoverOffset: 10
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: {
+            animateRotate: true,
+            animateScale: true
+          },
+          layout: {
+            padding: 20
+          },
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: {
+                padding: 20,
+                boxWidth: 12,
+                boxHeight: 12
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              titleColor: '#1e293b',
+              bodyColor: '#334155',
+              titleFont: {
+                size: 12,
+                weight: 'bold'
+              },
+              bodyFont: {
+                size: 12
+              },
+              padding: 12,
+              borderColor: 'rgba(226, 232, 240, 1)',
+              borderWidth: 1,
+              displayColors: false
+            }
+          }
+        }
+      });
+    }
+
+    // Heatmap for habit completion with improved visuals
+    const cal = new CalHeatmap();
+    cal.init({
+      itemSelector: '#heatmap',
+      domain: 'month',
+      subDomain: 'day',
+      range: 12,
+      cellSize: 13,
+      cellPadding: 3,
+      domainGutter: 15,
+      domainMargin: [0, 0, 0, 0],
+      data: {{heatmapData}},
+      start: new Date(new Date().setDate(new Date().getDate() - 365)),
+      legend: [1, 3, 5, 7, 10],
+      legendColors: {
+        empty: '#f8fafc',
+        min: '#e0f2fe',
+        max: '#3b82f6'
+      },
+      tooltip: true,
+      displayLegend: true,
+      itemName: ['completion', 'completions']
+    });
+    
+    // Add subtle animations to cards
+    const cards = document.querySelectorAll('.group');
+    cards.forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        card.classList.add('transform', 'translate-y-[-2px]');
+      });
+      
+      card.addEventListener('mouseleave', () => {
+        card.classList.remove('transform', 'translate-y-[-2px]');
+      });
+    });
+  });
+  
+  // Helper functions for Handlebars
+  Handlebars.registerHelper('calculateProgress', function(counter) {
+    const maxCount = 10; // Arbitrary max for progress bar
+    return Math.min(100, (counter / maxCount) * 100);
+  });
+  
+  Handlebars.registerHelper('calculateTotalCompletionsPercentage', function(total) {
+    // Target is arbitrary - could be set to a user goal
+    const target = 100;
+    return Math.min(100, (total / target) * 100);
+  });
+  
+  Handlebars.registerHelper('equals', function(a, b) {
+    return parseInt(a) === parseInt(b);
+  });
+  
+  Handlebars.registerHelper('lessThan', function(a, b) {
+    return parseInt(a) < parseInt(b);
+  });
+  
+  Handlebars.registerHelper('lessThanOrEqual', function(a, b) {
+    return parseInt(a) <= parseInt(b);
+  });
+  
+  Handlebars.registerHelper('greaterThan', function(a, b) {
+    return parseInt(a) > parseInt(b);
+  });
+  
+  Handlebars.registerHelper('range', function(n) {
+    const result = [];
+    for (let i = 0; i < n; i++) {
+      result.push(i);
+    }
+    return result;
+  });
+</script>

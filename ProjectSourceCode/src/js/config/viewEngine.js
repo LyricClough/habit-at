@@ -41,6 +41,37 @@ module.exports = function(app) {
     return `${hour12} ${period}`;
   });
 
+  // Helper for creating an array of numbers (range)
+  hbs.handlebars.registerHelper('range', function(n) {
+    const result = [];
+    for (let i = 0; i < n; i++) {
+      result.push(i);
+    }
+    return result;
+  });
+
+  // Helper for checking if a value is less than another
+  hbs.handlebars.registerHelper('lessThan', function(a, b) {
+    return parseInt(a) < parseInt(b);
+  });
+
+  // Helper for checking if a value is less than or equal to another
+  hbs.handlebars.registerHelper('lessThanOrEqual', function(a, b) {
+    return parseInt(a) <= parseInt(b);
+  });
+
+  // Helper for checking if a value is greater than another
+  hbs.handlebars.registerHelper('greaterThan', function(a, b) {
+    return parseInt(a) > parseInt(b);
+  });
+
+  // Helper for calculating total completions percentage
+  hbs.handlebars.registerHelper('calculateTotalCompletionsPercentage', function(total) {
+    // Target is arbitrary - could be set to a user goal
+    const target = 100;
+    return Math.min(100, (total / target) * 100);
+  });
+
   app.engine('hbs', hbs.engine);
   app.set('view engine', 'hbs');
   app.set('views', path.join(__dirname, '..','..','views'));
