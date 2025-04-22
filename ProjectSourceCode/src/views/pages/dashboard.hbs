@@ -52,7 +52,7 @@
       <p class="text-2xl font-bold">
         {{#if allHabits}}{{allHabits.length}}{{else}}0{{/if}}
       </p>
-      <p class="mt-2 text-sm text-gray-500"><!-- e.g. “2 New This Month” --></p>
+      <p class="mt-2 text-sm text-gray-500"><!-- e.g. "2 New This Month" --></p>
     </div>
 
     <!-- Longest Streak -->
@@ -92,17 +92,22 @@
     </div>
   </div>
 
-  <!-- TODAY’S HABITS HEADER -->
+  <!-- TODAY'S HABITS HEADER -->
   <div class="flex items-center justify-between">
     <h2 class="text-xl font-semibold">Today's Habits</h2>
-    <button onclick="location.href='/calendar'"
-            class="flex items-center bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-500">
-      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 4v16m8-8H4" />
-      </svg>
-      New Habit
-    </button>
+    <div class="flex space-x-2">
+      <a href="/habits" class="flex items-center bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-50">
+        View All Habits
+      </a>
+      <button onclick="location.href='/calendar'"
+              class="flex items-center bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-500">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 4v16m8-8H4" />
+        </svg>
+        New Habit
+      </button>
+    </div>
   </div>
 
   <!-- HABITS TABLE -->
@@ -123,14 +128,37 @@
                 </form>
               </td>
               <td class="px-4 py-3 bg-white">
-                <p class="font-medium">{{habit_name}}</p>
-                <p class="text-sm text-gray-500">{{description}}, {{printTime time_slot}}</p>
+                <div class="flex items-center">
+                  <div>
+                    <p class="font-medium">{{habit_name}}</p>
+                    <p class="text-sm text-gray-500">{{description}}, {{printTime time_slot}}</p>
+                  </div>
+                  <div class="ml-3">
+                    <span class="inline-block px-2 py-1 rounded-full text-xs font-semibold
+                      {{#if (equals status 0)}}bg-gray-100 text-gray-800{{/if}}
+                      {{#if (equals status 1)}}bg-green-100 text-green-800{{/if}}
+                      {{#if (equals status 2)}}bg-yellow-100 text-yellow-800{{/if}}
+                      {{#if (equals status 3)}}bg-blue-100 text-blue-800{{/if}}">
+                      {{#if (equals status 0)}}Inactive{{/if}}
+                      {{#if (equals status 1)}}Active{{/if}}
+                      {{#if (equals status 2)}}In Progress{{/if}}
+                      {{#if (equals status 3)}}Complete{{/if}}
+                    </span>
+                  </div>
+                </div>
               </td>
               <td class="px-4 py-3 bg-white text-right">
-                <span
-                  class="inline-block bg-green-100 text-green-800 text-sm px-2 py-1 rounded-full font-semibold">
-                  Completed {{counter}} Times
-                </span>
+                <div class="flex items-center justify-end">
+                  <div class="mr-4">
+                    <div class="w-24 bg-gray-200 rounded-full h-2.5 mb-1">
+                      <div class="bg-indigo-600 h-2.5 rounded-full" style="width: {{calculateProgress counter}}%"></div>
+                    </div>
+                    <span class="text-xs text-gray-500">{{counter}} completions</span>
+                  </div>
+                  <span class="inline-block bg-green-100 text-green-800 text-sm px-2 py-1 rounded-full font-semibold">
+                    Progress
+                  </span>
+                </div>
               </td>
             </tr>
           {{/each}}
@@ -147,14 +175,37 @@
                 </form>
               </td>
               <td class="px-4 py-3 bg-white">
-                <p class="font-medium line-through">{{habit_name}}</p>
-                <p class="text-sm text-gray-500">{{description}}, {{printTime time_slot}}</p>
+                <div class="flex items-center">
+                  <div>
+                    <p class="font-medium line-through">{{habit_name}}</p>
+                    <p class="text-sm text-gray-500">{{description}}, {{printTime time_slot}}</p>
+                  </div>
+                  <div class="ml-3">
+                    <span class="inline-block px-2 py-1 rounded-full text-xs font-semibold
+                      {{#if (equals status 0)}}bg-gray-100 text-gray-800{{/if}}
+                      {{#if (equals status 1)}}bg-green-100 text-green-800{{/if}}
+                      {{#if (equals status 2)}}bg-yellow-100 text-yellow-800{{/if}}
+                      {{#if (equals status 3)}}bg-blue-100 text-blue-800{{/if}}">
+                      {{#if (equals status 0)}}Inactive{{/if}}
+                      {{#if (equals status 1)}}Active{{/if}}
+                      {{#if (equals status 2)}}In Progress{{/if}}
+                      {{#if (equals status 3)}}Complete{{/if}}
+                    </span>
+                  </div>
+                </div>
               </td>
               <td class="px-4 py-3 bg-white text-right">
-                <span
-                  class="inline-block bg-green-100 text-green-800 text-sm px-2 py-1 rounded-full font-semibold">
-                  Completed {{counter}} Times
-                </span>
+                <div class="flex items-center justify-end">
+                  <div class="mr-4">
+                    <div class="w-24 bg-gray-200 rounded-full h-2.5 mb-1">
+                      <div class="bg-indigo-600 h-2.5 rounded-full" style="width: {{calculateProgress counter}}%"></div>
+                    </div>
+                    <span class="text-xs text-gray-500">{{counter}} completions</span>
+                  </div>
+                  <span class="inline-block bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded-full font-semibold">
+                    Done Today
+                  </span>
+                </div>
               </td>
             </tr>
           {{/each}}
@@ -182,4 +233,15 @@
       d.toLocaleString('default',{ month:'long' })
     } ${d.getDate()}, ${d.getFullYear()}`;
   }
+  
+  // Helper function for handlebars
+  Handlebars.registerHelper('calculateProgress', function(counter) {
+    // Simple calculation - could be more sophisticated
+    const maxCount = 10; // Arbitrary max for progress bar
+    return Math.min(100, (counter / maxCount) * 100);
+  });
+  
+  Handlebars.registerHelper('equals', function(a, b) {
+    return parseInt(a) === parseInt(b);
+  });
 </script>

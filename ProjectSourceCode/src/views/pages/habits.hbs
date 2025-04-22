@@ -1,0 +1,502 @@
+<!-- src/views/pages/habits.hbs -->
+<div class="space-y-6">
+  <!-- HEADER -->
+  <div>
+    <h1 class="text-3xl font-bold">My Habits</h1>
+    <p class="mt-2 text-gray-600">Manage and track all your habits in one place</p>
+  </div>
+
+  <!-- FILTERS AND ACTIONS -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <!-- Filter Tabs -->
+    <div class="inline-flex rounded-md shadow-sm" role="group">
+      <button type="button" id="filter-all" class="filter-btn active px-4 py-2 text-sm font-medium bg-white border border-gray-200 rounded-l-lg hover:bg-gray-100 hover:text-indigo-700 focus:z-10 focus:ring-2 focus:ring-indigo-500">
+        All Habits
+      </button>
+      <button type="button" id="filter-today" class="filter-btn px-4 py-2 text-sm font-medium bg-white border-t border-b border-gray-200 hover:bg-gray-100 hover:text-indigo-700 focus:z-10 focus:ring-2 focus:ring-indigo-500">
+        Due Today
+      </button>
+      <button type="button" id="filter-week" class="filter-btn px-4 py-2 text-sm font-medium bg-white border border-gray-200 hover:bg-gray-100 hover:text-indigo-700 focus:z-10 focus:ring-2 focus:ring-indigo-500">
+        This Week
+      </button>
+      <button type="button" id="filter-month" class="filter-btn px-4 py-2 text-sm font-medium bg-white border border-gray-200 rounded-r-md hover:bg-gray-100 hover:text-indigo-700 focus:z-10 focus:ring-2 focus:ring-indigo-500">
+        This Month
+      </button>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex space-x-2">
+      <div class="relative">
+        <input type="text" id="search-habits" placeholder="Search habits..." class="px-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
+      </div>
+      <button id="new-habit-btn" class="flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        New Habit
+      </button>
+    </div>
+  </div>
+
+  <!-- STATUS FILTER PILLS -->
+  <div class="flex flex-wrap gap-2">
+    <span class="status-filter cursor-pointer inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200" data-status="all">
+      All Statuses
+    </span>
+    <span class="status-filter cursor-pointer inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200" data-status="active">
+      Active
+    </span>
+    <span class="status-filter cursor-pointer inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 hover:bg-yellow-200" data-status="in-progress">
+      In Progress
+    </span>
+    <span class="status-filter cursor-pointer inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200" data-status="inactive">
+      Inactive
+    </span>
+    <span class="status-filter cursor-pointer inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200" data-status="complete">
+      Complete
+    </span>
+  </div>
+
+  <!-- HABITS GRID/CARDS -->
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    {{#if allHabits}}
+      {{#each allHabits}}
+        <div class="habit-card rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all" 
+             data-id="{{habit_id}}" 
+             data-weekday="{{weekday}}" 
+             data-status="{{status}}"
+             data-time="{{time_slot}}">
+          <div class="p-4">
+            <!-- Habit Name & Status -->
+            <div class="flex items-start justify-between">
+              <h3 class="text-lg font-medium">{{habit_name}}</h3>
+              <div class="status-badge ml-2 px-2 py-1 rounded-full text-xs font-semibold 
+                {{#if (equals status 0)}}bg-gray-100 text-gray-800{{/if}}
+                {{#if (equals status 1)}}bg-green-100 text-green-800{{/if}}
+                {{#if (equals status 2)}}bg-yellow-100 text-yellow-800{{/if}}
+                {{#if (equals status 3)}}bg-blue-100 text-blue-800{{/if}}">
+                {{#if (equals status 0)}}Inactive{{/if}}
+                {{#if (equals status 1)}}Active{{/if}}
+                {{#if (equals status 2)}}In Progress{{/if}}
+                {{#if (equals status 3)}}Complete{{/if}}
+              </div>
+            </div>
+            
+            <!-- Description -->
+            <p class="mt-2 text-sm text-gray-600">{{description}}</p>
+            
+            <!-- Weekday & Time -->
+            <div class="mt-3 flex items-center text-sm text-gray-500">
+              <svg class="mr-1.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              {{#if (equals weekday 0)}}Sunday{{/if}}
+              {{#if (equals weekday 1)}}Monday{{/if}}
+              {{#if (equals weekday 2)}}Tuesday{{/if}}
+              {{#if (equals weekday 3)}}Wednesday{{/if}}
+              {{#if (equals weekday 4)}}Thursday{{/if}}
+              {{#if (equals weekday 5)}}Friday{{/if}}
+              {{#if (equals weekday 6)}}Saturday{{/if}}
+              <span class="mx-2">•</span>
+              <svg class="mr-1.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              {{printTime time_slot}}
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="mt-4">
+              <div class="flex justify-between text-xs text-gray-600 mb-1">
+                <span>Progress</span>
+                <span>{{counter}} {{#if (equals counter 1)}}time{{else}}times{{/if}}</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div class="progress-bar bg-indigo-600 h-2.5 rounded-full" style="width: {{calculateProgress counter}}%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Footer / Actions -->
+          <div class="border-t border-gray-100 p-3 flex flex-wrap justify-between gap-2">
+            <div class="flex space-x-2">
+              <button class="mark-complete-btn px-3 py-1 text-xs font-medium rounded border border-indigo-200 text-indigo-700 hover:bg-indigo-50">
+                {{#if (greaterThanZero counter)}}Done Today{{else}}Mark Complete{{/if}}
+              </button>
+              
+              {{#unless (equals weekday ../dayOfWeek)}}
+              <button class="add-to-dashboard-btn px-3 py-1 text-xs font-medium rounded border border-green-200 text-green-700 hover:bg-green-50">
+                <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+                Pin to Dashboard
+              </button>
+              {{/unless}}
+            </div>
+            
+            <div class="flex space-x-2">
+              <button class="edit-habit-btn p-1 text-gray-500 hover:text-indigo-600" title="Edit">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+              </button>
+              <button class="delete-habit-btn p-1 text-gray-500 hover:text-red-600" title="Delete">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      {{/each}}
+    {{else}}
+      <div class="col-span-full py-12 text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">No habits</h3>
+        <p class="mt-1 text-sm text-gray-500">Get started by creating a new habit.</p>
+        <div class="mt-6">
+          <button id="empty-new-habit-btn" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            New Habit
+          </button>
+        </div>
+      </div>
+    {{/if}}
+  </div>
+
+  <!-- DUE TODAY SECTION -->
+  <div class="mt-12">
+    <h2 class="text-xl font-semibold mb-4">Habits Due Today</h2>
+    
+    <div class="overflow-hidden bg-white shadow sm:rounded-md">
+      <ul class="divide-y divide-gray-200">
+        {{#if habits}}
+          {{#each habits}}
+            <li class="today-habit-item" data-id="{{habit_id}}">
+              <div class="flex items-center px-4 py-4 sm:px-6 hover:bg-gray-50">
+                <div class="flex min-w-0 flex-1 items-center">
+                  <div class="flex-shrink-0">
+                    <input type="checkbox" class="complete-checkbox h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                           {{#if (greaterThanZero counter)}}checked{{/if}}
+                           data-habit-id="{{habit_id}}">
+                  </div>
+                  <div class="min-w-0 flex-1 px-4">
+                    <p class="truncate text-sm font-medium {{#if (greaterThanZero counter)}}line-through text-gray-500{{else}}text-gray-900{{/if}}">
+                      {{habit_name}}
+                    </p>
+                    <p class="mt-1 truncate text-sm text-gray-500">{{description}}</p>
+                  </div>
+                  <div>
+                    <div class="inline-flex rounded-full bg-indigo-100 px-2 py-1 text-xs font-semibold text-indigo-800">
+                      {{printTime time_slot}}
+                    </div>
+                  </div>
+                </div>
+                <div class="ml-5">
+                  <button class="edit-today-habit-btn p-2 text-gray-400 hover:text-indigo-600">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </li>
+          {{/each}}
+        {{else}}
+          <li>
+            <div class="px-4 py-5 text-center text-sm text-gray-500 italic">
+              You have no habits due today
+            </div>
+          </li>
+        {{/if}}
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Include the habit modal partial -->
+{{> habitModal}}
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // References to elements
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const statusFilters = document.querySelectorAll('.status-filter');
+    const newHabitBtn = document.getElementById('new-habit-btn');
+    const emptyNewHabitBtn = document.getElementById('empty-new-habit-btn');
+    const searchInput = document.getElementById('search-habits');
+    const habitCards = document.querySelectorAll('.habit-card');
+    const completeCheckboxes = document.querySelectorAll('.complete-checkbox');
+    const editHabitBtns = document.querySelectorAll('.edit-habit-btn');
+    const editTodayHabitBtns = document.querySelectorAll('.edit-today-habit-btn');
+    const deleteHabitBtns = document.querySelectorAll('.delete-habit-btn');
+    const markCompleteBtns = document.querySelectorAll('.mark-complete-btn');
+    const addToDashboardBtns = document.querySelectorAll('.add-to-dashboard-btn');
+    let currentFilterDay = 'all';
+    let currentStatusFilter = 'all';
+    
+    // Date calculations for filters
+    const today = new Date();
+    const todayDay = today.getDay(); // 0-6 (Sunday-Saturday)
+    
+    // Calculate days in current week (Sunday to Saturday)
+    const daysInWeek = [];
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay()); // Start with Sunday
+    
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(startOfWeek);
+      day.setDate(startOfWeek.getDate() + i);
+      daysInWeek.push(day.getDay());
+    }
+    
+    // Calculate days in current month
+    const daysInMonth = [];
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    const daysInCurrentMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    
+    for (let i = 1; i <= daysInCurrentMonth; i++) {
+      const day = new Date(currentYear, currentMonth, i);
+      daysInMonth.push(day.getDay());
+    }
+    
+    // Filter habits based on time period (all, today, week, month)
+    function filterHabits() {
+      habitCards.forEach(card => {
+        const weekday = parseInt(card.dataset.weekday);
+        const status = card.dataset.status;
+        const statusMatch = currentStatusFilter === 'all' || 
+                          (currentStatusFilter === 'active' && status === '1') ||
+                          (currentStatusFilter === 'in-progress' && status === '2') ||
+                          (currentStatusFilter === 'inactive' && status === '0') ||
+                          (currentStatusFilter === 'complete' && status === '3');
+        
+        let dayMatch = false;
+        
+        if (currentFilterDay === 'all') {
+          dayMatch = true;
+        } else if (currentFilterDay === 'today') {
+          dayMatch = weekday === todayDay;
+        } else if (currentFilterDay === 'week') {
+          dayMatch = daysInWeek.includes(weekday);
+        } else if (currentFilterDay === 'month') {
+          dayMatch = daysInMonth.includes(weekday);
+        }
+        
+        // Search filtering
+        const searchTerm = searchInput.value.toLowerCase();
+        const habitName = card.querySelector('h3').textContent.toLowerCase();
+        const habitDesc = card.querySelector('p').textContent.toLowerCase();
+        const searchMatch = searchTerm === '' || 
+                          habitName.includes(searchTerm) || 
+                          habitDesc.includes(searchTerm);
+        
+        if (dayMatch && statusMatch && searchMatch) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    }
+    
+    // Event listeners for filter buttons
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active', 'bg-indigo-100', 'text-indigo-700'));
+        btn.classList.add('active', 'bg-indigo-100', 'text-indigo-700');
+        currentFilterDay = btn.id.replace('filter-', '');
+        filterHabits();
+      });
+    });
+    
+    // Event listeners for status filter pills
+    statusFilters.forEach(pill => {
+      pill.addEventListener('click', () => {
+        statusFilters.forEach(p => p.classList.remove('ring-2', 'ring-offset-2', 'ring-indigo-500'));
+        pill.classList.add('ring-2', 'ring-offset-2', 'ring-indigo-500');
+        currentStatusFilter = pill.dataset.status;
+        filterHabits();
+      });
+    });
+    
+    // Search functionality
+    searchInput.addEventListener('input', filterHabits);
+    
+    // Open modal to create new habit
+    if (newHabitBtn) {
+      newHabitBtn.addEventListener('click', () => {
+        window.openHabitModal();
+      });
+    }
+    
+    if (emptyNewHabitBtn) {
+      emptyNewHabitBtn.addEventListener('click', () => {
+        window.openHabitModal();
+      });
+    }
+    
+    // Edit habit buttons
+    editHabitBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const habitCard = btn.closest('.habit-card');
+        const habitId = habitCard.dataset.id;
+        
+        // Get the habit data from the DOM
+        const habitData = {
+          habit_id: habitId,
+          habit_name: habitCard.querySelector('h3').textContent,
+          description: habitCard.querySelector('p').textContent,
+          weekday: habitCard.dataset.weekday,
+          time_slot: habitCard.dataset.time,
+          status: habitCard.dataset.status
+        };
+        
+        window.openHabitModal(habitData);
+      });
+    });
+    
+    // Edit today's habits buttons
+    editTodayHabitBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const habitItem = btn.closest('.today-habit-item');
+        const habitId = habitItem.dataset.id;
+        
+        // Find the matching habit card to get all data
+        const habitCard = document.querySelector(`.habit-card[data-id="${habitId}"]`);
+        if (habitCard) {
+          const habitData = {
+            habit_id: habitId,
+            habit_name: habitCard.querySelector('h3').textContent,
+            description: habitCard.querySelector('p').textContent,
+            weekday: habitCard.dataset.weekday,
+            time_slot: habitCard.dataset.time,
+            status: habitCard.dataset.status
+          };
+          
+          window.openHabitModal(habitData);
+        }
+      });
+    });
+    
+    // Delete habit buttons
+    deleteHabitBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const habitCard = btn.closest('.habit-card');
+        const habitId = habitCard.dataset.id;
+        
+        if (confirm('Are you sure you want to delete this habit?')) {
+          // Create form and submit
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = '/habits/delete';
+          
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = 'habitId';
+          input.value = habitId;
+          
+          form.appendChild(input);
+          document.body.appendChild(form);
+          form.submit();
+        }
+      });
+    });
+    
+    // Mark complete buttons
+    markCompleteBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const habitCard = btn.closest('.habit-card');
+        const habitId = habitCard.dataset.id;
+        
+        // Create form and submit
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/completedHabit';
+        
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'habitId';
+        input.value = habitId;
+        
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+      });
+    });
+    
+    // Add to Dashboard buttons
+    if (addToDashboardBtns) {
+      addToDashboardBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const habitCard = btn.closest('.habit-card');
+          const habitId = habitCard.dataset.id;
+          
+          // Create a "pinned" copy of this habit for today
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = '/habits/pin-to-dashboard';
+          
+          const habitIdInput = document.createElement('input');
+          habitIdInput.type = 'hidden';
+          habitIdInput.name = 'habitId';
+          habitIdInput.value = habitId;
+          
+          form.appendChild(habitIdInput);
+          document.body.appendChild(form);
+          form.submit();
+        });
+      });
+    }
+    
+    // Complete checkboxes
+    completeCheckboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', () => {
+        const habitId = checkbox.dataset.habitId;
+        const isChecked = checkbox.checked;
+        
+        // Create form and submit
+        const form = document.createElement('form');
+        form.method = 'POST';
+        
+        if (isChecked) {
+          form.action = '/completedHabit';
+        } else {
+          form.action = '/decrementHabit';
+        }
+        
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'habitId';
+        input.value = habitId;
+        
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+      });
+    });
+  });
+  
+  // Helper function for handlebars
+  Handlebars.registerHelper('calculateProgress', function(counter) {
+    // Simple calculation - could be more sophisticated
+    const maxCount = 10; // Arbitrary max for progress bar
+    return Math.min(100, (counter / maxCount) * 100);
+  });
+  
+  Handlebars.registerHelper('equals', function(a, b) {
+    return parseInt(a) === parseInt(b);
+  });
+  
+  Handlebars.registerHelper('greaterThanZero', function(value) {
+    return parseInt(value) > 0;
+  });
+</script> 

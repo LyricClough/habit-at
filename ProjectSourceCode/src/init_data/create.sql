@@ -16,7 +16,8 @@ CREATE TABLE habits (
   Description VARCHAR(200),
   weekday INT NOT NULL CHECK (weekday >= 0 AND weekday <= 6),
   time_slot INT NOT NULL CHECK (time_slot >= 0 AND time_slot < 24),
-  counter INT DEFAULT 0
+  counter INT DEFAULT 0,
+  status INT DEFAULT 1 CHECK (status >= 0 AND status <= 3)
 );
 
 CREATE TABLE users_to_habits (
