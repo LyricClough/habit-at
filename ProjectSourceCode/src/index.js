@@ -19,6 +19,10 @@ const friendsRoutes   = require('./js/routes/friendsRoutes');
 
 const app = express();
 
+// index.js, at top, right after creating `app`
+app.set('trust proxy', 1);
+
+
 // static & parsers
 app.use(express.static(path.join(__dirname,'..','public')));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -34,15 +38,20 @@ app.use(bodyParser.json());
 // session with explicit MemoryStore
 
 app.use(session({
+  name: 'sid',                  // optional: avoid default name clashes
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  store: new MemoryStore(), // Add this line to use MemoryStore explicitly
+  proxy: true,                  // trust X-Forwarded-Proto for secure cookies
+  store: new MemoryStore(),     // or a production store like connect-redis
   cookie: {
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours (optional)
-    secure: process.env.NODE_ENV === 'production' // Optional security configuration
+    secure: true,               // only over HTTPS
+    httpOnly: true,             // not accessible via JS
+    sameSite: 'none',           // allow cross-site (modern Chrome requires None+Secure)
+    maxAge: 24 * 60 * 60 * 1000 // 1 day
   }
 }));
+
 
 // templating
 viewEngine(app);
