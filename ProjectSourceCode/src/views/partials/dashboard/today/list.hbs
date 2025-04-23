@@ -1,0 +1,90 @@
+<div class="bg-white rounded-xl shadow-sm overflow-hidden">
+  <div class="divide-y divide-gray-100">
+    {{#if habits}}
+
+      {{!-- Incomplete --}}
+      {{#each incompleteHabits}}
+        <div class="hover:bg-gray-50 transition-colors p-4">
+          <div class="flex items-center">
+            <div class="mr-4">
+              <form action="/completedHabit" method="POST">
+                <input type="hidden" name="habitId" value="{{habit_id}}">
+                <input type="checkbox" onChange="this.form.submit()"
+                       class="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                       {{#if (greaterThanZero counter)}}checked disabled{{/if}} />
+              </form>
+            </div>
+
+            <div class="flex-1">
+              <h3 class="font-medium text-gray-900">{{habit_name}}</h3>
+              <div class="flex items-center text-sm text-gray-500 mt-0.5 space-x-2">
+                <span>{{description}}</span><span>•</span><span>{{printTime time_slot}}</span>
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+              <div>
+                <div class="w-24 bg-gray-200 rounded-full h-2 mb-1">
+                  <div class="bg-indigo-600 h-2 rounded-full" style="width: {{calculateProgress counter}}%"></div>
+                </div>
+                <span class="text-xs text-gray-500">{{counter}} completions</span>
+              </div>
+              <button type="button" class="text-gray-400 hover:text-gray-600"
+                      onclick="openHabitDetail('{{habit_id}}')">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      {{/each}}
+
+      {{!-- Completed --}}
+      {{#each completedHabits}}
+        <div class="bg-gray-50 p-4">
+          <div class="flex items-center">
+            <div class="mr-4">
+              <form action="/decrementHabit" method="POST">
+                <input type="hidden" name="habitId" value="{{habit_id}}">
+                <input type="checkbox" onChange="this.form.submit()"
+                       class="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" checked/>
+              </form>
+            </div>
+
+            <div class="flex-1">
+              <h3 class="font-medium text-gray-900 line-through">{{habit_name}}</h3>
+              <div class="flex items-center text-sm text-gray-500 mt-0.5 space-x-2">
+                <span>{{description}}</span><span>•</span><span>{{printTime time_slot}}</span>
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+              <div>
+                <div class="w-24 bg-gray-200 rounded-full h-2 mb-1">
+                  <div class="bg-indigo-600 h-2 rounded-full" style="width: {{calculateProgress counter}}%"></div>
+                </div>
+                <span class="text-xs text-gray-500">{{counter}} completions</span>
+              </div>
+              <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                Completed
+              </span>
+            </div>
+          </div>
+        </div>
+      {{/each}}
+
+    {{else}}
+      <div class="py-12 text-center text-gray-500 italic">
+        <div class="flex flex-col items-center justify-center">
+          <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+          <p>You have no habits scheduled for today!</p>
+          <a href="/habits" class="mt-4 text-indigo-600 hover:text-indigo-800 font-medium">Add a habit</a>
+        </div>
+      </div>
+    {{/if}}
+  </div>
+</div>

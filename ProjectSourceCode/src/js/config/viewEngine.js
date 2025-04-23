@@ -1,153 +1,130 @@
 // src/js/config/handlebars.js
-const path = require('path');
-const exphbs = require('express-handlebars');
+const path    = require('path');
+const fs      = require('fs');
+const exphbs  = require('express-handlebars');
 
-module.exports = function(app) {
+/* ------------------------------------------------------------------ */
+/*  1.  Helper to collect partial paths recursively                    */
+/* ------------------------------------------------------------------ */
+function gatherPartials(dir) {
+  const files = [];
+  (function walk(cur) {
+    fs.readdirSync(cur).forEach(f => {
+      const fp = path.join(cur, f);
+      fs.statSync(fp).isDirectory() ? walk(fp)
+                                    : files.push(fp);
+    });
+  })(dir);
+  return files;
+}
+
+/* ------------------------------------------------------------------ */
+module.exports = function (app) {
+  const partialRoot = path.join(__dirname, '..', '..', 'views', 'partials');
+
+  /* ---------------- express-handlebars instance ------------------- */
   const hbs = exphbs.create({
-    extname: 'hbs',
-    layoutsDir: path.join(__dirname, '..','..','views','layouts'),
-    partialsDir: path.join(__dirname, '..','..','views','partials'),
+    extname    : 'hbs',
+    layoutsDir : path.join(__dirname, '..', '..', 'views', 'layouts'),
+    // give it the *list* of partial files so sub-folders work
+    partialsDir: partialRoot,
   });
 
-  // Store for sections content
+  /* ----------------------------------------------------------------
+   * 2.  ALL your existing helpers (unchanged)
+   * ---------------------------------------------------------------- */
   const _sections = {};
-  
-  // Section helper for defining content sections
-  hbs.handlebars.registerHelper('section', function(name, options) {
-    if (!_sections[name]) {
-      _sections[name] = [];
-    }
-    
-    _sections[name].push(options.fn(this));
+  hbs.handlebars.registerHelper('section', function (n, opts) {
+    (_sections[n] = _sections[n] || []).push(opts.fn(this));
     return null;
   });
-  
-  // Block helper for retrieving and rendering sections
-  hbs.handlebars.registerHelper('block', function(name) {
-    const val = (_sections[name] || []).join('\n');
-    // Clear the section after retrieval
-    _sections[name] = [];
-    return new hbs.handlebars.SafeString(val);
+  hbs.handlebars.registerHelper('block', n => {
+    const out = (_sections[n] || []).join('\n');
+    _sections[n] = [];
+    return new hbs.handlebars.SafeString(out);
+  });
+  hbs.handlebars.registerHelper('stringify', v => {
+    try { return JSON.stringify(v, null, 2) || 'null'; }
+    catch (e) { return `Error stringifying: ${e.message}`; }
   });
 
-  // Helper for debugging - stringify any value for display
-  hbs.handlebars.registerHelper('stringify', function(value) {
-    try {
-      return JSON.stringify(value, null, 2) || 'null';
-    } catch (error) {
-      return `Error stringifying: ${error.message}`;
+  hbs.handlebars.registerHelper('ifActive', (cur, link, o) =>
+    cur.replace(/\/$/, '') === `/${link}` ? o.fn(this) : o.inverse(this));
+
+  hbs.handlebars.registerHelper('equals', (a, b) => parseInt(a) === parseInt(b));
+  hbs.handlebars.registerHelper('greaterThanZero', v => parseInt(v) > 0);
+  hbs.handlebars.registerHelper('calculateProgress', c =>
+    Math.min(100, (c / 10) * 100));
+
+  hbs.handlebars.registerHelper('printTime', h => {
+    if (h === null || h === undefined) return '';
+    const hour = parseInt(h);
+    return `${hour % 12 || 12} ${hour >= 12 ? 'PM' : 'AM'}`;
+  });
+  hbs.handlebars.registerHelper('firstLetter', s =>
+    (typeof s === 'string' && s[0]) ? s[0].toUpperCase() : '');
+
+  hbs.handlebars.registerHelper('range', n =>
+    Array.from({ length: n }, (_, i) => i));
+
+  ['lessThan','lessThanOrEqual','greaterThan'].forEach(fn => {
+    const op = { lessThan:'<', lessThanOrEqual:'<=', greaterThan:'>' }[fn];
+    hbs.handlebars.registerHelper(fn, (a, b) =>
+      eval(`${parseInt(a)} ${op} ${parseInt(b)}`));   // eslint-disable-line no-eval
+  });
+
+  hbs.handlebars.registerHelper('calculateTotalCompletionsPercentage', t =>
+    Math.min(100, (t / 100) * 100));
+
+  hbs.handlebars.registerHelper('json', ctx => JSON.stringify(ctx));
+  hbs.handlebars.registerHelper('eq', (a, b) => a === b);
+
+  hbs.handlebars.registerHelper('includes', (col, item) => {
+    if (typeof col === 'string')
+      return col.split(',').map(i => i.trim()).includes(String(item));
+    return col?.includes(item);
+  });
+
+  hbs.handlebars.registerHelper('math', (l, op, r) => {
+    l = parseFloat(l); r = parseFloat(r);
+    switch (op) { case '+': return l + r;
+      case '-': return l - r;
+      case '*': return l * r;
+      case '/': return l / r;
+      case '%': return l % r;
+      default : return l; }
+  });
+  hbs.handlebars.registerHelper('subtract', (a, b) =>
+    parseFloat(a) - parseFloat(b));
+
+  /* ----------------------------------------------------------------
+   * 3.  NEW switch/case/default helpers (used in sidebar/week.hbs)
+   * ---------------------------------------------------------------- */
+  hbs.handlebars.registerHelper('switch', function (value, options) {
+    this._switch_value_ = value;            // store on context
+    const html = options.fn(this);          // render inner block
+    delete this._switch_value_;
+    return html;
+  });
+
+  hbs.handlebars.registerHelper('case', function (value, options) {
+    if (value === this._switch_value_) {
+      return options.fn(this);
     }
+    return '';
   });
 
-  hbs.handlebars.registerHelper('ifActive', (currentPath, linkPath, opts) => {
-    const active = currentPath.replace(/\/$/, '') === `/${linkPath}`;
-    return active ? opts.fn(this) : opts.inverse(this);
-  });
-  
-  // Helper for comparing values
-  hbs.handlebars.registerHelper('equals', function(a, b) {
-    return parseInt(a) === parseInt(b);
-  });
-  
-  // Helper for checking if value is greater than zero
-  hbs.handlebars.registerHelper('greaterThanZero', function(value) {
-    return parseInt(value) > 0;
-  });
-  
-  // Helper for calculating progress percentage
-  hbs.handlebars.registerHelper('calculateProgress', function(counter) {
-    const maxCount = 10; // Arbitrary max for progress bar
-    return Math.min(100, (counter / maxCount) * 100);
-  });
-  
-  // Helper for formatting time
-  hbs.handlebars.registerHelper('printTime', function(hour) {
-    if (hour === null || hour === undefined) return '';
-    
-    const h = parseInt(hour);
-    const period = h >= 12 ? 'PM' : 'AM';
-    const hour12 = h % 12 || 12;
-    
-    return `${hour12} ${period}`;
-  });
-
-  // Helper for extracting the first letter of a string (for user avatar)
-  hbs.handlebars.registerHelper('firstLetter', function(str) {
-    if (!str || typeof str !== 'string') return '';
-    return str.charAt(0).toUpperCase();
-  });
-
-  // Helper for creating an array of numbers (range)
-  hbs.handlebars.registerHelper('range', function(n) {
-    const result = [];
-    for (let i = 0; i < n; i++) {
-      result.push(i);
+  // default must come last
+  hbs.handlebars.registerHelper('default', function (options) {
+    if (!('_switch_found_' in this)) {
+      this._switch_found_ = true;
+      return options.fn(this);
     }
-    return result;
+    return '';
   });
 
-  // Helper for checking if a value is less than another
-  hbs.handlebars.registerHelper('lessThan', function(a, b) {
-    return parseInt(a) < parseInt(b);
-  });
-
-  // Helper for checking if a value is less than or equal to another
-  hbs.handlebars.registerHelper('lessThanOrEqual', function(a, b) {
-    return parseInt(a) <= parseInt(b);
-  });
-
-  // Helper for checking if a value is greater than another
-  hbs.handlebars.registerHelper('greaterThan', function(a, b) {
-    return parseInt(a) > parseInt(b);
-  });
-
-  // Helper for calculating total completions percentage
-  hbs.handlebars.registerHelper('calculateTotalCompletionsPercentage', function(total) {
-    // Target is arbitrary - could be set to a user goal
-    const target = 100;
-    return Math.min(100, (total / target) * 100);
-  });
-  
-  // Helper for JSON stringification in templates
-  hbs.handlebars.registerHelper('json', function(context) {
-    return JSON.stringify(context);
-  });
-
-  // Equality helper (new)
-  hbs.handlebars.registerHelper('eq', function(a, b) {
-    return a === b;
-  });
-  
-  // Includes helper for arrays and comma-separated strings (new)
-  hbs.handlebars.registerHelper('includes', function(collection, item) {
-    if (typeof collection === 'string') {
-      // Handle comma-separated string case
-      return collection.split(',').map(i => i.trim()).includes(item.toString());
-    }
-    return collection && collection.includes(item);
-  });
-  
-  // Math helper for arithmetic operations
-  hbs.handlebars.registerHelper('math', function(lvalue, operator, rvalue) {
-    lvalue = parseFloat(lvalue);
-    rvalue = parseFloat(rvalue);
-    
-    switch(operator) {
-      case '+': return lvalue + rvalue;
-      case '-': return lvalue - rvalue;
-      case '*': return lvalue * rvalue;
-      case '/': return lvalue / rvalue;
-      case '%': return lvalue % rvalue;
-      default: return lvalue;
-    }
-  });
-  
-  // Simple subtraction helper
-  hbs.handlebars.registerHelper('subtract', function(a, b) {
-    return parseFloat(a) - parseFloat(b);
-  });
-
+  /* ---------------------------------------------------------------- */
   app.engine('hbs', hbs.engine);
-  app.set('view engine', 'hbs');
-  app.set('views', path.join(__dirname, '..','..','views'));
+  app.set   ('view engine', 'hbs');
+  app.set   ('views', path.join(__dirname, '..', '..', 'views'));
 };

@@ -1,0 +1,32 @@
+<div>
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-xl font-semibold">Calendar</h2>
+    <a href="/calendar" class="text-sm text-indigo-600 hover:text-indigo-800">
+      View full calendar
+    </a>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm p-4">
+    <div class="flex items-center justify-between mb-4">
+      <button id="prevMonth" class="p-2 rounded-full hover:bg-gray-100">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </button>
+
+      <div id="currentMonth" class="font-medium"></div>
+
+      <button id="nextMonth" class="p-2 rounded-full hover:bg-gray-100">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="grid grid-cols-7 mb-2 text-center text-gray-500 text-xs font-medium">
+      <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+    </div>
+
+    <div id="calendarDays" class="grid grid-cols-7 gap-1"></div>
+  </div>
+</div>

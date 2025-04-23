@@ -1,0 +1,41 @@
+<div>
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-xl font-semibold">Weekly Progress</h2>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm p-4">
+    <div class="flex justify-between items-end space-x-1 mb-2 px-2">
+      {{#each weeklyData}}
+        <div class="flex flex-col items-center">
+          <div class="text-xs font-medium text-gray-500 mb-1">
+            {{#switch @index}}
+              {{#case 0}}Sunday{{/case}}
+              {{#case 1}}Monday{{/case}}
+              {{#case 2}}Tuesday{{/case}}
+              {{#case 3}}Wednesday{{/case}}
+              {{#case 4}}Thursday{{/case}}
+              {{#case 5}}Friday{{/case}}
+              {{#case 6}}Saturday{{/case}}
+              {{!-- {{#default}}{{/default}} --}}
+            {{/switch}}
+          </div>
+
+          <div class="w-7 h-16 bg-gray-100 rounded-t-lg relative overflow-hidden">
+            <div class="absolute bottom-0 w-full bg-indigo-500 rounded-t-lg"
+                 style="height: {{this}}%;"></div>
+          </div>
+        </div>
+      {{/each}}
+    </div>
+
+    {{#if streak}}
+      <div class="mt-3 flex items-center justify-between bg-gradient-to-r from-indigo-50 to-purple-50 p-3 rounded-lg">
+        <div class="text-sm text-gray-600">{{streak}} day streak!</div>
+        <a href="/statistics"
+           class="text-xs px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+          See Stats
+        </a>
+      </div>
+    {{/if}}
+  </div>
+</div>

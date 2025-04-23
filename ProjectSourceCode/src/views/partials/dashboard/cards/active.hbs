@@ -1,0 +1,16 @@
+<div class="bg-white rounded-xl shadow-sm p-6 flex flex-col justify-between hover:shadow-md transition-shadow">
+  <div class="flex items-center justify-between mb-4">
+    <span class="text-gray-500">Active Habits</span>
+    <span class="bg-green-100 text-green-800 p-2 rounded-full">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+      </svg>
+    </span>
+  </div>
+
+  <p class="text-3xl font-bold text-center">
+    {{#if allHabits}}{{allHabits.length}}{{else}}0{{/if}}
+  </p>
+  <p class="mt-2 text-sm text-gray-500 text-center">Total active habits</p>
+</div>
