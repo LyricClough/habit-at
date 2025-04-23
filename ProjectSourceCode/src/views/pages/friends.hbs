@@ -14,7 +14,8 @@
     transition: all 0.3s ease;
   }
   .friend-card:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+                0 4px 6px -2px rgba(0, 0, 0, 0.05);
   }
 </style>
 {{/section}}
@@ -32,7 +33,11 @@
         My Friends
       </button>
       <button id="requests-tab" class="py-4 px-6 font-medium text-sm text-gray-500 hover:text-gray-700">
-        Friend Requests <span id="request-count" class="inline-flex items-center justify-center w-5 h-5 ml-2 text-xs font-semibold text-white bg-indigo-500 rounded-full hidden">0</span>
+        Friend Requests
+        <span id="request-count"
+              class="inline-flex items-center justify-center w-5 h-5 ml-2 text-xs font-semibold text-white bg-indigo-500 rounded-full hidden">
+          0
+        </span>
       </button>
       <button id="search-tab" class="py-4 px-6 font-medium text-sm text-gray-500 hover:text-gray-700">
         Find Friends
@@ -40,22 +45,22 @@
     </nav>
   </div>
 
-  <!-- Friends Tab Content -->
+  <!-- My Friends -->
   <div id="friends-content" class="tab-content">
     <div id="friends-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Friends will be loaded here dynamically -->
       <div class="flex justify-center items-center p-8 col-span-3">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
         <span class="ml-2">Loading friends...</span>
       </div>
     </div>
-    
-    <!-- Empty state for no friends -->
     <div id="no-friends" class="hidden text-center py-12">
       <div class="text-6xl mb-4">👋</div>
       <h3 class="text-xl font-medium text-gray-900 mb-2">No friends yet</h3>
-      <p class="text-gray-500 mb-6">Start connecting with others to see their habit progress here</p>
-      <button id="find-friends-btn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+      <p class="text-gray-500 mb-6">
+        Start connecting with others to see their habit progress here
+      </p>
+      <button id="find-friends-btn"
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
           <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
         </svg>
@@ -64,17 +69,14 @@
     </div>
   </div>
 
-  <!-- Friend Requests Tab Content -->
+  <!-- Friend Requests -->
   <div id="requests-content" class="tab-content hidden">
     <div id="friend-requests" class="space-y-4">
-      <!-- Friend requests will be loaded here dynamically -->
       <div class="flex justify-center items-center p-8">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
         <span class="ml-2">Loading requests...</span>
       </div>
     </div>
-    
-    <!-- Empty state for no requests -->
     <div id="no-requests" class="hidden text-center py-12">
       <div class="text-6xl mb-4">✉️</div>
       <h3 class="text-xl font-medium text-gray-900 mb-2">No pending requests</h3>
@@ -82,37 +84,33 @@
     </div>
   </div>
 
-  <!-- Search Tab Content -->
+  <!-- Find Friends -->
   <div id="search-content" class="tab-content hidden">
     <div class="mb-6">
       <div class="relative">
-        <input 
-          type="text" 
-          id="search-input" 
-          placeholder="Search for users by username or email" 
-          class="w-full py-3 px-4 pr-10 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-        />
+        <input type="text"
+               id="search-input"
+               placeholder="Search for users by username or email"
+               class="w-full py-3 px-4 pr-10 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"/>
         <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
           <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+            <path fill-rule="evenodd"
+                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                  clip-rule="evenodd"/>
           </svg>
         </div>
       </div>
       <p class="mt-2 text-sm text-gray-500">
-        Type at least 3 characters to search. Only users who have enabled profile visibility will appear in search results.
+        Type at least 3 characters to search.
       </p>
     </div>
-    
-    <div id="search-results" class="space-y-4 mt-6 hidden">
-      <!-- Search results will be loaded here dynamically -->
-    </div>
-    
+
+    <div id="search-results" class="space-y-4 mt-6 hidden"></div>
     <div id="search-empty" class="hidden text-center py-12">
       <div class="text-6xl mb-4">🔍</div>
       <h3 class="text-xl font-medium text-gray-900 mb-2">No users found</h3>
       <p class="text-gray-500">Try with different search terms</p>
     </div>
-    
     <div id="search-initial" class="text-center py-12">
       <div class="text-6xl mb-4">👥</div>
       <h3 class="text-xl font-medium text-gray-900 mb-2">Find friends</h3>
@@ -127,11 +125,11 @@
         <h3 class="text-lg font-medium text-gray-900" id="modal-friend-name">Friend's Statistics</h3>
         <button id="close-modal" class="text-gray-400 hover:text-gray-500">
           <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
       </div>
-      
       <div class="p-6" id="friend-stats-container">
         <div class="flex justify-center items-center p-8">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
@@ -141,14 +139,12 @@
     </div>
   </div>
 
-  <!-- Add this section near the end of the file, before the friend-stats-modal -->
+  <!-- Debug Section (optional) -->
   <div id="debug-section" class="mt-8 p-4 border border-gray-300 rounded-lg" style="display: none;">
     <h3 class="text-lg font-medium mb-4">Debug Information</h3>
-    
     <div class="mb-4">
       <button id="show-all-users" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Show All Users</button>
     </div>
-    
     <div id="debug-output" class="bg-gray-100 p-4 rounded overflow-auto max-h-96 font-mono text-sm">
       <p>Debug output will appear here</p>
     </div>
@@ -156,730 +152,6 @@
 </div>
 
 {{#section "scripts"}}
-<script>
-  // DOM Elements
-  const tabs = {
-    friends: {
-      tab: document.getElementById('friends-tab'),
-      content: document.getElementById('friends-content')
-    },
-    requests: {
-      tab: document.getElementById('requests-tab'),
-      content: document.getElementById('requests-content')
-    },
-    search: {
-      tab: document.getElementById('search-tab'),
-      content: document.getElementById('search-content')
-    }
-  };
-  
-  const friendsList = document.getElementById('friends-list');
-  const noFriends = document.getElementById('no-friends');
-  const friendRequests = document.getElementById('friend-requests');
-  const noRequests = document.getElementById('no-requests');
-  const searchInput = document.getElementById('search-input');
-  const searchResults = document.getElementById('search-results');
-  const searchEmpty = document.getElementById('search-empty');
-  const searchInitial = document.getElementById('search-initial');
-  const requestCount = document.getElementById('request-count');
-  const findFriendsBtn = document.getElementById('find-friends-btn');
-  const friendStatsModal = document.getElementById('friend-stats-modal');
-  const closeModal = document.getElementById('close-modal');
-  const modalFriendName = document.getElementById('modal-friend-name');
-  const friendStatsContainer = document.getElementById('friend-stats-container');
-  
-  // Switch tabs function
-  function switchTab(tabName) {
-    Object.keys(tabs).forEach(key => {
-      if (key === tabName) {
-        tabs[key].tab.classList.add('tab-active');
-        tabs[key].tab.classList.remove('text-gray-500');
-        tabs[key].content.classList.remove('hidden');
-      } else {
-        tabs[key].tab.classList.remove('tab-active');
-        tabs[key].tab.classList.add('text-gray-500');
-        tabs[key].content.classList.add('hidden');
-      }
-    });
-    
-    // Save active tab in local storage
-    localStorage.setItem('activeFriendsTab', tabName);
-  }
-  
-  // Add event listeners to tabs
-  Object.keys(tabs).forEach(key => {
-    tabs[key].tab.addEventListener('click', () => switchTab(key));
-  });
-  
-  // Load saved tab or default to 'friends'
-  const savedTab = localStorage.getItem('activeFriendsTab') || 'friends';
-  switchTab(savedTab);
-  
-  // Load friends list
-  async function loadFriends() {
-    try {
-      const response = await fetch('/friends/api/friends');
-      const data = await response.json();
-      
-      friendsList.innerHTML = '';
-      
-      if (data.friends && data.friends.length > 0) {
-        noFriends.classList.add('hidden');
-        
-        data.friends.forEach(friend => {
-          const friendCard = createFriendCard(friend);
-          friendsList.appendChild(friendCard);
-        });
-      } else {
-        noFriends.classList.remove('hidden');
-      }
-    } catch (error) {
-      console.error('Error loading friends:', error);
-      friendsList.innerHTML = `
-        <div class="col-span-3 text-center py-6">
-          <p class="text-red-500">Failed to load friends. Please try again.</p>
-        </div>
-      `;
-    }
-  }
-  
-  // Load friend requests
-  async function loadFriendRequests() {
-    try {
-      const response = await fetch('/friends/api/friends/requests');
-      const data = await response.json();
-      
-      friendRequests.innerHTML = '';
-      
-      if (data.requests && data.requests.length > 0) {
-        noRequests.classList.add('hidden');
-        requestCount.textContent = data.requests.length;
-        requestCount.classList.remove('hidden');
-        
-        data.requests.forEach(request => {
-          const requestCard = createRequestCard(request);
-          friendRequests.appendChild(requestCard);
-        });
-      } else {
-        noRequests.classList.remove('hidden');
-        requestCount.classList.add('hidden');
-      }
-    } catch (error) {
-      console.error('Error loading friend requests:', error);
-      friendRequests.innerHTML = `
-        <div class="text-center py-6">
-          <p class="text-red-500">Failed to load friend requests. Please try again.</p>
-        </div>
-      `;
-    }
-  }
-  
-  // Search for users
-  async function searchUsers() {
-    const searchTerm = searchInput.value.trim();
-    
-    if (searchTerm.length < 3) {
-      searchResults.classList.add('hidden');
-      searchEmpty.classList.add('hidden');
-      searchInitial.classList.remove('hidden');
-      return;
-    }
-    
-    try {
-      const response = await fetch(`/friends/api/friends/search?q=${encodeURIComponent(searchTerm)}`);
-      const data = await response.json();
-      
-      searchResults.innerHTML = '';
-      searchInitial.classList.add('hidden');
-      
-      if (data.users && data.users.length > 0) {
-        searchResults.classList.remove('hidden');
-        searchEmpty.classList.add('hidden');
-        
-        data.users.forEach(user => {
-          const userCard = createSearchResultCard(user);
-          searchResults.appendChild(userCard);
-        });
-      } else {
-        searchResults.classList.add('hidden');
-        searchEmpty.classList.remove('hidden');
-      }
-    } catch (error) {
-      console.error('Error searching users:', error);
-      searchResults.innerHTML = `
-        <div class="text-center py-6">
-          <p class="text-red-500">Failed to search users. Please try again.</p>
-        </div>
-      `;
-      searchResults.classList.remove('hidden');
-      searchEmpty.classList.add('hidden');
-      searchInitial.classList.add('hidden');
-    }
-  }
-  
-  // Add friend function
-  async function addFriend(userId) {
-    try {
-      const response = await fetch('/friends/api/friends/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ friendId: userId })
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        // Reload friends or requests based on current tab
-        if (savedTab === 'friends') {
-          loadFriends();
-        } else if (savedTab === 'requests') {
-          loadFriendRequests();
-        }
-        
-        // Update search results if on search tab
-        if (searchInput.value.trim().length >= 3) {
-          searchUsers();
-        }
-        
-        return true;
-      } else {
-        console.error('Error adding friend:', data.error);
-        return false;
-      }
-    } catch (error) {
-      console.error('Error adding friend:', error);
-      return false;
-    }
-  }
-  
-  // Remove friend function
-  async function removeFriend(userId) {
-    if (!confirm('Are you sure you want to remove this friend?')) {
-      return false;
-    }
-    
-    try {
-      const response = await fetch('/friends/api/friends/remove', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ friendId: userId })
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        // Reload friends list
-        loadFriends();
-        return true;
-      } else {
-        console.error('Error removing friend:', data.error);
-        return false;
-      }
-    } catch (error) {
-      console.error('Error removing friend:', error);
-      return false;
-    }
-  }
-  
-  // View friend stats function
-  async function viewFriendStats(friendId, friendName) {
-    try {
-      modalFriendName.textContent = `${friendName}'s Statistics`;
-      friendStatsModal.classList.remove('hidden');
-      friendStatsContainer.innerHTML = `
-        <div class="flex justify-center items-center p-8">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
-          <span class="ml-2">Loading stats...</span>
-        </div>
-      `;
-      
-      const response = await fetch(`/friends/api/friends/${friendId}/stats`);
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to load friend statistics');
-      }
-      
-      // Build stats UI
-      let statsHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <!-- Streak Card -->
-          <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-            <div class="flex items-center justify-between">
-              <h4 class="font-medium text-gray-900">Current Streak</h4>
-              <div class="text-yellow-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" />
-                </svg>
-              </div>
-            </div>
-            <div class="mt-2">
-              <span class="text-3xl font-bold">${data.streak ? data.streak.current_streak : 0}</span>
-              <span class="text-sm text-gray-500 ml-2">days</span>
-            </div>
-            <div class="mt-2 text-sm text-gray-500">
-              Longest streak: ${data.streak ? data.streak.longest_streak : 0} days
-            </div>
-          </div>
-          
-          <!-- Completion Rate Card -->
-          <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-            <div class="flex items-center justify-between">
-              <h4 class="font-medium text-gray-900">Completion Rate</h4>
-              <div class="text-green-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                </svg>
-              </div>
-            </div>
-            <div class="mt-2">
-              <span class="text-3xl font-bold">${data.statistics && data.statistics[0] ? data.statistics[0].completion_rate : 0}</span>
-              <span class="text-sm text-gray-500 ml-2">%</span>
-            </div>
-            <div class="mt-2 text-sm text-gray-500">
-              Total completions: ${data.statistics && data.statistics[0] ? data.statistics[0].total_completions : 0}
-            </div>
-          </div>
-          
-          <!-- Active Habits Card -->
-          <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-            <div class="flex items-center justify-between">
-              <h4 class="font-medium text-gray-900">Active Habits</h4>
-              <div class="text-blue-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
-                  <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd" />
-                </svg>
-              </div>
-            </div>
-            <div class="mt-2">
-              <span class="text-3xl font-bold">${data.statistics && data.statistics[0] ? data.statistics[0].active_habits : 0}</span>
-              <span class="text-sm text-gray-500 ml-2">habits</span>
-            </div>
-            <div class="mt-2 text-sm text-gray-500">
-              Categories: ${data.categories ? data.categories.length : 0}
-            </div>
-          </div>
-        </div>
-      `;
-      
-      // Add habits by category
-      if (data.categories && data.categories.length > 0) {
-        statsHTML += `
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Habits by Category</h3>
-          <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Habit Count
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-        `;
-        
-        data.categories.forEach(category => {
-          statsHTML += `
-            <tr>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">
-                  ${category.category_name || 'Uncategorized'}
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">${category.habit_count}</div>
-              </td>
-            </tr>
-          `;
-        });
-        
-        statsHTML += `
-              </tbody>
-            </table>
-          </div>
-        `;
-      }
-      
-      // Add completion history chart
-      if (data.statistics && data.statistics.length > 0) {
-        statsHTML += `
-          <h3 class="text-lg font-medium text-gray-900 mt-8 mb-4">Completion History</h3>
-          <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-            <div class="h-64" id="completion-chart"></div>
-          </div>
-        `;
-      }
-      
-      friendStatsContainer.innerHTML = statsHTML;
-      
-      // If we have statistics data, render the chart
-      if (data.statistics && data.statistics.length > 0) {
-        renderCompletionChart(data.statistics);
-      }
-      
-    } catch (error) {
-      console.error('Error loading friend stats:', error);
-      friendStatsContainer.innerHTML = `
-        <div class="text-center py-6">
-          <p class="text-red-500">Failed to load friend statistics. Please try again.</p>
-        </div>
-      `;
-    }
-  }
-  
-  // Create friend card function
-  function createFriendCard(friend) {
-    const card = document.createElement('div');
-    card.className = 'friend-card bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden';
-    
-    const completionRate = friend.completion_rate || 0;
-    const currentStreak = friend.current_streak || 0;
-    const longestStreak = friend.longest_streak || 0;
-    
-    card.innerHTML = `
-      <div class="p-5">
-        <div class="flex items-center mb-4">
-          <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500">
-            <span class="text-lg font-medium">${friend.username.charAt(0).toUpperCase()}</span>
-          </div>
-          <div class="ml-3">
-            <h3 class="text-lg font-medium text-gray-900">${friend.username}</h3>
-            <p class="text-sm text-gray-500">${friend.email}</p>
-          </div>
-        </div>
-        
-        <div class="grid grid-cols-2 gap-4 mb-4">
-          <div class="text-center p-2 bg-indigo-50 rounded">
-            <div class="text-xl font-bold text-indigo-600">${completionRate}%</div>
-            <div class="text-xs text-gray-500">Completion</div>
-          </div>
-          <div class="text-center p-2 bg-yellow-50 rounded">
-            <div class="text-xl font-bold text-yellow-600">${currentStreak}</div>
-            <div class="text-xs text-gray-500">Streak</div>
-          </div>
-        </div>
-        
-        <div class="flex space-x-2">
-          <button
-            data-friend-id="${friend.user_id}"
-            data-friend-name="${friend.username}"
-            class="view-stats-btn flex-1 bg-indigo-50 text-indigo-600 py-2 px-4 rounded hover:bg-indigo-100 transition duration-200"
-          >
-            View Stats
-          </button>
-          <button
-            data-friend-id="${friend.user_id}"
-            class="remove-friend-btn text-red-500 hover:text-red-700 p-2"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-            </svg>
-          </button>
-        </div>
-      </div>
-    `;
-    
-    // Add event listeners
-    const viewStatsBtn = card.querySelector('.view-stats-btn');
-    const removeFriendBtn = card.querySelector('.remove-friend-btn');
-    
-    viewStatsBtn.addEventListener('click', () => {
-      const friendId = viewStatsBtn.dataset.friendId;
-      const friendName = viewStatsBtn.dataset.friendName;
-      viewFriendStats(friendId, friendName);
-    });
-    
-    removeFriendBtn.addEventListener('click', () => {
-      const friendId = removeFriendBtn.dataset.friendId;
-      removeFriend(friendId);
-    });
-    
-    return card;
-  }
-  
-  // Create request card function
-  function createRequestCard(request) {
-    const card = document.createElement('div');
-    card.className = 'bg-white rounded-lg border border-gray-200 shadow-sm p-4 flex items-center justify-between';
-    
-    // Format date
-    const requestDate = new Date(request.created_at);
-    const formattedDate = requestDate.toLocaleDateString();
-    
-    card.innerHTML = `
-      <div class="flex items-center">
-        <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500">
-          <span class="text-lg font-medium">${request.username.charAt(0).toUpperCase()}</span>
-        </div>
-        <div class="ml-3">
-          <h3 class="font-medium text-gray-900">${request.username}</h3>
-          <p class="text-sm text-gray-500">${request.email}</p>
-          <p class="text-xs text-gray-400">Requested on ${formattedDate}</p>
-        </div>
-      </div>
-      <div class="flex space-x-2">
-        <button
-          data-request-id="${request.friendship_id}"
-          data-friend-id="${request.user_id}"
-          class="accept-request-btn bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition duration-200"
-        >
-          Accept
-        </button>
-        <button
-          data-friend-id="${request.user_id}"
-          class="reject-request-btn bg-gray-200 text-gray-800 py-2 px-4 rounded hover:bg-gray-300 transition duration-200"
-        >
-          Reject
-        </button>
-      </div>
-    `;
-    
-    // Add event listeners
-    const acceptBtn = card.querySelector('.accept-request-btn');
-    const rejectBtn = card.querySelector('.reject-request-btn');
-    
-    acceptBtn.addEventListener('click', async () => {
-      const friendId = acceptBtn.dataset.friendId;
-      const success = await addFriend(friendId);
-      
-      if (success) {
-        loadFriendRequests();
-        loadFriends();
-      }
-    });
-    
-    rejectBtn.addEventListener('click', async () => {
-      const friendId = rejectBtn.dataset.friendId;
-      const success = await removeFriend(friendId);
-      
-      if (success) {
-        loadFriendRequests();
-      }
-    });
-    
-    return card;
-  }
-  
-  // Create search result card function
-  function createSearchResultCard(user) {
-    const card = document.createElement('div');
-    card.className = 'bg-white rounded-lg border border-gray-200 shadow-sm p-4 flex items-center justify-between';
-    
-    card.innerHTML = `
-      <div class="flex items-center">
-        <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500">
-          <span class="text-lg font-medium">${user.username.charAt(0).toUpperCase()}</span>
-        </div>
-        <div class="ml-3">
-          <h3 class="font-medium text-gray-900">${user.username}</h3>
-          <p class="text-sm text-gray-500">${user.email}</p>
-        </div>
-      </div>
-      <button
-        data-user-id="${user.user_id}"
-        class="add-friend-btn bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition duration-200 flex items-center"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
-        </svg>
-        Add Friend
-      </button>
-    `;
-    
-    // Add event listener
-    const addFriendBtn = card.querySelector('.add-friend-btn');
-    
-    addFriendBtn.addEventListener('click', async () => {
-      const userId = addFriendBtn.dataset.userId;
-      const success = await addFriend(userId);
-      
-      if (success) {
-        addFriendBtn.disabled = true;
-        addFriendBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
-        addFriendBtn.classList.add('bg-gray-300', 'cursor-not-allowed');
-        addFriendBtn.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-          </svg>
-          Request Sent
-        `;
-      }
-    });
-    
-    return card;
-  }
-  
-  // Render completion chart function
-  function renderCompletionChart(statistics) {
-    if (!statistics || statistics.length === 0) return;
-    
-    // Prepare data for chart
-    const reversedStats = [...statistics].reverse();
-    const dates = reversedStats.map(stat => {
-      const date = new Date(stat.date);
-      return `${date.getMonth() + 1}/${date.getDate()}`;
-    });
-    
-    const completionRates = reversedStats.map(stat => stat.completion_rate || 0);
-    
-    // Simple chart implementation
-    const chartContainer = document.getElementById('completion-chart');
-    if (!chartContainer) return;
-    
-    // Calculate max value for scaling
-    const maxValue = Math.max(...completionRates, 100);
-    const chartHeight = 200;
-    
-    let chartHTML = `
-      <div class="flex items-end justify-between h-${chartHeight} space-x-2 relative">
-    `;
-    
-    // Add vertical axis labels
-    chartHTML += `
-      <div class="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-gray-500 w-8">
-        <span>100%</span>
-        <span>75%</span>
-        <span>50%</span>
-        <span>25%</span>
-        <span>0%</span>
-      </div>
-    `;
-    
-    // Add horizontal grid lines
-    chartHTML += `
-      <div class="absolute left-8 right-0 top-0 h-full">
-        <div class="border-t border-gray-200 h-1/4"></div>
-        <div class="border-t border-gray-200 h-1/4"></div>
-        <div class="border-t border-gray-200 h-1/4"></div>
-        <div class="border-t border-gray-200 h-1/4"></div>
-      </div>
-    `;
-    
-    // Add bars with dates
-    completionRates.forEach((rate, i) => {
-      const height = (rate / 100) * chartHeight;
-      
-      chartHTML += `
-        <div class="flex flex-col items-center z-10" style="flex: 1;">
-          <div class="bg-indigo-500 w-full rounded-t" style="height: ${height}px;"></div>
-          <span class="text-xs text-gray-500 mt-1">${dates[i]}</span>
-        </div>
-      `;
-    });
-    
-    chartHTML += `</div>`;
-    chartContainer.innerHTML = chartHTML;
-  }
-  
-  // Add event listeners
-  document.addEventListener('DOMContentLoaded', () => {
-    // Load friends and requests on page load
-    loadFriends();
-    loadFriendRequests();
-    
-    // Search input
-    searchInput.addEventListener('input', debounce(searchUsers, 500));
-    
-    // Find friends button
-    findFriendsBtn.addEventListener('click', () => {
-      switchTab('search');
-    });
-    
-    // Close modal
-    closeModal.addEventListener('click', () => {
-      friendStatsModal.classList.add('hidden');
-    });
-    
-    // Close modal when clicking outside
-    friendStatsModal.addEventListener('click', (e) => {
-      if (e.target === friendStatsModal) {
-        friendStatsModal.classList.add('hidden');
-      }
-    });
-    
-    // Close modal with Escape key
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !friendStatsModal.classList.contains('hidden')) {
-        friendStatsModal.classList.add('hidden');
-      }
-    });
-    
-    // Debug Functions
-    // Add debug toggle to the page header
-    const pageHeader = document.querySelector('.max-w-6xl > div:first-child');
-    const debugToggle = document.createElement('button');
-    debugToggle.className = 'text-xs text-gray-400 ml-4';
-    debugToggle.textContent = 'Debug';
-    debugToggle.addEventListener('click', () => {
-      const debugSection = document.getElementById('debug-section');
-      debugSection.style.display = debugSection.style.display === 'none' ? 'block' : 'none';
-    });
-    pageHeader.appendChild(debugToggle);
-    
-    // Show all users button
-    document.getElementById('show-all-users').addEventListener('click', async () => {
-      try {
-        const response = await fetch('/friends/api/debug/users');
-        const data = await response.json();
-        
-        const debugOutput = document.getElementById('debug-output');
-        debugOutput.innerHTML = '<h4 class="font-bold mb-2">All Users:</h4>';
-        
-        if (data.users && data.users.length > 0) {
-          const userList = document.createElement('ul');
-          userList.className = 'list-disc pl-5';
-          
-          data.users.forEach(user => {
-            const userItem = document.createElement('li');
-            userItem.className = 'mb-2';
-            userItem.innerHTML = `
-              ID: ${user.user_id}, 
-              Username: ${user.username}, 
-              Email: ${user.email}
-              <button 
-                class="ml-2 px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
-                data-user-id="${user.user_id}"
-              >Add Friend</button>
-            `;
-            userList.appendChild(userItem);
-          });
-          
-          debugOutput.appendChild(userList);
-          
-          // Add event listeners to buttons
-          const buttons = debugOutput.querySelectorAll('button');
-          buttons.forEach(btn => {
-            btn.addEventListener('click', async () => {
-              const userId = btn.dataset.userId;
-              await addFriend(userId);
-              alert(`Friend request sent to user ID: ${userId}`);
-            });
-          });
-        } else {
-          debugOutput.innerHTML += '<p>No users found</p>';
-        }
-      } catch (error) {
-        console.error('Error fetching all users:', error);
-        document.getElementById('debug-output').innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`;
-      }
-    });
-  });
-  
-  // Debounce function
-  function debounce(func, wait) {
-    let timeout;
-    return function(...args) {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => func.apply(this, args), wait);
-    };
-  }
-</script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="/js/friends.js"></script>
 {{/section}}

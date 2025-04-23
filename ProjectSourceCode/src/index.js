@@ -1,63 +1,57 @@
-// index.js
+// src/index.js
 require('dotenv').config();
-const express = require('express');
-const path = require('path');
-const session = require('express-session');
-const bodyParser = require('body-parser');
-const MemoryStore = session.MemoryStore; // Add this line before your session middleware
 
+const express       = require('express');
+const path          = require('path');
+const session       = require('express-session');
+const bodyParser    = require('body-parser');
+const MemoryStore   = session.MemoryStore;      // ❗ dev-only, swap for Redis/PG in prod
+
+// view / middleware helpers
 const viewEngine = require('./js/config/viewEngine');
 const setLocals  = require('./js/middleware/setLocals');
 
 // route modules
-const authRoutes      = require('./js/routes/authRoutes');
-const dashboardRoutes = require('./js/routes/dashboardRoutes');
-const settingsRoutes  = require('./js/routes/settingsRoutes');
-const habitsRoutes    = require('./js/routes/habitsRoutes');
+const authRoutes       = require('./js/routes/authRoutes');
+const dashboardRoutes  = require('./js/routes/dashboardRoutes');
+const settingsRoutes   = require('./js/routes/settingsRoutes');
+const habitsRoutes     = require('./js/routes/habitsRoutes');
 const statisticsRoutes = require('./js/routes/statisticsRoutes');
-const friendsRoutes   = require('./js/routes/friendsRoutes');
+const friendsRoutes    = require('./js/routes/friendsRoutes');
 
-const app = express();
+const app    = express();
+const isProd = process.env.NODE_ENV === 'production';
 
-// index.js, at top, right after creating `app`
-app.set('trust proxy', 1);
-
-
-// static & parsers
-app.use(express.static(path.join(__dirname,'..','public')));
+/* ----------  static & parsers  ---------- */
+app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// // session
-// app.use(session({
-//   secret: process.env.SESSION_SECRET,
-//   resave: false,
-//   saveUninitialized: false
-// }));
-
-// session with explicit MemoryStore
+/* ----------  sessions  ---------- */
+// behind Render’s HTTPS proxy we *do* want secure cookies,
+// but locally we need them to work over plain http://localhost
+if (isProd) app.set('trust proxy', 1);   // trust X-Forwarded-Proto
 
 app.use(session({
-  name: 'sid',                  // optional: avoid default name clashes
+  name: 'sid',                           // cookie name (was “connect.sid”)
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  proxy: true,                  // trust X-Forwarded-Proto for secure cookies
-  store: new MemoryStore(),     // or a production store like connect-redis
+  proxy: isProd,                         // only trust proxy headers in prod
+  store: new MemoryStore(),              // swap out for a real store in prod
   cookie: {
-    secure: true,               // only over HTTPS
-    httpOnly: true,             // not accessible via JS
-    sameSite: 'none',           // allow cross-site (modern Chrome requires None+Secure)
-    maxAge: 24 * 60 * 60 * 1000 // 1 day
+    secure:   isProd,                    // HTTPS only in prod, http OK locally
+    sameSite: isProd ? 'none' : 'lax',   // ‘none’ requires secure=true
+    httpOnly: true,
+    maxAge:   24 * 60 * 60 * 1000        // 24 h
   }
 }));
 
-
-// templating
+/* ----------  templating & locals  ---------- */
 viewEngine(app);
+app.use(setLocals);                      // makes req.session.user available to views
 
-// locals & routes
-app.use(setLocals);
+/* ----------  routes  ---------- */
 app.use(authRoutes);
 app.use(dashboardRoutes);
 app.use(settingsRoutes);
@@ -65,9 +59,9 @@ app.use(habitsRoutes);
 app.use(statisticsRoutes);
 app.use('/friends', friendsRoutes);
 
-// catch‑all redirect
-app.get('/', (req, res) => res.redirect('/login'));
+// default route – send users to login
+app.get('/', (_req, res) => res.redirect('/login'));
 
+/* ----------  start server  ---------- */
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Listening on ${PORT}`));
-
+app.listen(PORT, () => console.log(`Listening on ${PORT} (${isProd ? 'prod' : 'dev'})`));
