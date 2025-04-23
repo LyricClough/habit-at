@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer');
-const twilio = require('twilio');
+const axios = require('axios');
 const db = require('../config/db');
 
 // Initialize Email Transporter
@@ -13,10 +13,10 @@ const emailTransporter = nodemailer.createTransport({
   },
 });
 
-// Initialize Twilio Client
-const twilioClient = process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN
-  ? twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
-  : null;
+// // Initialize Twilio Client
+// const twilioClient = process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN
+//   ? twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+//   : null;
 
 /**
  * Send an email notification
@@ -42,31 +42,24 @@ async function sendEmail(to, subject, htmlContent, options = {}) {
   }
 }
 
+
 /**
- * Send an SMS notification
- * @param {string} to - Recipient phone number
- * @param {string} message - SMS message
- * @returns {Promise} - SMS send result
+ * Send an SMS via Textbelt (free tier, one SMS per day).
+ * @param {string} to      – phone number (E.164 or national digits)
+ * @param {string} message – SMS body (≤160 chars)
  */
 async function sendSMS(to, message) {
-  if (!twilioClient) {
-    console.error('Twilio client not initialized');
-    return { success: false, error: 'Twilio client not initialized' };
-  }
+  const phone = to.replace(/\D/g, '');
+  const url   = process.env.TEXTBELT_API_URL;
+  const key   = process.env.TEXTBELT_API_KEY;
 
   try {
-    // Add +1 country code if not present (for US numbers)
-    const formattedTo = to.startsWith('+') ? to : `+1${to}`;
-    
-    const result = await twilioClient.messages.create({
-      body: message,
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: formattedTo
-    });
-    return { success: true, result };
-  } catch (error) {
-    console.error('Failed to send SMS:', error);
-    return { success: false, error };
+    const { data } = await axios.post(url, { phone, message, key });
+    if (!data.success) throw new Error(data.error);
+    return { success: true, info: data };
+  } catch (err) {
+    console.error('Textbelt SMS failed:', err.message || err);
+    return { success: false, error: err };
   }
 }
 
