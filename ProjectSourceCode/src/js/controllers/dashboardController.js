@@ -89,6 +89,30 @@ exports.dashboard = async (req, res) => {
       [userId]
     );
 
+    // Get upcoming reminders for the dashboard
+    const upcomingReminders = await db.any(`
+      SELECT hr.reminder_id, hr.reminder_time, h.habit_name, h.habit_id 
+      FROM habit_reminders hr
+      JOIN habits h ON hr.habit_id = h.habit_id
+      WHERE hr.user_id = $1 AND hr.enabled = true
+      ORDER BY hr.reminder_time ASC
+      LIMIT 5
+    `, [userId]);
+
+    // Format reminder times for display
+    const formattedReminders = upcomingReminders.map(reminder => {
+      // Convert 24-hour time to AM/PM format
+      const [hours, minutes] = reminder.reminder_time.split(':');
+      const hour = parseInt(hours, 10);
+      const period = hour >= 12 ? 'PM' : 'AM';
+      const formattedHour = hour % 12 || 12;
+      
+      return {
+        ...reminder,
+        formatted_time: `${formattedHour}:${minutes} ${period}`
+      };
+    });
+
     res.render('pages/dashboard', {
       hideNav: false,
       user: req.session.user,
@@ -101,8 +125,9 @@ exports.dashboard = async (req, res) => {
       friendRequests,
       streak: currentStreak,
       longestStreak,
-      weeklyData: JSON.stringify(weeklyData),
-      totalCompletions: totalCompletions.total
+      weeklyData: weeklyData,
+      totalCompletions: totalCompletions.total,
+      reminders: formattedReminders
     });
   } catch (err) {
     console.error(err);

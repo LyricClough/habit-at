@@ -1,4 +1,5 @@
-const router = require('express').Router();
+const express = require('express');
+const router = express.Router();
 const auth = require('../middleware/auth');
 const ctrl = require('../controllers/habitsController');
 
@@ -18,5 +19,9 @@ router.post('/habits/delete', ctrl.deleteHabit);
 
 // Pin a habit to dashboard
 router.post('/habits/pin-to-dashboard', ctrl.pinToDashboard);
+
+// API routes
+router.get('/api/habits/date/:date', ctrl.getHabitsByDate);
+router.get('/api/habits/:habitId', ctrl.getHabitDetails);
 
 module.exports = router; 

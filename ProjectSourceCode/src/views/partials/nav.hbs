@@ -1,76 +1,102 @@
 <!-- src/views/partials/nav.hbs -->
-<nav class="w-64 bg-white border-r shadow h-full flex flex-col">
-  <div class="h-16 flex items-center justify-center border-b font-bold">
-    Habit-@
+<nav class="w-64 bg-white h-full flex flex-col shadow-md">
+  <div class="h-16 flex items-center justify-center border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-indigo-100">
+    <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+      Habit-@
+    </h1>
   </div>
-  <ul class="flex-1 overflow-auto">
+  <ul class="flex-1 overflow-auto py-2">
     {{!-- Dashboard --}}
-    <li>
+    <li class="px-2 my-1">
       {{#ifActive currentPath "dashboard"}}
         <a href="/dashboard"
-           class="flex items-center px-4 py-3 bg-indigo-50 text-indigo-600 border-l-4 border-indigo-500">
+           class="flex items-center px-4 py-3 rounded-lg bg-indigo-50 text-indigo-600 border-l-4 border-indigo-500 shadow-sm transition-all duration-200">
       {{else}}
         <a href="/dashboard"
-           class="flex items-center px-4 py-3 hover:bg-gray-50 text-gray-700 hover:text-gray-900 border-l-4 border-transparent hover:border-indigo-500">
+           class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-50 text-gray-700 hover:text-indigo-600 border-l-4 border-transparent hover:border-indigo-500 transition-all duration-200">
       {{/ifActive}}
-          <i class="fas fa-home mr-3"></i>
-          Dashboard
+          <i class="fas fa-home mr-3 text-lg"></i>
+          <span class="font-medium">Dashboard</span>
         </a>
     </li>
     {{!-- Habits --}}
-    <li>
+    <li class="px-2 my-1">
       {{#ifActive currentPath "habits"}}
-        <a href="/habits" class="flex items-center px-4 py-3 bg-indigo-50 text-indigo-600 border-l-4 border-indigo-500">
+        <a href="/habits" class="flex items-center px-4 py-3 rounded-lg bg-indigo-50 text-indigo-600 border-l-4 border-indigo-500 shadow-sm transition-all duration-200">
       {{else}}
-        <a href="/habits" class="flex items-center px-4 py-3 hover:bg-gray-50 text-gray-700 hover:text-gray-900 border-l-4 border-transparent hover:border-indigo-500">
+        <a href="/habits" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-50 text-gray-700 hover:text-indigo-600 border-l-4 border-transparent hover:border-indigo-500 transition-all duration-200">
       {{/ifActive}}
-          <i class="fas fa-tasks mr-3"></i>
-          My Habits
+          <i class="fas fa-tasks mr-3 text-lg"></i>
+          <span class="font-medium">My Habits</span>
         </a>
     </li>
     {{!-- Calendar --}}
-    <li>
+    <li class="px-2 my-1">
       {{#ifActive currentPath "calendar"}}
-        <a href="/calendar" class="flex items-center px-4 py-3 bg-indigo-50 text-indigo-600 border-l-4 border-indigo-500">
+        <a href="/calendar" class="flex items-center px-4 py-3 rounded-lg bg-indigo-50 text-indigo-600 border-l-4 border-indigo-500 shadow-sm transition-all duration-200">
       {{else}}
-        <a href="/calendar" class="flex items-center px-4 py-3 hover:bg-gray-50 text-gray-700 hover:text-gray-900 border-l-4 border-transparent hover:border-indigo-500">
+        <a href="/calendar" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-50 text-gray-700 hover:text-indigo-600 border-l-4 border-transparent hover:border-indigo-500 transition-all duration-200">
       {{/ifActive}}
-          <i class="far fa-calendar-alt mr-3"></i>
-          Calendar
+          <i class="far fa-calendar-alt mr-3 text-lg"></i>
+          <span class="font-medium">Calendar</span>
         </a>
     </li>
     {{!-- Statistics --}}
-    <li>
+    <li class="px-2 my-1">
       {{#ifActive currentPath "statistics"}}
-        <a href="/statistics" class="flex items-center px-4 py-3 bg-indigo-50 text-indigo-600 border-l-4 border-indigo-500">
+        <a href="/statistics" class="flex items-center px-4 py-3 rounded-lg bg-indigo-50 text-indigo-600 border-l-4 border-indigo-500 shadow-sm transition-all duration-200">
       {{else}}
-        <a href="/statistics" class="flex items-center px-4 py-3 hover:bg-gray-50 text-gray-700 hover:text-gray-900 border-l-4 border-transparent hover:border-indigo-500">
+        <a href="/statistics" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-50 text-gray-700 hover:text-indigo-600 border-l-4 border-transparent hover:border-indigo-500 transition-all duration-200">
       {{/ifActive}}
-          <i class="far fa-chart-bar mr-3"></i>
-          Statistics
+          <i class="far fa-chart-bar mr-3 text-lg"></i>
+          <span class="font-medium">Statistics</span>
         </a>
     </li>
     {{!-- Friends --}}
-    <li>
+    <li class="px-2 my-1">
       {{#ifActive currentPath "friends"}}
-        <a href="/friends" class="flex items-center px-4 py-3 bg-indigo-50 text-indigo-600 border-l-4 border-indigo-500">
+        <a href="/friends" class="flex items-center px-4 py-3 rounded-lg bg-indigo-50 text-indigo-600 border-l-4 border-indigo-500 shadow-sm transition-all duration-200">
       {{else}}
-        <a href="/friends" class="flex items-center px-4 py-3 hover:bg-gray-50 text-gray-700 hover:text-gray-900 border-l-4 border-transparent hover:border-indigo-500">
+        <a href="/friends" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-50 text-gray-700 hover:text-indigo-600 border-l-4 border-transparent hover:border-indigo-500 transition-all duration-200">
       {{/ifActive}}
-          <i class="fas fa-user-friends mr-3"></i>
-          Friends
+          <i class="fas fa-user-friends mr-3 text-lg"></i>
+          <span class="font-medium">Friends</span>
+        </a>
+    </li>
+    {{!-- Notifications --}}
+    <li class="px-2 my-1">
+      {{#ifActive currentPath "notifications"}}
+        <a href="/notifications" class="flex items-center px-4 py-3 rounded-lg bg-indigo-50 text-indigo-600 border-l-4 border-indigo-500 shadow-sm transition-all duration-200">
+      {{else}}
+        <a href="/notifications" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-50 text-gray-700 hover:text-indigo-600 border-l-4 border-transparent hover:border-indigo-500 transition-all duration-200">
+      {{/ifActive}}
+          <i class="fas fa-bell mr-3 text-lg"></i>
+          <span class="font-medium">Notifications</span>
         </a>
     </li>
     {{!-- Settings --}}
-    <li>
+    <li class="px-2 my-1">
       {{#ifActive currentPath "settings"}}
-        <a href="/settings" class="flex items-center px-4 py-3 bg-indigo-50 text-indigo-600 border-l-4 border-indigo-500">
+        <a href="/settings" class="flex items-center px-4 py-3 rounded-lg bg-indigo-50 text-indigo-600 border-l-4 border-indigo-500 shadow-sm transition-all duration-200">
       {{else}}
-        <a href="/settings" class="flex items-center px-4 py-3 hover:bg-gray-50 text-gray-700 hover:text-gray-900 border-l-4 border-transparent hover:border-indigo-500">
+        <a href="/settings" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-50 text-gray-700 hover:text-indigo-600 border-l-4 border-transparent hover:border-indigo-500 transition-all duration-200">
       {{/ifActive}}
-          <i class="fas fa-cog mr-3"></i>
-          Settings
+          <i class="fas fa-cog mr-3 text-lg"></i>
+          <span class="font-medium">Settings</span>
         </a>
     </li>
   </ul>
+  
+  <!-- User profile section at bottom -->
+  <div class="border-t border-gray-100 p-4">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold">
+        {{#if user.username}}{{firstLetter user.username}}{{else}}U{{/if}}
+      </div>
+      <div>
+        <p class="font-medium text-gray-900">{{#if user.username}}{{user.username}}{{else}}User{{/if}}</p>
+        <a href="/logout" class="text-xs text-indigo-600 hover:text-indigo-800">Sign out</a>
+      </div>
+    </div>
+  </div>
 </nav>
