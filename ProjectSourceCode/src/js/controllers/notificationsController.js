@@ -115,90 +115,109 @@ exports.updateNotificationPreferences = async (req, res) => {
 /**
  * Create or update a habit reminder
  */
+// src/js/controllers/notificationsController.js
+
 exports.updateHabitReminder = async (req, res) => {
   try {
     const userId = req.session.user.user_id;
     const { 
       habit_id, 
-      reminder_time, 
-      days_of_week, 
+      reminder_time,   // comes in as "HH:MM" or "HH:MM:SS"
+      days_of_week,    // string or array of strings
       notification_method,
       enabled
     } = req.body;
     
-    // Format time for database
-    const formattedTime = reminder_time + ':00'; // Add seconds
+    // 1) Normalize reminder_time to "HH:MM:SS"
+    let formattedTime;
+    // if format is "14:25"
+    if (/^\d{1,2}:\d{2}$/.test(reminder_time)) {
+      const [hh, mm] = reminder_time.split(':');
+      formattedTime = `${hh.padStart(2,'0')}:${mm}:00`;
+    }
+    // if format is already "14:25:00"
+    else if (/^\d{1,2}:\d{2}:\d{2}$/.test(reminder_time)) {
+      formattedTime = reminder_time;
+    }
+    // fallback: take first 8 characters
+    else {
+      formattedTime = reminder_time.slice(0, 8);
+    }
     
-    // Check if reminder already exists
+    // 2) Check if a reminder exists for this user & habit
     const existingReminder = await db.oneOrNone(
-      'SELECT * FROM habit_reminders WHERE habit_id = $1 AND user_id = $2',
+      `SELECT * 
+         FROM habit_reminders 
+        WHERE habit_id = $1 
+          AND user_id  = $2`,
       [habit_id, userId]
     );
     
-    // Format days correctly (array in form, string in DB)
-    const daysArray = Array.isArray(days_of_week) ? days_of_week : [days_of_week];
+    // 3) Normalize days_of_week into comma-separated string
+    const daysArray  = Array.isArray(days_of_week) ? days_of_week : [days_of_week];
     const daysString = daysArray.join(',');
     
     if (existingReminder) {
-      // Update existing reminder
-      await db.none(`
-        UPDATE habit_reminders
-        SET reminder_time = $1,
-            days_of_week = $2,
-            notification_method = $3,
-            enabled = $4
-        WHERE reminder_id = $5
-      `, [
-        formattedTime,
-        daysString,
-        notification_method,
-        !!enabled,
-        existingReminder.reminder_id
-      ]);
+      // 4a) Update the existing reminder
+      await db.none(
+        `UPDATE habit_reminders
+            SET reminder_time       = $1,
+                days_of_week        = $2,
+                notification_method = $3,
+                enabled             = $4
+          WHERE reminder_id = $5`,
+        [
+          formattedTime,
+          daysString,
+          notification_method,
+          !!enabled,
+          existingReminder.reminder_id
+        ]
+      );
       
-      // Update the schedule
+      // 5a) Refresh its scheduled job
       await schedulerService.updateReminderSchedule(existingReminder.reminder_id);
-    } else {
-      // Create new reminder
-      const { reminder_id } = await db.one(`
-        INSERT INTO habit_reminders (
-          habit_id, 
-          user_id, 
-          reminder_time, 
-          days_of_week, 
-          notification_method, 
-          enabled
-        )
-        VALUES ($1, $2, $3, $4, $5, $6)
-        RETURNING reminder_id
-      `, [
-        habit_id,
-        userId,
-        formattedTime,
-        daysString,
-        notification_method,
-        !!enabled
-      ]);
+    }
+    else {
+      // 4b) Insert a new reminder
+      const { reminder_id } = await db.one(
+        `INSERT INTO habit_reminders
+           (habit_id, user_id, reminder_time, days_of_week, notification_method, enabled)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING reminder_id`,
+        [
+          habit_id,
+          userId,
+          formattedTime,
+          daysString,
+          notification_method,
+          !!enabled
+        ]
+      );
       
-      // Get full reminder data for scheduling
-      const reminder = await db.one(`
-        SELECT hr.*, h.habit_name, h.description, u.email, u.phone, u.user_id, u.username
-        FROM habit_reminders hr
-        JOIN habits h ON hr.habit_id = h.habit_id
-        JOIN users u ON hr.user_id = u.user_id
-        WHERE hr.reminder_id = $1
-      `, [reminder_id]);
+      // 5b) Fetch the full reminder record for scheduling
+      const reminder = await db.one(
+        `SELECT hr.*, h.habit_name, h.description, u.email, u.phone, u.username
+           FROM habit_reminders hr
+           JOIN habits  h ON hr.habit_id = h.habit_id
+           JOIN users   u ON hr.user_id  = u.user_id
+          WHERE hr.reminder_id = $1`,
+        [reminder_id]
+      );
       
-      // Schedule the new reminder
+      // 6b) Schedule the new reminder job
       await schedulerService.addReminderSchedule(reminder);
     }
     
+    // 7) Redirect back with success
     res.redirect('/notifications?success=Reminder updated successfully');
-  } catch (err) {
-    console.error(err);
+  } 
+  catch (err) {
+    console.error('Failed to update habit reminder:', err);
     res.redirect('/notifications?error=Failed to update reminder');
   }
 };
+
 
 /**
  * Delete a habit reminder

@@ -206,9 +206,11 @@ function scheduleHabitReminder(reminder) {
               description: reminderData.description
             },
             reminderData,
-            type: 'habit'
+            type: 'habit',
+            timezone: process.env.TZ  // 'America/Denver'
           });
         }
+        
       } catch (error) {
         console.error(`Error executing reminder job ${jobKey}:`, error);
       }
