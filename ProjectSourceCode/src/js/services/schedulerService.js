@@ -1,282 +1,193 @@
+// src/js/services/schedulerService.js
 const cron = require('node-cron');
-const db = require('../config/db');
+const db   = require('../config/db');
 const notificationService = require('./notificationService');
 
-// Store active cron jobs for management
+// store active cron jobs by key
 const activeJobs = {};
 
 /**
- * Initialize reminder schedules for the application
+ * Initialize everything on server boot
  */
 async function initializeScheduler() {
   console.log('Initializing reminder scheduler...');
   
-  // Schedule system jobs
-  scheduleDailyDigests();
-  scheduleWeeklyReports();
-  
-  // Schedule all active habit reminders
+  // 1) Habit reminders
   const reminders = await db.any(`
     SELECT hr.*, h.habit_name, h.description, u.email, u.phone, u.user_id, u.username
-    FROM habit_reminders hr
-    JOIN habits h ON hr.habit_id = h.habit_id
-    JOIN users u ON hr.user_id = u.user_id
-    WHERE hr.enabled = true
-  `);
-  
-  reminders.forEach(reminder => {
-    scheduleHabitReminder(reminder);
-  });
-  
-  console.log(`Initialized ${Object.keys(activeJobs).length} reminder jobs`);
-}
-
-/**
- * Schedule daily digest emails for all users who have them enabled
- */
-function scheduleDailyDigests() {
-  // Run every hour to check for digests that should be sent
-  activeJobs['daily-digest-check'] = cron.schedule('0 * * * *', async () => {
-    try {
-      const now = new Date();
-      const currentHour = now.getHours();
-      
-      // Find users who should receive digests at this hour
-      const users = await db.any(`
-        SELECT * FROM users 
-        WHERE daily_digest = true 
-        AND extract(hour from digest_time) = $1
-      `, [currentHour]);
-      
-      console.log(`Sending daily digests to ${users.length} users`);
-      
-      // For each user, check if we've already sent a digest today
-      for (const user of users) {
-        const alreadySent = await db.oneOrNone(`
-          SELECT * FROM reminder_logs
-          WHERE user_id = $1 
-          AND notification_type = 'digest'
-          AND sent_at >= $2::date
-          AND sent_at < ($2::date + '1 day'::interval)
-        `, [user.user_id, now.toISOString().split('T')[0]]);
-        
-        if (!alreadySent) {
-          // Get today's habits for the digest content
-          const habitCount = await db.one(`
-            SELECT COUNT(*) FROM habits h
-            JOIN users_to_habits uh ON h.habit_id = uh.habit_id
-            WHERE uh.user_id = $1 AND h.weekday = $2
-          `, [user.user_id, now.getDay()]);
-          
-          // Send the digest
-          const method = user.phone_notif && user.email_notif ? 'both' : 
-                         user.phone_notif ? 'sms' : 'email';
-          
-          await notificationService.sendReminder({
-            user,
-            habit: { habit_count: habitCount.count },
-            reminderData: { notification_method: method },
-            type: 'digest'
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Error sending daily digests:', error);
-    }
-  });
-}
-
-/**
- * Schedule weekly reports for all users who have them enabled
- */
-function scheduleWeeklyReports() {
-  // Run at 8am every day to check for weekly reports
-  activeJobs['weekly-report-check'] = cron.schedule('0 8 * * *', async () => {
-    try {
-      const now = new Date();
-      const currentDayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
-      
-      // Find users who should receive weekly reports on this day of the week
-      const users = await db.any(`
-        SELECT * FROM users 
-        WHERE weekly_report = true 
-        AND report_day = $1
-      `, [currentDayOfWeek]);
-      
-      console.log(`Sending weekly reports to ${users.length} users`);
-      
-      // For each user, send the weekly report
-      for (const user of users) {
-        // Make sure we haven't already sent a report today
-        const alreadySent = await db.oneOrNone(`
-          SELECT * FROM reminder_logs
-          WHERE user_id = $1 
-          AND notification_type = 'report'
-          AND sent_at >= $2::date
-          AND sent_at < ($2::date + '1 day'::interval)
-        `, [user.user_id, now.toISOString().split('T')[0]]);
-        
-        if (!alreadySent) {
-          // Get user stats for the report content
-          const stats = await db.oneOrNone(`
-            SELECT * FROM streaks
-            WHERE user_id = $1
-          `, [user.user_id]);
-          
-          // Send the report
-          const method = user.phone_notif && user.email_notif ? 'both' : 
-                         user.phone_notif ? 'sms' : 'email';
-          
-          await notificationService.sendReminder({
-            user,
-            habit: { streak: stats?.current_streak || 0 },
-            reminderData: { notification_method: method },
-            type: 'report'
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Error sending weekly reports:', error);
-    }
-  });
-}
-
-/**
- * Schedule a specific habit reminder
- * @param {Object} reminder - The reminder object from the database
- */
-function scheduleHabitReminder(reminder) {
-  try {
-    const { reminder_id, reminder_time, days_of_week } = reminder;
-    const jobKey = `habit-reminder-${reminder_id}`;
-    
-    // Clean up any existing job for this reminder
-    if (activeJobs[jobKey]) {
-      activeJobs[jobKey].stop();
-      delete activeJobs[jobKey];
-    }
-    
-    // Parse days of week from the database string (comma-separated list)
-    const days = days_of_week.split(',').map(day => parseInt(day.trim()));
-    
-    // Parse time from the database
-    const [hours, minutes] = reminder_time.split(':').map(Number);
-    
-    // Create cron pattern: minutes hours * * dayOfWeek
-    // dayOfWeek is 0-6 (Sun-Sat)
-    const cronDays = days.join(',');
-    const cronPattern = `${minutes} ${hours} * * ${cronDays}`;
-    
-    // Create the cron job
-    activeJobs[jobKey] = cron.schedule(cronPattern, async () => {
-      try {
-        // Check if this reminder is still enabled
-        const active = await db.oneOrNone(`
-          SELECT enabled FROM habit_reminders WHERE reminder_id = $1
-        `, [reminder_id]);
-        
-        if (!active || !active.enabled) {
-          // Reminder has been disabled, clean up
-          activeJobs[jobKey].stop();
-          delete activeJobs[jobKey];
-          return;
-        }
-        
-        // Get fresh data for the reminder
-        const reminderData = await db.oneOrNone(`
-          SELECT hr.*, h.habit_name, h.description, u.email, u.phone, u.user_id, u.username
-          FROM habit_reminders hr
-          JOIN habits h ON hr.habit_id = h.habit_id
-          JOIN users u ON hr.user_id = u.user_id
-          WHERE hr.reminder_id = $1
-        `, [reminder_id]);
-        
-        if (reminderData) {
-          // Send the reminder
-          await notificationService.sendReminder({
-            user: {
-              email: reminderData.email,
-              phone: reminderData.phone,
-              user_id: reminderData.user_id,
-              username: reminderData.username
-            },
-            habit: {
-              habit_id: reminderData.habit_id,
-              habit_name: reminderData.habit_name,
-              description: reminderData.description
-            },
-            reminderData,
-            type: 'habit',
-            timezone: process.env.TZ  // 'America/Denver'
-          });
-        }
-        
-      } catch (error) {
-        console.error(`Error executing reminder job ${jobKey}:`, error);
-      }
-    });
-    
-    console.log(`Scheduled reminder ${reminder_id} with pattern: ${cronPattern}`);
-  } catch (error) {
-    console.error(`Error scheduling reminder ${reminder.reminder_id}:`, error);
-  }
-}
-
-/**
- * Add a new reminder schedule
- * @param {Object} reminder - The reminder object to schedule
- */
-async function addReminderSchedule(reminder) {
-  // Schedule the new reminder
-  scheduleHabitReminder(reminder);
-}
-
-/**
- * Update an existing reminder schedule
- * @param {number} reminderId - The ID of the reminder to update
- */
-async function updateReminderSchedule(reminderId) {
-  try {
-    // Get the updated reminder data
-    const reminder = await db.oneOrNone(`
-      SELECT hr.*, h.habit_name, h.description, u.email, u.phone, u.user_id, u.username
       FROM habit_reminders hr
       JOIN habits h ON hr.habit_id = h.habit_id
-      JOIN users u ON hr.user_id = u.user_id
-      WHERE hr.reminder_id = $1
-    `, [reminderId]);
-    
-    if (reminder) {
-      // Re-schedule with the new settings
-      scheduleHabitReminder(reminder);
-    } else {
-      // Reminder no longer exists, clean up any existing job
-      const jobKey = `habit-reminder-${reminderId}`;
-      if (activeJobs[jobKey]) {
-        activeJobs[jobKey].stop();
-        delete activeJobs[jobKey];
-      }
-    }
-  } catch (error) {
-    console.error(`Error updating reminder schedule ${reminderId}:`, error);
-  }
+      JOIN users u  ON hr.user_id   = u.user_id
+     WHERE hr.enabled = TRUE
+  `);
+  reminders.forEach(scheduleHabitReminder);
+  
+  // 2) Daily digests
+  const digestUsers = await db.any(`
+    SELECT user_id, email, phone, username, digest_time
+      FROM users
+     WHERE daily_digest = TRUE
+  `);
+  digestUsers.forEach(addDailyDigestSchedule);
+  
+  // 3) Weekly reports
+  const reportUsers = await db.any(`
+    SELECT user_id, email, phone, username, report_day
+      FROM users
+     WHERE weekly_report = TRUE
+  `);
+  reportUsers.forEach(addWeeklyReportSchedule);
+  
+  console.log(`Initialized ${Object.keys(activeJobs).length} scheduled jobs`);
 }
 
 /**
- * Remove a reminder schedule
- * @param {number} reminderId - The ID of the reminder to remove
+ * Habit reminder (unchanged)
  */
+function scheduleHabitReminder(reminder) {
+  const { reminder_id, reminder_time, days_of_week } = reminder;
+  const key   = `habit-${reminder_id}`;
+  if (activeJobs[key]) {
+    activeJobs[key].stop();
+    delete activeJobs[key];
+  }
+  
+  // parse days & time
+  const days  = days_of_week.split(',').map(d => d.trim()).join(',');
+  const [hh, mm] = reminder_time.split(':').map(Number);
+  const expr = `${mm} ${hh} * * ${days}`;
+  
+  activeJobs[key] = cron.schedule(expr, async () => {
+    console.log(`🔔 [${new Date().toLocaleString()}] Firing habit reminder ${reminder_id}`);
+    // re-fetch & guard
+    const r = await db.oneOrNone(
+      `SELECT enabled FROM habit_reminders WHERE reminder_id = $1`, [reminder_id]
+    );
+    if (r?.enabled) {
+      const fresh = await db.one(`
+        SELECT hr.*, h.habit_name, h.description, u.email, u.phone, u.user_id, u.username
+          FROM habit_reminders hr
+          JOIN habits h ON hr.habit_id = h.habit_id
+          JOIN users u  ON hr.user_id   = u.user_id
+         WHERE hr.reminder_id = $1
+      `, [reminder_id]);
+      await notificationService.sendReminder({
+        user: {
+          email:   fresh.email,
+          phone:   fresh.phone,
+          user_id: fresh.user_id,
+          username:fresh.username
+        },
+        habit: {
+          habit_id:   fresh.habit_id,
+          habit_name: fresh.habit_name,
+          description:fresh.description
+        },
+        reminderData: fresh,
+        type: 'habit'
+      });
+    }
+  }, { timezone: process.env.TZ });
+  
+  console.log(`Scheduled habit reminder ${reminder_id}: ${expr}`);
+}
+
+/**
+ * Helpers for habit reminders (create/update/delete)
+ */
+async function addReminderSchedule(reminder) {
+  scheduleHabitReminder(reminder);
+}
+async function updateReminderSchedule(reminderId) {
+  const reminder = await db.oneOrNone(`
+    SELECT hr.*, h.habit_name, h.description, u.email, u.phone, u.user_id, u.username
+      FROM habit_reminders hr
+      JOIN habits h ON hr.habit_id = h.habit_id
+      JOIN users u  ON hr.user_id   = u.user_id
+     WHERE hr.reminder_id = $1
+  `, [reminderId]);
+  if (reminder) scheduleHabitReminder(reminder);
+  else removeReminderSchedule(reminderId);
+}
 function removeReminderSchedule(reminderId) {
-  const jobKey = `habit-reminder-${reminderId}`;
-  if (activeJobs[jobKey]) {
-    activeJobs[jobKey].stop();
-    delete activeJobs[jobKey];
-    console.log(`Removed schedule for reminder ${reminderId}`);
+  const key = `habit-${reminderId}`;
+  if (activeJobs[key]) {
+    activeJobs[key].stop();
+    delete activeJobs[key];
+    console.log(`Removed habit reminder ${reminderId}`);
   }
 }
 
 /**
- * Stop all scheduler jobs
+ * Daily digest scheduling
+ */
+function addDailyDigestSchedule(user) {
+  const { user_id, digest_time, email, phone, username } = user;
+  const key = `digest-${user_id}`;
+  if (activeJobs[key]) {
+    activeJobs[key].stop();
+    delete activeJobs[key];
+  }
+  const [hh, mm] = digest_time.split(':').map(Number);
+  const expr = `${mm} ${hh} * * *`;  // every day at HH:MM
+  
+  activeJobs[key] = cron.schedule(expr, async () => {
+    console.log(`🗒️ [${new Date().toLocaleString()}] Sending daily digest to user ${user_id}`);
+    await notificationService.sendReminder({
+      user:    { user_id, email, phone, username },
+      habit:   null,
+      reminderData: null,
+      type:    'digest'
+    });
+  }, { timezone: process.env.TZ });
+  
+  console.log(`Scheduled daily digest for user ${user_id}: ${expr}`);
+}
+function removeDailyDigestSchedule(userId) {
+  const key = `digest-${userId}`;
+  if (activeJobs[key]) {
+    activeJobs[key].stop();
+    delete activeJobs[key];
+    console.log(`Removed daily digest for user ${userId}`);
+  }
+}
+
+/**
+ * Weekly report scheduling
+ */
+function addWeeklyReportSchedule(user) {
+  const { user_id, report_day, email, phone, username } = user;
+  const key = `report-${user_id}`;
+  if (activeJobs[key]) {
+    activeJobs[key].stop();
+    delete activeJobs[key];
+  }
+  // schedule at 08:00 on report_day
+  const expr = `0 8 * * ${report_day}`;
+  
+  activeJobs[key] = cron.schedule(expr, async () => {
+    console.log(`📊 [${new Date().toLocaleString()}] Sending weekly report to user ${user_id}`);
+    await notificationService.sendReminder({
+      user:    { user_id, email, phone, username },
+      habit:   null,
+      reminderData: null,
+      type:    'report'
+    });
+  }, { timezone: process.env.TZ });
+  
+  console.log(`Scheduled weekly report for user ${user_id}: ${expr}`);
+}
+function removeWeeklyReportSchedule(userId) {
+  const key = `report-${userId}`;
+  if (activeJobs[key]) {
+    activeJobs[key].stop();
+    delete activeJobs[key];
+    console.log(`Removed weekly report for user ${userId}`);
+  }
+}
+
+/**
+ * Shut everything down (for tests, etc.)
  */
 function stopAllJobs() {
   Object.keys(activeJobs).forEach(key => {
@@ -291,5 +202,9 @@ module.exports = {
   addReminderSchedule,
   updateReminderSchedule,
   removeReminderSchedule,
+  addDailyDigestSchedule,
+  removeDailyDigestSchedule,
+  addWeeklyReportSchedule,
+  removeWeeklyReportSchedule,
   stopAllJobs
-}; 
+};
