@@ -4,6 +4,7 @@ const express = require('express');
 const path = require('path');
 const session = require('express-session');
 const bodyParser = require('body-parser');
+const MemoryStore = session.MemoryStore; // Add this line before your session middleware
 
 const viewEngine = require('./js/config/viewEngine');
 const setLocals  = require('./js/middleware/setLocals');
@@ -23,11 +24,24 @@ app.use(express.static(path.join(__dirname,'..','public')));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// session
+// // session
+// app.use(session({
+//   secret: process.env.SESSION_SECRET,
+//   resave: false,
+//   saveUninitialized: false
+// }));
+
+// session with explicit MemoryStore
+
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  store: new MemoryStore(), // Add this line to use MemoryStore explicitly
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours (optional)
+    secure: process.env.NODE_ENV === 'production' // Optional security configuration
+  }
 }));
 
 // templating
