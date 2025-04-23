@@ -5,11 +5,11 @@
 -- Sample users with plain text password for easy testing
 -- Note: In production, you would never store passwords in plain text!
 -- The password for all test users is 'password123'
-INSERT INTO users (username, email, password, phone, show_profile)
+INSERT INTO users (username, email, password, phone)
 VALUES 
-  ('testuser', 'test@example.com', 'password123', '5555555555', TRUE),
-  ('johndoe', 'john@example.com', 'password123', '5551234567', TRUE),
-  ('janedoe', 'jane@example.com', 'password123', '5559876543', TRUE);
+  ('testuser', 'test@example.com', 'password123', '5555555555'),
+  ('johndoe', 'john@example.com', 'password123', '5551234567'),
+  ('janedoe', 'jane@example.com', 'password123', '5559876543');
 
 -- Sample friend relationships
 INSERT INTO friends (sender, receiver, mutual)

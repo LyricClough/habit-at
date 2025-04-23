@@ -99,7 +99,7 @@
         </div>
       </div>
       <p class="mt-2 text-sm text-gray-500">
-        Type at least 3 characters to search. Only users who have enabled profile visibility will appear in search results.
+        Type at least 3 characters to search.  
       </p>
     </div>
     
@@ -669,50 +669,81 @@
   }
   
   // Create search result card function
-  function createSearchResultCard(user) {
+  function createSearchResultCard(u) {
     const card = document.createElement('div');
     card.className = 'bg-white rounded-lg border border-gray-200 shadow-sm p-4 flex items-center justify-between';
     
     card.innerHTML = `
       <div class="flex items-center">
         <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500">
-          <span class="text-lg font-medium">${user.username.charAt(0).toUpperCase()}</span>
+          <span class="text-lg font-medium">${u.username.charAt(0).toUpperCase()}</span>
         </div>
         <div class="ml-3">
-          <h3 class="font-medium text-gray-900">${user.username}</h3>
-          <p class="text-sm text-gray-500">${user.email}</p>
+          <h3 class="font-medium text-gray-900">${u.username}</h3>
+          <p class="text-sm text-gray-500">${u.email}</p>
         </div>
       </div>
-      <button
-        data-user-id="${user.user_id}"
-        class="add-friend-btn bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition duration-200 flex items-center"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
-        </svg>
-        Add Friend
-      </button>
     `;
-    
-    // Add event listener
-    const addFriendBtn = card.querySelector('.add-friend-btn');
-    
-    addFriendBtn.addEventListener('click', async () => {
-      const userId = addFriendBtn.dataset.userId;
-      const success = await addFriend(userId);
-      
-      if (success) {
-        addFriendBtn.disabled = true;
-        addFriendBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
-        addFriendBtn.classList.add('bg-gray-300', 'cursor-not-allowed');
-        addFriendBtn.innerHTML = `
+
+    let actionBtn;
+
+    if (u.isFriend) {
+      actionBtn = `
+        <button
+          data-user-id="${u.user_id}"
+          onclick="viewFriendStats(${u.user_id}, '${u.username}')"
+          class="bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition duration-200 flex items-center"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+          </svg>
+          View Stats
+        </button>
+      `;
+    } else if (u.pendingReceived) {
+      actionBtn = `
+        <button
+          data-user-id="${u.user_id}"
+          onclick="addFriend(${u.user_id})"
+          class="bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition duration-200 flex items-center"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+          </svg>
+          Accept Request
+        </button>
+      `;
+    } else if (u.pendingSent) {
+      actionBtn = `
+        <button
+          disabled
+          class="bg-gray-300 text-gray-600 py-2 px-4 rounded cursor-not-allowed flex items-center"
+        >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
           </svg>
           Request Sent
-        `;
-      }
-    });
+        </button>
+      `;
+    } else {
+      actionBtn = `
+        <button
+          data-user-id="${u.user_id}"
+          onclick="addFriend(${u.user_id})"
+          class="add-friend-btn bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition duration-200 flex items-center"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+          </svg>
+          Add Friend
+        </button>
+      `;
+    }
+
+    card.innerHTML += actionBtn;
+
+    // No need to add event listeners here as we're using onclick attributes
     
     return card;
   }

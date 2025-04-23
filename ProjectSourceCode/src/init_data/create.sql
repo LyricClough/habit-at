@@ -6,7 +6,6 @@ CREATE TABLE users (
   phone VARCHAR(10),
   email_notif BOOLEAN DEFAULT TRUE,
   phone_notif BOOLEAN DEFAULT FALSE,
-  show_profile BOOLEAN DEFAULT FALSE,
   dark_mode BOOLEAN DEFAULT FALSE
 );
 
