@@ -6,7 +6,12 @@ CREATE TABLE users (
   phone VARCHAR(10),
   email_notif BOOLEAN DEFAULT TRUE,
   phone_notif BOOLEAN DEFAULT FALSE,
-  dark_mode BOOLEAN DEFAULT FALSE
+  dark_mode BOOLEAN DEFAULT FALSE,
+  daily_digest BOOLEAN DEFAULT FALSE,
+  weekly_report BOOLEAN DEFAULT FALSE,
+  digest_time TIME DEFAULT '08:00:00',
+  report_day INT DEFAULT 0,
+  show_profile BOOLEAN DEFAULT TRUE
 );
 
 -- Friends relationship table
@@ -92,6 +97,35 @@ CREATE TABLE habit_trends (
   FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
 );
 
+-- Table to store habit reminders
+CREATE TABLE habit_reminders (
+  reminder_id SERIAL PRIMARY KEY NOT NULL,
+  habit_id INT NOT NULL,
+  user_id INT NOT NULL,
+  reminder_time TIME NOT NULL,
+  days_of_week VARCHAR(20) DEFAULT '0,1,2,3,4,5,6', -- Comma-separated days (0 = Sunday)
+  notification_method VARCHAR(10) DEFAULT 'email', -- 'email', 'sms', or 'both'
+  enabled BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (habit_id) REFERENCES habits (habit_id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
+);
+
+-- Table to log sent reminders to avoid duplicates
+CREATE TABLE reminder_logs (
+  log_id SERIAL PRIMARY KEY NOT NULL,
+  reminder_id INT, -- Can be NULL for system notifications like digests
+  user_id INT NOT NULL,
+  habit_id INT, -- Can be NULL for system notifications
+  notification_type VARCHAR(20) NOT NULL, -- 'habit', 'digest', 'report'
+  sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  delivery_method VARCHAR(10) NOT NULL, -- 'email', 'sms', or 'both'
+  status VARCHAR(10) DEFAULT 'sent', -- 'sent', 'failed', 'delivered'
+  FOREIGN KEY (reminder_id) REFERENCES habit_reminders (reminder_id) ON DELETE SET NULL,
+  FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE,
+  FOREIGN KEY (habit_id) REFERENCES habits (habit_id) ON DELETE SET NULL
+);
+
 -- Create indexes for common queries to improve performance
 CREATE INDEX idx_habits_category ON habits(category_id);
 CREATE INDEX idx_history_date ON history(date);
@@ -100,4 +134,8 @@ CREATE INDEX idx_habit_history ON habits_to_history(habit_id, history_id);
 CREATE INDEX idx_user_stats_date ON user_statistics(user_id, date);
 CREATE INDEX idx_friends_sender ON friends(sender);
 CREATE INDEX idx_friends_receiver ON friends(receiver);
+CREATE INDEX idx_habit_reminders_user ON habit_reminders(user_id);
+CREATE INDEX idx_habit_reminders_habit ON habit_reminders(habit_id);
+CREATE INDEX idx_reminder_logs_date ON reminder_logs(sent_at);
+CREATE INDEX idx_reminder_logs_user ON reminder_logs(user_id);
 

@@ -71,6 +71,12 @@ module.exports = function(app) {
     return `${hour12} ${period}`;
   });
 
+  // Helper for extracting the first letter of a string (for user avatar)
+  hbs.handlebars.registerHelper('firstLetter', function(str) {
+    if (!str || typeof str !== 'string') return '';
+    return str.charAt(0).toUpperCase();
+  });
+
   // Helper for creating an array of numbers (range)
   hbs.handlebars.registerHelper('range', function(n) {
     const result = [];
@@ -105,6 +111,40 @@ module.exports = function(app) {
   // Helper for JSON stringification in templates
   hbs.handlebars.registerHelper('json', function(context) {
     return JSON.stringify(context);
+  });
+
+  // Equality helper (new)
+  hbs.handlebars.registerHelper('eq', function(a, b) {
+    return a === b;
+  });
+  
+  // Includes helper for arrays and comma-separated strings (new)
+  hbs.handlebars.registerHelper('includes', function(collection, item) {
+    if (typeof collection === 'string') {
+      // Handle comma-separated string case
+      return collection.split(',').map(i => i.trim()).includes(item.toString());
+    }
+    return collection && collection.includes(item);
+  });
+  
+  // Math helper for arithmetic operations
+  hbs.handlebars.registerHelper('math', function(lvalue, operator, rvalue) {
+    lvalue = parseFloat(lvalue);
+    rvalue = parseFloat(rvalue);
+    
+    switch(operator) {
+      case '+': return lvalue + rvalue;
+      case '-': return lvalue - rvalue;
+      case '*': return lvalue * rvalue;
+      case '/': return lvalue / rvalue;
+      case '%': return lvalue % rvalue;
+      default: return lvalue;
+    }
+  });
+  
+  // Simple subtraction helper
+  hbs.handlebars.registerHelper('subtract', function(a, b) {
+    return parseFloat(a) - parseFloat(b);
   });
 
   app.engine('hbs', hbs.engine);

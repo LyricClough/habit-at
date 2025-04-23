@@ -1,0 +1,346 @@
+{{!-- src/views/pages/notifications.hbs --}}
+
+{{#section 'styles'}}
+<style>
+  .toggle-checkbox:checked {
+    right: 0;
+    background-color: #1a202c;
+    border-color: #1a202c;
+  }
+  .toggle-checkbox:checked + .toggle-label {
+    background-color: #4a5568;
+  }
+</style>
+{{/section}}
+
+<div class="max-w-6xl mx-auto py-8 px-4">
+  <h1 class="text-3xl font-bold mb-8 text-center">Notification Settings</h1>
+
+  {{#if error}}
+  <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
+    <strong class="font-bold">Error: </strong>
+    <span class="block sm:inline">{{error}}</span>
+  </div>
+  {{/if}}
+  
+  {{#if success}}
+  <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4" role="alert">
+    <strong class="font-bold">Success: </strong>
+    <span class="block sm:inline">{{success}}</span>
+  </div>
+  {{/if}}
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <!-- Global Notification Preferences Section -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-semibold mb-6">Global Notification Settings</h2>
+      
+      <form method="POST" action="/notifications/preferences">
+        <!-- Notification Methods -->
+        <div class="mb-8">
+          <h3 class="text-lg font-medium mb-4">Notification Methods</h3>
+          
+          <div class="space-y-4">
+            <div class="flex items-center">
+              <input 
+                type="checkbox" 
+                id="email-notifications" 
+                name="email_notif" 
+                class="h-4 w-4 rounded border-gray-300"
+                {{#if preferences.email_notif}}checked{{/if}}
+              />
+              <label for="email-notifications" class="ml-2 text-sm font-medium">
+                Receive email notifications
+              </label>
+            </div>
+            
+            <div class="flex items-center">
+              <input 
+                type="checkbox" 
+                id="phone-notifications" 
+                name="phone_notif" 
+                class="h-4 w-4 rounded border-gray-300"
+                {{#if preferences.phone_notif}}checked{{/if}}
+                {{#unless user.phone}}disabled{{/unless}}
+              />
+              <label for="phone-notifications" class="ml-2 text-sm font-medium">
+                Receive SMS notifications
+              </label>
+            </div>
+            
+            {{#unless user.phone}}
+            <p class="mt-1 text-sm text-red-600">
+              Please add a phone number in <a href="/settings" class="underline">settings</a> to enable SMS notifications.
+            </p>
+            {{/unless}}
+          </div>
+        </div>
+        
+        <!-- Daily Digest -->
+        <div class="mb-8">
+          <h3 class="text-lg font-medium mb-4">Daily Digest</h3>
+          
+          <div class="flex items-center mb-4">
+            <input 
+              type="checkbox" 
+              id="daily-digest" 
+              name="daily_digest" 
+              class="h-4 w-4 rounded border-gray-300"
+              {{#if preferences.daily_digest}}checked{{/if}}
+            />
+            <label for="daily-digest" class="ml-2 text-sm font-medium">
+              Send me a daily summary of my habits
+            </label>
+          </div>
+          
+          <div class="flex items-center space-x-4">
+            <label for="digest-time" class="text-sm font-medium">Time:</label>
+            <input 
+              type="time" 
+              id="digest-time" 
+              name="digest_time" 
+              class="border rounded-md px-3 py-2 text-sm"
+              value="{{digestTime}}"
+            />
+          </div>
+        </div>
+        
+        <!-- Weekly Report -->
+        <div class="mb-8">
+          <h3 class="text-lg font-medium mb-4">Weekly Report</h3>
+          
+          <div class="flex items-center mb-4">
+            <input 
+              type="checkbox" 
+              id="weekly-report" 
+              name="weekly_report" 
+              class="h-4 w-4 rounded border-gray-300"
+              {{#if preferences.weekly_report}}checked{{/if}}
+            />
+            <label for="weekly-report" class="ml-2 text-sm font-medium">
+              Send me a weekly report of my progress
+            </label>
+          </div>
+          
+          <div class="flex items-center space-x-4">
+            <label for="report-day" class="text-sm font-medium">Day:</label>
+            <select 
+              id="report-day" 
+              name="report_day" 
+              class="border rounded-md px-3 py-2 text-sm"
+            >
+              {{#each dayNames}}
+                <option value="{{@index}}" {{#if (eq ../reportDay @index)}}selected{{/if}}>
+                  {{this}}
+                </option>
+              {{/each}}
+            </select>
+          </div>
+        </div>
+        
+        <button type="submit" class="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800">
+          Save Preferences
+        </button>
+      </form>
+    </div>
+    
+    <!-- Per-Habit Reminders Section -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-semibold mb-6">Per-Habit Reminders</h2>
+      
+      <p class="text-sm text-gray-600 mb-4">
+        Configure custom reminders for each of your habits.
+      </p>
+      
+      {{#if habits.length}}
+        <div class="space-y-6">
+          {{#each habits}}
+            <div class="border rounded-lg p-4 relative">
+              <h3 class="font-medium">{{this.habit_name}}</h3>
+              <p class="text-sm text-gray-600 mb-3">
+                {{#if this.description}}
+                  {{this.description}}
+                {{else}}
+                  No description
+                {{/if}}
+              </p>
+              
+              {{#if this.hasReminder}}
+                <!-- Edit Existing Reminder -->
+                <form method="POST" action="/notifications/habit-reminder" class="space-y-4">
+                  <input type="hidden" name="habit_id" value="{{this.habit_id}}">
+                  
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium mb-1">Time:</label>
+                      <input 
+                        type="time" 
+                        name="reminder_time" 
+                        class="w-full border rounded-md px-3 py-2 text-sm"
+                        value="{{this.reminder.reminder_time}}"
+                        required
+                      >
+                    </div>
+                    
+                    <div>
+                      <label class="block text-sm font-medium mb-1">Method:</label>
+                      <select 
+                        name="notification_method" 
+                        class="w-full border rounded-md px-3 py-2 text-sm"
+                      >
+                        <option value="email" {{#if (eq this.reminder.notification_method "email")}}selected{{/if}}>Email Only</option>
+                        <option value="sms" {{#if (eq this.reminder.notification_method "sms")}}selected{{/if}} {{#unless ../user.phone}}disabled{{/unless}}>SMS Only</option>
+                        <option value="both" {{#if (eq this.reminder.notification_method "both")}}selected{{/if}} {{#unless ../user.phone}}disabled{{/unless}}>Both Email & SMS</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium mb-1">Days:</label>
+                    <div class="flex flex-wrap gap-2">
+                      {{#each ../dayNames}}
+                        <label class="inline-flex items-center">
+                          <input 
+                            type="checkbox" 
+                            name="days_of_week" 
+                            value="{{@index}}" 
+                            class="h-4 w-4"
+                            {{#if (includes ../../this.reminder.days_of_week @index)}}checked{{/if}}
+                          >
+                          <span class="ml-1 text-sm">{{this}}</span>
+                        </label>
+                      {{/each}}
+                    </div>
+                  </div>
+                  
+                  <div class="flex items-center">
+                    <input 
+                      type="checkbox" 
+                      id="enabled-{{this.habit_id}}" 
+                      name="enabled" 
+                      class="h-4 w-4"
+                      {{#if this.reminder.enabled}}checked{{/if}}
+                    >
+                    <label for="enabled-{{this.habit_id}}" class="ml-2 text-sm">
+                      Reminder Enabled
+                    </label>
+                  </div>
+                  
+                  <div class="flex space-x-2">
+                    <button type="submit" class="px-3 py-1 bg-gray-800 text-white text-sm rounded hover:bg-gray-700">
+                      Update Reminder
+                    </button>
+                    
+                    <button 
+                      type="button" 
+                      onclick="document.getElementById('delete-form-{{this.habit_id}}').submit();" 
+                      class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </form>
+                
+                <form 
+                  id="delete-form-{{this.habit_id}}" 
+                  method="POST" 
+                  action="/notifications/delete-reminder" 
+                  class="hidden"
+                >
+                  <input type="hidden" name="habit_id" value="{{this.habit_id}}">
+                </form>
+              {{else}}
+                <!-- Create New Reminder -->
+                <form method="POST" action="/notifications/habit-reminder" class="space-y-4">
+                  <input type="hidden" name="habit_id" value="{{this.habit_id}}">
+                  <input type="hidden" name="enabled" value="true">
+                  
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium mb-1">Time:</label>
+                      <input 
+                        type="time" 
+                        name="reminder_time" 
+                        class="w-full border rounded-md px-3 py-2 text-sm"
+                        required
+                      >
+                    </div>
+                    
+                    <div>
+                      <label class="block text-sm font-medium mb-1">Method:</label>
+                      <select 
+                        name="notification_method" 
+                        class="w-full border rounded-md px-3 py-2 text-sm"
+                      >
+                        <option value="email">Email Only</option>
+                        <option value="sms" {{#unless ../user.phone}}disabled{{/unless}}>SMS Only</option>
+                        <option value="both" {{#unless ../user.phone}}disabled{{/unless}}>Both Email & SMS</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium mb-1">Days:</label>
+                    <div class="flex flex-wrap gap-2">
+                      {{#each ../dayNames}}
+                        <label class="inline-flex items-center">
+                          <input 
+                            type="checkbox" 
+                            name="days_of_week" 
+                            value="{{@index}}" 
+                            class="h-4 w-4"
+                          >
+                          <span class="ml-1 text-sm">{{this}}</span>
+                        </label>
+                      {{/each}}
+                    </div>
+                  </div>
+                  
+                  <button type="submit" class="px-3 py-1 bg-gray-800 text-white text-sm rounded hover:bg-gray-700">
+                    Add Reminder
+                  </button>
+                </form>
+              {{/if}}
+            </div>
+          {{/each}}
+        </div>
+      {{else}}
+        <p class="text-center text-gray-500 py-8">
+          You don't have any habits yet. 
+          <a href="/habits" class="text-blue-600 underline">Create some habits</a> to set reminders.
+        </p>
+      {{/if}}
+    </div>
+  </div>
+</div>
+
+{{#section 'scripts'}}
+<script>
+  // Helper functions for the view
+  document.addEventListener('DOMContentLoaded', function() {
+    // Daily Digest time field toggle
+    const dailyDigestCheckbox = document.getElementById('daily-digest');
+    const digestTimeInput = document.getElementById('digest-time');
+    
+    if (dailyDigestCheckbox && digestTimeInput) {
+      digestTimeInput.disabled = !dailyDigestCheckbox.checked;
+      
+      dailyDigestCheckbox.addEventListener('change', function() {
+        digestTimeInput.disabled = !this.checked;
+      });
+    }
+    
+    // Weekly Report day field toggle
+    const weeklyReportCheckbox = document.getElementById('weekly-report');
+    const reportDaySelect = document.getElementById('report-day');
+    
+    if (weeklyReportCheckbox && reportDaySelect) {
+      reportDaySelect.disabled = !weeklyReportCheckbox.checked;
+      
+      weeklyReportCheckbox.addEventListener('change', function() {
+        reportDaySelect.disabled = !this.checked;
+      });
+    }
+  });
+</script>
+{{/section}} 
