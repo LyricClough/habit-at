@@ -14,6 +14,7 @@ const dashboardRoutes = require('./js/routes/dashboardRoutes');
 const settingsRoutes  = require('./js/routes/settingsRoutes');
 const habitsRoutes    = require('./js/routes/habitsRoutes');
 const statisticsRoutes = require('./js/routes/statisticsRoutes');
+const friendsRoutes   = require('./js/routes/friendsRoutes');
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use(dashboardRoutes);
 app.use(settingsRoutes);
 app.use(habitsRoutes);
 app.use(statisticsRoutes);
+app.use('/friends', friendsRoutes);
 
 // catch‑all redirect
 app.get('/', (req, res) => res.redirect('/login'));
