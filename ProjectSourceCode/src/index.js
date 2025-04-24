@@ -70,9 +70,11 @@ app.get('/', (_req, res) => res.redirect('/login'));
 
 /* ----------  start server  ---------- */
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, async () => {
+const server = app.listen(PORT, async () => {
   console.log(`Listening on ${PORT} (${isProd ? 'prod' : 'dev'})`);
   
   // Initialize the scheduler for reminders
   await schedulerService.initializeScheduler();
 });
+
+module.exports = server;
