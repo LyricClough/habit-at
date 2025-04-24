@@ -860,4 +860,7 @@ async function generateCategoryData(userId) {
       colors: ['#4ADE80', '#3B82F6', '#8B5CF6', '#EF4444', '#EC4899']
     };
   }
-} 
+}
+
+// Export the function so it can be used by the API
+exports.generateDailyCompletionData = generateDailyCompletionData; 

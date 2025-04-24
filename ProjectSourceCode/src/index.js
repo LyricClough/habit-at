@@ -19,6 +19,7 @@ const habitsRoutes     = require('./js/routes/habitsRoutes');
 const statisticsRoutes = require('./js/routes/statisticsRoutes');
 const friendsRoutes    = require('./js/routes/friendsRoutes');
 const notificationRoutes = require('./js/routes/notificationsRoutes');
+// const apiRoutes       = require('./js/routes/apiRoutes');
 
 // services
 const schedulerService = require('./js/services/schedulerService');

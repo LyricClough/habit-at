@@ -14,6 +14,7 @@ VALUES
   (1, 3, TRUE),  -- testuser and janedoe are friends
   (3, 1, TRUE),  -- reciprocal friendship
   (2, 3, FALSE); -- johndoe sent request to janedoe (not mutual yet)
+  -- ON CONFLICT ON CONSTRAINT "idx_friends_pair" DO NOTHING;
 
 -- Sample habit categories
 INSERT INTO habit_categories (category_name, color, icon)

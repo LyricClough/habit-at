@@ -1,133 +1,140 @@
 // src/js/controllers/dashboardController.js
 const db = require('../config/db');
 
+/* ====================================================================== */
+/*  MAIN DASHBOARD ROUTE                                                  */
+/* ====================================================================== */
 exports.dashboard = async (req, res) => {
   try {
+    /* -------------------------------------------------- */
+    /* 1.  Basic context                                  */
+    /* -------------------------------------------------- */
     const userId = req.session.user.user_id;
-    const today = new Date().toISOString().slice(0, 10);
-    const dayOfWeek = new Date().getDay();
+    const todayISO = new Date().toISOString().slice(0, 10);  // YYYY-MM-DD
+    const weekdayNum = new Date().getDay();                    // 0-
 
-    // friends count
+    /* -------------------------------------------------- */
+    /* 2.  Social widgets                                 */
+    /* -------------------------------------------------- */
     const friends = await db.any(
       'SELECT * FROM friends WHERE sender = $1 AND mutual = TRUE',
       [userId]
     );
-    const friendCount = friends.length;
-
-    // friend requests
-    const requests = await db.any(
+    const friendRequests = await db.any(
       'SELECT * FROM friends WHERE receiver = $1 AND mutual = FALSE',
       [userId]
     );
-    const friendRequests = requests.length;
 
-    // all habits
-    const allHabits = await db.any(
-      `SELECT h.* 
-         FROM habits h
-         JOIN users_to_habits uh ON h.habit_id = uh.habit_id
-        WHERE uh.user_id = $1`,
-      [userId]
-    );
+    /* -------------------------------------------------- */
+    /* 3.  Habit queries                                  */
+    /* -------------------------------------------------- */
 
-    // today's habits
-    const habits = await db.any(
-      `WITH allHabits AS (
-         SELECT h.*, h.counter
-           FROM habits h
-           JOIN users_to_habits uh ON h.habit_id = uh.habit_id
-          WHERE uh.user_id = $1
-       )
-       SELECT * FROM allHabits WHERE weekday = $2`,
-      [userId, dayOfWeek]
-    );
+    /* “Active Habits” card — every habit the user owns   */
+    const allHabits = await db.any(`
+      SELECT h.*
+      FROM habits h
+      JOIN users_to_habits uh ON h.habit_id = uh.habit_id
+      WHERE uh.user_id = $1
+    `, [userId]);
 
-    // completed today
-    const completedHabits = await db.any(
-      `SELECT h.*, hth.history_id
-         FROM habits_to_history hth
-         JOIN history hi   ON hth.history_id = hi.history_id
-         JOIN habits h     ON h.habit_id   = hth.habit_id
-         JOIN users_to_habits uh ON uh.habit_id = h.habit_id
-        WHERE hi.date = $1 AND uh.user_id = $2`,
-      [today, userId]
-    );
+    // ─────────────────── TODAY’S HABITS ────────────────────
 
-    // incomplete today
-    const incompleteHabits = await db.any(
-      `SELECT h.*
-         FROM habits h
-         JOIN users_to_habits uh ON h.habit_id = uh.habit_id
-        WHERE uh.user_id = $1
-          AND h.weekday = $2
-          AND h.habit_id NOT IN (
-            SELECT hth.habit_id
-              FROM habits_to_history hth
-              JOIN history hi ON hth.history_id = hi.history_id
-             WHERE hi.date = $3
-          )`,
-      [userId, dayOfWeek, today]
-    );
+    // completed TODAY
+    const completedToday = (await db.any(`
+  SELECT h.*, hth.history_id
+  FROM habits_to_history hth
+  JOIN history        hi ON hth.history_id = hi.history_id
+  JOIN habits         h  ON h.habit_id     = hth.habit_id
+  JOIN users_to_habits uh ON uh.habit_id   = h.habit_id
+  WHERE uh.user_id = $1
+    AND hi.date    = $2
+`, [userId, todayISO]))
+      .map(row => ({ ...row, doneToday: true }));   // ← parentheses added
 
-    const completionPerc = habits.length
-      ? Math.floor((completedHabits.length / habits.length) * 100)
+    // incomplete TODAY
+    const incompleteToday = (await db.any(`
+  SELECT h.*
+  FROM habits h
+  JOIN users_to_habits uh ON h.habit_id = uh.habit_id
+  WHERE uh.user_id = $1
+    AND h.weekday = $2
+    AND h.habit_id NOT IN (
+      SELECT hth.habit_id
+      FROM habits_to_history hth
+      JOIN history hi ON hth.history_id = hi.history_id
+      WHERE hi.date = $3
+    )
+`, [userId, weekdayNum, todayISO]))
+      .map(row => ({ ...row, doneToday: false }));
+
+    // unified list
+    const todayHabits = [...incompleteToday, ...completedToday];
+
+
+    const completionPerc = todayHabits.length
+      ? Math.floor((completedToday.length / todayHabits.length) * 100)
       : 0;
 
-    // Get current streak and longest streak (for statistics preview)
+    /* -------------------------------------------------- */
+    /* 4.  Streak + weekly widgets                        */
+    /* -------------------------------------------------- */
     const { currentStreak, longestStreak } = await calculateStreak(userId);
-
-    // Get weekly completion rates (for statistics preview)
     const weeklyData = await calculateWeeklyData(userId);
 
-    // Get total habit completions
-    const totalCompletions = await db.one(
-      `SELECT COUNT(*) as total
-       FROM habits_to_history hth
-       JOIN habits h ON hth.habit_id = h.habit_id
-       JOIN users_to_habits uh ON h.habit_id = uh.habit_id
-       WHERE uh.user_id = $1`,
-      [userId]
-    );
+    const { total: totalCompletions } = await db.one(`
+      SELECT COUNT(*) AS total
+      FROM habits_to_history hth
+      JOIN habits         h  ON hth.habit_id = h.habit_id
+      JOIN users_to_habits uh ON h.habit_id  = uh.habit_id
+      WHERE uh.user_id = $1
+    `, [userId]);
 
-    // Get upcoming reminders for the dashboard
+    /* -------------------------------------------------- */
+    /* 5.  Upcoming reminders                             */
+    /* -------------------------------------------------- */
     const upcomingReminders = await db.any(`
-      SELECT hr.reminder_id, hr.reminder_time, h.habit_name, h.habit_id 
+      SELECT hr.reminder_id, hr.reminder_time,
+             h.habit_name, h.habit_id
       FROM habit_reminders hr
       JOIN habits h ON hr.habit_id = h.habit_id
-      WHERE hr.user_id = $1 AND hr.enabled = true
+      WHERE hr.user_id = $1
+        AND hr.enabled = TRUE
       ORDER BY hr.reminder_time ASC
       LIMIT 5
     `, [userId]);
 
-    // Format reminder times for display
-    const formattedReminders = upcomingReminders.map(reminder => {
-      // Convert 24-hour time to AM/PM format
-      const [hours, minutes] = reminder.reminder_time.split(':');
-      const hour = parseInt(hours, 10);
-      const period = hour >= 12 ? 'PM' : 'AM';
-      const formattedHour = hour % 12 || 12;
-      
-      return {
-        ...reminder,
-        formatted_time: `${formattedHour}:${minutes} ${period}`
-      };
+    const reminders = upcomingReminders.map(r => {
+      const [hh, mm] = r.reminder_time.split(':');
+      const hr = +hh;
+      const period = hr >= 12 ? 'PM' : 'AM';
+      const displayHr = hr % 12 || 12;
+      return { ...r, formatted_time: `${displayHr}:${mm} ${period}` };
     });
 
+    /* -------------------------------------------------- */
+    /* 6.  Render                                         */
+    /* -------------------------------------------------- */
     res.render('pages/dashboard', {
       hideNav: false,
       user: req.session.user,
+
+      /* cards & lists */
       allHabits,
-      habits,
-      completedHabits,
-      incompleteHabits,
+      todayHabits,
       completionPerc,
-      friendCount,
-      friendRequests,
+
+      /* social */
+      friendCount: friends.length,
+      friendRequests: friendRequests.length,
+
+      /* streak & graphs */
       streak: currentStreak,
       longestStreak,
-      weeklyData: weeklyData,
-      totalCompletions: totalCompletions.total,
-      reminders: formattedReminders
+      weeklyData,
+      completedHabits: completedToday.length,
+      // totalCompletions,
+      // totalIncomplete,
+      reminders
     });
   } catch (err) {
     console.error(err);
@@ -135,22 +142,34 @@ exports.dashboard = async (req, res) => {
   }
 };
 
+/* ====================================================================== */
+/*  COMPLETE & DECREMENT ACTIONS                                          */
+/* ====================================================================== */
 exports.completeHabit = async (req, res) => {
   try {
     const { habitId } = req.body;
+
+    /* increment counter on the habit */
     await db.none(
       'UPDATE habits SET counter = counter + 1 WHERE habit_id = $1',
       [habitId]
     );
-    const { history_id } = await db.one(
-      `INSERT INTO history (date) VALUES (CURRENT_DATE)
-       RETURNING history_id`
-    );
-    await db.none(
-      `INSERT INTO habits_to_history (habit_id, history_id)
-         VALUES ($1, $2)`,
-      [habitId, history_id]
-    );
+
+    /* create / reuse today’s history row */
+    const { history_id } = await db.one(`
+      INSERT INTO history (date)
+      VALUES (CURRENT_DATE)
+      ON CONFLICT (date) DO UPDATE SET date = EXCLUDED.date
+      RETURNING history_id
+    `);
+
+    /* bind habit to history */
+    await db.none(`
+      INSERT INTO habits_to_history (habit_id, history_id)
+      VALUES ($1, $2)
+      ON CONFLICT DO NOTHING
+    `, [habitId, history_id]);
+
     res.redirect('/dashboard');
   } catch (err) {
     console.error(err);
@@ -161,22 +180,35 @@ exports.completeHabit = async (req, res) => {
 exports.decrementHabit = async (req, res) => {
   try {
     const { habitId } = req.body;
-    await db.none(
-      'UPDATE habits SET counter = counter - 1 WHERE habit_id = $1',
-      [habitId]
-    );
-    const { history_id } = await db.one(
-      `SELECT history_id
-         FROM habits_to_history
-        WHERE habit_id = $1
-        ORDER BY history_id DESC
-        LIMIT 1`,
-      [habitId]
-    );
-    await db.none('DELETE FROM habits_to_history WHERE history_id = $1', [
-      history_id,
-    ]);
-    await db.none('DELETE FROM history WHERE history_id = $1', [history_id]);
+
+    /* decrement counter (minimum 0) */
+    await db.none(`
+      UPDATE habits
+      SET counter = GREATEST(counter - 1, 0)
+      WHERE habit_id = $1
+    `, [habitId]);
+
+    /* remove the most recent completion for this habit (today) */
+    const { history_id } = await db.one(`
+      SELECT history_id
+      FROM habits_to_history
+      JOIN history USING (history_id)
+      WHERE habit_id = $1 AND date = CURRENT_DATE
+      LIMIT 1
+    `, [habitId]);
+
+    await db.none('DELETE FROM habits_to_history WHERE habit_id = $1 AND history_id = $2',
+      [habitId, history_id]);
+
+    /* if no other habits are linked to this history row, delete it */
+    await db.none(`
+      DELETE FROM history h
+      WHERE h.history_id = $1
+        AND NOT EXISTS (
+          SELECT 1 FROM habits_to_history WHERE history_id = h.history_id
+        )
+    `, [history_id]);
+
     res.redirect('/dashboard');
   } catch (err) {
     console.error(err);
@@ -184,135 +216,105 @@ exports.decrementHabit = async (req, res) => {
   }
 };
 
-/**
- * Calculate current and longest streak of habit completions
- */
+
+/* ====================================================================== */
+/*  STREAK CALCULATION                                                    */
+/* ====================================================================== */
 async function calculateStreak(userId) {
   try {
-    // Get all dates with completed habits
-    const dates = await db.any(
-      `SELECT DISTINCT hi.date
-       FROM history hi
-       JOIN habits_to_history hth ON hi.history_id = hth.history_id
-       JOIN habits h ON hth.habit_id = h.habit_id
-       JOIN users_to_habits uh ON h.habit_id = uh.habit_id
-       WHERE uh.user_id = $1
-       ORDER BY hi.date DESC`,
-      [userId]
-    );
+    /* all distinct completion dates (descending) */
+    const dates = await db.any(`
+      SELECT DISTINCT hi.date
+      FROM history hi
+      JOIN habits_to_history hth ON hi.history_id = hth.history_id
+      JOIN habits h             ON hth.habit_id  = h.habit_id
+      JOIN users_to_habits uh   ON h.habit_id    = uh.habit_id
+      WHERE uh.user_id = $1
+      ORDER BY hi.date DESC
+    `, [userId]);
 
-    if (dates.length === 0) {
-      return { currentStreak: 0, longestStreak: 0 };
-    }
+    if (dates.length === 0) return { currentStreak: 0, longestStreak: 0 };
 
-    // Calculate current streak
+    /* ---------- current streak ---------- */
     let currentStreak = 0;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    
-    // Check if there's a completion for today
-    const hasCompletionToday = dates.some(d => {
+    let checkDate = new Date();   // start today
+    checkDate.setHours(0, 0, 0, 0);
+
+    for (const d of dates) {
       const date = new Date(d.date);
-      return date.toISOString().slice(0, 10) === today.toISOString().slice(0, 10);
-    });
-    
-    // Start checking from today or yesterday depending on if there's a completion today
-    let checkDate = hasCompletionToday ? today : yesterday;
-    
-    for (let i = 0; i < dates.length; i++) {
-      const date = new Date(dates[i].date);
       date.setHours(0, 0, 0, 0);
-      
-      const diff = Math.round((checkDate - date) / (1000 * 60 * 60 * 24));
-      
-      if (diff <= currentStreak) {
-        // Already counted this date
-        continue;
-      } else if (diff === currentStreak + 1) {
-        // Consecutive day
-        currentStreak++;
-        checkDate = date;
+
+      const diff = Math.round((checkDate - date) / 86400000); // day diff
+
+      if (diff === 0 || diff === 1) {
+        currentStreak += 1;
+        checkDate = date;             // move back one day
       } else {
-        // Streak broken
-        break;
+        break;                        // gap found
       }
     }
-    
-    // Calculate longest streak
-    let longestStreak = 0;
-    let currentLongest = 0;
-    
+
+    /* ---------- longest streak ---------- */
+    let longestStreak = 1;
+    let tempStreak = 1;
+
     for (let i = 0; i < dates.length - 1; i++) {
-      const currentDate = new Date(dates[i].date);
-      const nextDate = new Date(dates[i + 1].date);
-      
-      const diff = Math.round((currentDate - nextDate) / (1000 * 60 * 60 * 24));
-      
+      const a = new Date(dates[i].date);
+      const b = new Date(dates[i + 1].date);
+      const diff = Math.round((a - b) / 86400000);
+
       if (diff === 1) {
-        // Consecutive day
-        currentLongest++;
+        tempStreak += 1;
+        longestStreak = Math.max(longestStreak, tempStreak);
       } else {
-        // Reset streak count
-        longestStreak = Math.max(longestStreak, currentLongest);
-        currentLongest = 0;
+        tempStreak = 1;
       }
     }
-    
-    longestStreak = Math.max(longestStreak, currentLongest) + 1; // +1 to count the first day
-    
-    return {
-      currentStreak: hasCompletionToday ? currentStreak : currentStreak > 0 ? currentStreak : 0,
-      longestStreak
-    };
+
+    return { currentStreak, longestStreak };
   } catch (err) {
     console.error('Error calculating streak:', err);
     return { currentStreak: 0, longestStreak: 0 };
   }
 }
 
-/**
- * Calculate weekly completion data by day of week
- */
+/* ====================================================================== */
+/*  WEEKLY COMPLETION DATA (7-element array [%])                          */
+/* ====================================================================== */
 async function calculateWeeklyData(userId) {
   try {
-    const weekDays = [0, 1, 2, 3, 4, 5, 6]; // Sunday to Saturday
+    const weekDays = [0, 1, 2, 3, 4, 5, 6];     // Sun-Sat
     const result = [];
-    
+
     for (const day of weekDays) {
-      // Get total scheduled habits for this weekday
-      const scheduled = await db.any(
-        `SELECT COUNT(*) as total
-         FROM habits h
-         JOIN users_to_habits uh ON h.habit_id = uh.habit_id
-         WHERE uh.user_id = $1 AND h.weekday = $2`,
-        [userId, day]
-      );
-      
-      // Get total completions by day of week
-      const completed = await db.any(
-        `SELECT COUNT(*) as total
-         FROM habits_to_history hth
-         JOIN history hi ON hth.history_id = hi.history_id
-         JOIN habits h ON hth.habit_id = h.habit_id
-         JOIN users_to_habits uh ON h.habit_id = uh.habit_id
-         WHERE uh.user_id = $1 AND h.weekday = $2 AND hi.date >= NOW() - INTERVAL '90 days'`,
-        [userId, day]
-      );
-      
-      // Calculate completion rate
+      /* scheduled for this weekday */
+      const scheduled = await db.one(`
+        SELECT COUNT(*) AS total
+        FROM habits h
+        JOIN users_to_habits uh ON h.habit_id = uh.habit_id
+        WHERE uh.user_id = $1 AND h.weekday = $2
+      `, [userId, day]);
+
+      /* completions in the last 90 days on this weekday */
+      const completed = await db.one(`
+        SELECT COUNT(*) AS total
+        FROM habits_to_history hth
+        JOIN history hi          ON hth.history_id = hi.history_id
+        JOIN habits  h           ON hth.habit_id   = h.habit_id
+        JOIN users_to_habits uh  ON h.habit_id     = uh.habit_id
+        WHERE uh.user_id = $1
+          AND h.weekday  = $2
+          AND hi.date   >= NOW() - INTERVAL '90 days'
+      `, [userId, day]);
+
+      /* estimate completion rate */
       let rate = 0;
-      if (scheduled[0].total > 0) {
-        // Approximate rate based on last 90 days (about 13 of each weekday)
-        rate = Math.round((completed[0].total / (scheduled[0].total * 13)) * 100);
-        rate = Math.min(rate, 100); // Cap at 100%
+      if (+scheduled.total > 0) {
+        rate = Math.round((completed.total / (scheduled.total * 13)) * 100);
+        rate = Math.min(rate, 100);
       }
-      
       result.push(rate);
     }
-    
     return result;
   } catch (err) {
     console.error('Error calculating weekly data:', err);
