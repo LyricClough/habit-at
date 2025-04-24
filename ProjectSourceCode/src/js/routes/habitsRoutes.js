@@ -24,4 +24,7 @@ router.post('/habits/pin-to-dashboard', ctrl.pinToDashboard);
 router.get('/api/habits/date/:date', ctrl.getHabitsByDate);
 router.get('/api/habits/:habitId', ctrl.getHabitDetails);
 
+// New route to mark a habit as complete
+router.post('/api/habits/complete', ctrl.completeHabit);
+
 module.exports = router; 

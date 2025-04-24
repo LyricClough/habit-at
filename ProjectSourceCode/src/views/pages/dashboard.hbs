@@ -24,7 +24,9 @@
 {{> dashboard/sidebar/quickAdd }}
 {{> dashboard/modals/habitDetail }}
 
-{{#*inline "scripts"}}
+
+{{#section "scripts"}}
   <script type="module" src="/js/dashboard/main.js"></script>
   <script type="module" src="/js/habit.js"></script>
-{{/inline}}
+  <script type="module" src="/js/dashboard/calendar.js"></script>
+{{/section}}

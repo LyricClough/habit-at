@@ -3,20 +3,20 @@ const path    = require('path');
 const fs      = require('fs');
 const exphbs  = require('express-handlebars');
 
-/* ------------------------------------------------------------------ */
-/*  1.  Helper to collect partial paths recursively                    */
-/* ------------------------------------------------------------------ */
-function gatherPartials(dir) {
-  const files = [];
-  (function walk(cur) {
-    fs.readdirSync(cur).forEach(f => {
-      const fp = path.join(cur, f);
-      fs.statSync(fp).isDirectory() ? walk(fp)
-                                    : files.push(fp);
-    });
-  })(dir);
-  return files;
-}
+// /* ------------------------------------------------------------------ */
+// /*  1.  Helper to collect partial paths recursively                    */
+// /* ------------------------------------------------------------------ */
+// function gatherPartials(dir) {
+//   const files = [];
+//   (function walk(cur) {
+//     fs.readdirSync(cur).forEach(f => {
+//       const fp = path.join(cur, f);
+//       fs.statSync(fp).isDirectory() ? walk(fp)
+//                                     : files.push(fp);
+//     });
+//   })(dir);
+//   return files;
+// }
 
 /* ------------------------------------------------------------------ */
 module.exports = function (app) {

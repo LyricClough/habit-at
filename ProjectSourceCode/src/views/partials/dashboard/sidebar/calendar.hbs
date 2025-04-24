@@ -1,12 +1,5 @@
-<div>
-  <div class="flex items-center justify-between mb-4">
-    <h2 class="text-xl font-semibold">Calendar</h2>
-    <a href="/calendar" class="text-sm text-indigo-600 hover:text-indigo-800">
-      View full calendar
-    </a>
-  </div>
-
-  <div class="bg-white rounded-xl shadow-sm p-4">
+<div class="bg-white rounded-xl shadow-sm overflow-hidden">
+  <div class="p-4">
     <div class="flex items-center justify-between mb-4">
       <button id="prevMonth" class="p-2 rounded-full hover:bg-gray-100">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -27,6 +20,19 @@
       <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
     </div>
 
-    <div id="calendarDays" class="grid grid-cols-7 gap-1"></div>
+    <div id="calendarDays" class="grid grid-cols-7 gap-1 min-h-[180px]"></div>
+  </div>
+  
+  <!-- Daily habits container -->
+  <div class="border-t border-gray-100 p-4">
+    <h3 id="selected-date" class="font-medium text-gray-700 mb-3"></h3>
+    <div id="habits-for-date" class="overflow-y-auto max-h-60">
+      <!-- Habits will be loaded here dynamically -->
+      <div class="p-4 text-center text-gray-500">
+        <p>Select a date to view habits</p>
+      </div>
+    </div>
   </div>
 </div>
+
+

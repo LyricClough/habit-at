@@ -30,17 +30,6 @@
           <span class="font-medium">My Habits</span>
         </a>
     </li>
-    {{!-- Calendar --}}
-    <li class="px-2 my-1">
-      {{#ifActive currentPath "calendar"}}
-        <a href="/calendar" class="flex items-center px-4 py-3 rounded-lg bg-indigo-50 text-indigo-600 border-l-4 border-indigo-500 shadow-sm transition-all duration-200">
-      {{else}}
-        <a href="/calendar" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-50 text-gray-700 hover:text-indigo-600 border-l-4 border-transparent hover:border-indigo-500 transition-all duration-200">
-      {{/ifActive}}
-          <i class="far fa-calendar-alt mr-3 text-lg"></i>
-          <span class="font-medium">Calendar</span>
-        </a>
-    </li>
     {{!-- Statistics --}}
     <li class="px-2 my-1">
       {{#ifActive currentPath "statistics"}}

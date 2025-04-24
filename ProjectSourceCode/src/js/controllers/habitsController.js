@@ -333,4 +333,97 @@ exports.getHabitDetails = async (req, res) => {
     console.error('Error fetching habit details:', err);
     res.status(500).json({ success: false, error: 'Server error' });
   }
+};
+
+/**
+ * API: Mark a habit as complete for a specific date
+ */
+exports.completeHabit = async (req, res) => {
+  try {
+    const userId = req.session.user.user_id;
+    const { habitId, date } = req.body;
+    
+    if (!habitId || !date) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields: habitId and date'
+      });
+    }
+    
+    // Validate the date format
+    if (!date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid date format. Use YYYY-MM-DD.'
+      });
+    }
+    
+    // Verify the habit belongs to the user
+    const habitOwnership = await db.oneOrNone(
+      `SELECT 1 FROM habits h
+       JOIN users_to_habits uh ON h.habit_id = uh.habit_id
+       WHERE h.habit_id = $1 AND uh.user_id = $2`,
+      [habitId, userId]
+    );
+    
+    if (!habitOwnership) {
+      return res.status(403).json({
+        success: false,
+        error: 'You do not have permission to modify this habit'
+      });
+    }
+    
+    // Check if this completion already exists
+    const existingCompletion = await db.oneOrNone(
+      `SELECT 1 FROM history h 
+       JOIN habits_to_history hth ON h.history_id = hth.history_id 
+       WHERE h.date = $1 AND hth.habit_id = $2`,
+      [date, habitId]
+    );
+    
+    if (existingCompletion) {
+      return res.json({
+        success: true,
+        message: 'Habit already marked as complete for this date'
+      });
+    }
+    
+    // Create history entry if it doesn't exist for this date
+    let historyId = await db.oneOrNone(
+      `SELECT history_id FROM history WHERE date = $1`,
+      [date]
+    );
+    
+    if (!historyId) {
+      historyId = await db.one(
+        `INSERT INTO history (date) VALUES ($1) RETURNING history_id`,
+        [date]
+      );
+    } else {
+      historyId = historyId.history_id;
+    }
+    
+    // Link habit to history
+    await db.none(
+      `INSERT INTO habits_to_history (habit_id, history_id) VALUES ($1, $2)`,
+      [habitId, historyId]
+    );
+    
+    // Increment the habit counter
+    await db.none(
+      `UPDATE habits SET counter = counter + 1 WHERE habit_id = $1`,
+      [habitId]
+    );
+    
+    res.json({
+      success: true,
+      message: 'Habit marked as complete'
+    });
+  } catch (err) {
+    console.error('Error completing habit:', err);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Server error'
+    });
+  }
 }; 
