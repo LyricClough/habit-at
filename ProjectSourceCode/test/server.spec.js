@@ -1,140 +1,167 @@
-// ********************** Initialize server **********************************
+/*  test/server.spec.js  */
+const chai      = require('chai');
+const chaiHttp  = require('chai-http');
+const bcrypt    = require('bcryptjs');
 
-const server = require('../src/index'); 
+const server = require('../src/index.js');
+const db     = require('../src/js/config/db');
 
-// ********************** Import Libraries ***********************************
-
-const chai = require('chai'); // Chai HTTP provides an interface for live integration testing of the API's.
-const chaiHttp = require('chai-http');
-chai.should();
 chai.use(chaiHttp);
-const {assert, expect} = chai;
+const { expect } = chai;
 
-// ********************** DEFAULT WELCOME TESTCASE ****************************
-  // describe('Server!', () => {
-  //   // Sample test case given to test / endpoint.
-  //   it('Returns the default welcome message', done => {
-  //     chai
-  //       .request(server)
-  //       .get('/welcome')
-  //       .end((err, res) => {
-  //         expect(res).to.have.status(200);
-  //         expect(res.body.status).to.equals('success');
-  //         assert.strictEqual(res.body.message, 'Welcome!');
-  //         done();
-  //       });
-  //   });
-  // });
+/* ------------------------------------------------------------------
+   Two *named* test identities
+------------------------------------------------------------------ */
+const EXISTING = {
+  user : 'testuser',
+  email: 'habitat044@gmail.com',
+  pass : 'password123',
+  phone: '5555555555',
+};
 
+const REGISTER = {
+  user : 'reguser',               // will be created by the positive /register test
+  email: 'reg@example.com',
+  pass : 'Secret42!',
+  phone: '5552221111',
+};
 
-// *********************** TODO: WRITE 2 UNIT TESTCASES **************************
+/* ------------------------------------------------------------------
+   GLOBAL SETUP
+   • make sure EXISTING is in the table with a bcrypt password
+   • make sure REGISTER is *not* in the table
+------------------------------------------------------------------ */
+before(async () => {
+  const hash = await bcrypt.hash(EXISTING.pass, 10);
 
-// *********************** LOGIN API TESTCASES **************************
-/*
-describe('Login API - Positive Test Case', () => {
-  it('should log in successfully with valid credentials and redirect to /dashboard', done => {
-    chai.request(server)
-      .post('/login')
-      .redirects(0) 
-      .send({ username: 'testuser', password: 'password123' })
-      .end((err, res) => {
-        expect(res).to.have.status(302);
-        expect(res).to.have.header('location', '/dashboard');
-        done();
-      });
+  await db.tx(async t => {
+    await t.none(`
+      INSERT INTO users (username,email,password,phone)
+      VALUES ($1,$2,$3,$4)
+      ON CONFLICT (username)
+      DO UPDATE SET password = EXCLUDED.password`,
+      [EXISTING.user, EXISTING.email, hash, EXISTING.phone]);
+
+    await t.none('DELETE FROM users WHERE username = $1', [REGISTER.user]);
   });
 });
 
-describe('Login API - Negative Test Case', () => {
-  it('should fail to log in with invalid credentials and return a 400 status code', done => {
-    chai.request(server)
-      .post('/login')
-      .redirects(0) 
-      .send({ username: 'nonexistentuser', password: 'wrongpassword' })
-      .end((err, res) => {
-        expect(res).to.have.status(400);
-        expect(res.body.message).to.equal('Incorrect username or password.');
-        done();
-      });
+/* ==================================================================
+   1. AUTH  – Login & Registration
+================================================================== */
+describe('AUTH  – Login & Registration endpoints', () => {
+
+  /* ------------------------  POST /login  ----------------------- */
+  describe('POST /login', () => {
+    it('logs in with correct credentials and redirects to /dashboard', done => {
+      chai.request(server)
+        .post('/login')
+        .redirects(0)
+        .type('form')
+        .send({ username: EXISTING.user, password: EXISTING.pass })
+        .end((err, res) => {
+          expect(res).to.have.status(302);
+          expect(res).to.have.header('location', '/dashboard');
+          done(err);
+        });
+    });
+
+    it('rejects wrong password with 400 and error page', done => {
+      chai.request(server)
+        .post('/login')
+        .redirects(0)
+        .type('form')
+        .send({ username: EXISTING.user, password: 'wrongPassword!' })
+        .end((err, res) => {
+          expect(res).to.have.status(400);
+          expect(res.text).to.include('Incorrect username or password');
+          done(err);
+        });
+    });
   });
-});
 
-// *********************** REGISTRATION TESTCASES **************************
+  /* ----------------------  POST /register  ---------------------- */
+  describe('POST /register', () => {
 
-
-describe('Registration API', () => {
-
-  // Positive test case: Registering a new user
-  describe('Positive Test Case', () => {
-    it('should register a new user and redirect to the login page', done => {
+    it('registers a *new* user (reguser) then redirects to /login', done => {
       chai.request(server)
         .post('/register')
-        .redirects(0) // Prevent auto-following the redirect so we can assert on the response
+        .redirects(0)
+        .type('form')
         .send({
-          username: 'testuser1',
-          email: 'test1@example.com',
-          password: 'Password123'
+          username: REGISTER.user,
+          email   : REGISTER.email,
+          password: REGISTER.pass,
+          phone   : REGISTER.phone,
         })
         .end((err, res) => {
-          expect(res).to.have.status(302);         // Expecting a redirect on success
+          expect(res).to.have.status(302);
           expect(res).to.have.header('location', '/login');
-          done();
-        });
-    });
-  });
-
-  // Negative test cases: Attempting to register duplicate data
-  describe('Negative Test Cases', () => {
-
-    // First, register a user so we have duplicate records to test against
-    before(done => {
-      chai.request(server)
-        .post('/register')
-        .redirects(0)
-        .send({
-          username: 'duplicateUser',
-          email: 'duplicate@example.com',
-          password: 'Password123'
-        })
-        .end((err, res) => {
-          // You can check if registration succeeded (302 redirect) here if needed.
-          done();
+          done(err);
         });
     });
 
-    it('should not allow registration with a duplicate username', done => {
+    it('rejects duplicate username (testuser) with 400', done => {
       chai.request(server)
         .post('/register')
         .redirects(0)
+        .type('form')
         .send({
-          username: 'duplicateUser',          // duplicate username
-          email: 'unique@example.com',
-          password: 'Password123'
-        })
-        .end((err, res) => {
-          expect(res).to.have.status(400);       // Expecting 400 due to duplicate key violation
-          expect(res.text).to.include('Username already exists');
-          done();
-        });
-    });
-
-    it('should not allow registration with a duplicate email', done => {
-      chai.request(server)
-        .post('/register')
-        .redirects(0)
-        .send({
-          username: 'uniqueUser',
-          email: 'duplicate@example.com',       // duplicate email
-          password: 'Password123'
+          username: EXISTING.user,            // duplicate
+          email   : 'unique@example.com',
+          password: 'AnotherPass1!',
+          phone   : '5553334444',
         })
         .end((err, res) => {
           expect(res).to.have.status(400);
-          expect(res.text).to.include('An account with this email already exists');
-          done();
+          expect(res.text).to.include('Username already exists');
+          done(err);
         });
     });
   });
-
 });
-*/
-// ********************************************************************************
+
+/* ==================================================================
+   2. HABITS  – date-filtered API
+================================================================== */
+describe('API  /api/habits/date/:date', () => {
+  let agent;
+
+  before(done => {
+    agent = chai.request.agent(server);
+    agent
+      .post('/login')
+      .redirects(0)
+      .type('form')
+      .send({ username: EXISTING.user, password: EXISTING.pass })
+      .end(done);
+  });
+
+  after(() => agent.close());
+
+  it('returns habits JSON for a valid date', done => {
+    const today = new Date().toISOString().slice(0, 10);
+    agent.get(`/api/habits/date/${today}`).end((err, res) => {
+      expect(res).to.have.status(200);
+      expect(res.body).to.include({ success:true, date:today });
+      expect(res.body.habits).to.be.an('array');
+      done(err);
+    });
+  });
+
+  it('rejects an invalid date string with 400 + error JSON', done => {
+    agent.get('/api/habits/date/not-a-date').end((err, res) => {
+      expect(res).to.have.status(400);
+      expect(res.body).to.deep.equal({
+        success:false,
+        error:'Invalid date format. Use YYYY-MM-DD.',
+      });
+      done(err);
+    });
+  });
+});
+
+/* ------------------------------------------------------------------
+   GLOBAL TEARDOWN
+------------------------------------------------------------------ */
+after(() => server.close());

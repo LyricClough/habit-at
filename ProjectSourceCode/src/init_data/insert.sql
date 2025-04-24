@@ -1,12 +1,15 @@
 -- Sample users with plain text password for easy testing
 -- The password for all test users is 'password123'
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 INSERT INTO users (username,email,password,phone) VALUES
   ('testuser','habitat044@gmail.com',
-   '$2a$10$N9qo8uLOickgx2ZMRZo5i.e7pAt4EvsC1iBJ7ennZ/3o5O8kX9iTy','5555555555'),
+   crypt('password123', gen_salt('bf',10)),'5555555555'),
   ('johndoe','john@example.com',
-   '$2a$10$N9qo8uLOickgx2ZMRZo5i.e7pAt4EvsC1iBJ7ennZ/3o5O8kX9iTy','5551234567'),
+   crypt('password123', gen_salt('bf',10)),'5551234567'),
   ('janedoe','jane@example.com',
-   '$2a$10$N9qo8uLOickgx2ZMRZo5i.e7pAt4EvsC1iBJ7ennZ/3o5O8kX9iTy','5559876543');
+   crypt('password123', gen_salt('bf',10)),'5559876543');
 -- Sample friend relationships
 INSERT INTO friends (sender, receiver, mutual)
 VALUES
