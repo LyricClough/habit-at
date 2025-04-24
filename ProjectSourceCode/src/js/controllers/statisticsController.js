@@ -27,7 +27,8 @@ exports.getStatisticsPage = async (req, res, customView) => {
     
     // Get all habit history (completions)
     const historyData = await db.any(
-      `SELECT h.habit_id, h.habit_name, h.description, h.counter, hi.date, c.category_name
+      `SELECT h.habit_id, h.habit_name, h.description, h.counter, hi.date, c.category_name,
+              to_char(hi.date, 'YYYY-MM-DD') as formatted_date
        FROM habits h
        JOIN habits_to_history hth ON h.habit_id = hth.habit_id
        JOIN history hi ON hth.history_id = hi.history_id
@@ -38,6 +39,17 @@ exports.getStatisticsPage = async (req, res, customView) => {
       [userId]
     );
 
+    // Log date diagnostics to help debug any issues with dates
+    if (historyData.length > 0) {
+      const sampleDates = historyData.slice(0, 3).map(record => ({
+        date: record.date,
+        formatted_date: record.formatted_date,
+        jsDate: new Date(record.date).toISOString(),
+        timestamp: new Date(record.date).getTime() / 1000
+      }));
+      console.log('Date format diagnostics:', sampleDates);
+    }
+    
     // Get streak data from streaks table
     let streakData = await db.oneOrNone(
       `SELECT current_streak, longest_streak, last_activity_date
@@ -719,17 +731,63 @@ async function calculateMonthlyData(userId) {
 function generateHeatmapData(historyData) {
   const heatmapData = {};
   
+  if (!historyData || historyData.length === 0) {
+    console.warn('No history data available for heatmap');
+    return heatmapData;
+  }
+  
+  // Note: All dates in the database appear to be future dates (2025).
+  // For now, we'll allow future dates for testing/visualization purposes.
+  // TODO: Fix this when database dates are corrected.
+  const today = new Date();
+  today.setFullYear(2026); // Temporarily set "today" to 2026 to allow 2025 dates
+  today.setHours(23, 59, 59, 999);
+  
+  console.log('First few history records:', historyData.slice(0, 3));
+  
   // Group completions by date and count
   historyData.forEach(record => {
-    const timestamp = new Date(record.date).getTime() / 1000; // Convert to Unix timestamp (seconds)
-    
-    if (heatmapData[timestamp]) {
-      heatmapData[timestamp]++;
-    } else {
-      heatmapData[timestamp] = 1;
+    try {
+      // Ensure we have a valid date
+      if (!record.date) {
+        console.warn('Record missing date:', record);
+        return;
+      }
+      
+      // Parse the date string to ensure consistency
+      const dateObj = new Date(record.date);
+      if (isNaN(dateObj.getTime())) {
+        console.warn('Invalid date:', record.date);
+        return;
+      }
+      
+      // Skip extremely future dates (more than 5 years from now)
+      // This is a temporary fix until database dates are corrected
+      const realToday = new Date();
+      const fiveYearsFromNow = new Date(realToday);
+      fiveYearsFromNow.setFullYear(realToday.getFullYear() + 5);
+      
+      if (dateObj > fiveYearsFromNow) {
+        console.warn('Skipping extremely future date:', dateObj.toISOString(), record.date);
+        return;
+      }
+      
+      // Reset hours to get consistent timestamps (midnight)
+      dateObj.setHours(0, 0, 0, 0);
+      const timestamp = Math.floor(dateObj.getTime() / 1000); // Convert to Unix timestamp (seconds)
+      
+      if (heatmapData[timestamp]) {
+        heatmapData[timestamp]++;
+      } else {
+        heatmapData[timestamp] = 1;
+      }
+    } catch (err) {
+      console.error('Error processing record for heatmap:', err, record);
     }
   });
   
+  // Note: We're allowing future dates for now
+  console.log('Generated heatmap data:', heatmapData);
   return heatmapData;
 }
 

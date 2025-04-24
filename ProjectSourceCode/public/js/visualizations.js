@@ -742,33 +742,93 @@ class VisualizationManager {
       // Check if parsed data is empty
       if (!parsedData || Object.keys(parsedData).length === 0) {
         console.warn('No heatmap data available');
-        heatmapElement.innerHTML = '<div class="flex items-center justify-center h-full text-gray-400">No activity data available</div>';
+        heatmapElement.innerHTML = `
+          <div class="flex flex-col items-center justify-center h-full text-gray-400 py-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <p>No activity data available</p>
+            <p class="text-xs mt-1">Complete some habits to see your activity heat map</p>
+          </div>`;
         return;
       }
       
       // Format data for Cal-Heatmap v4
-      // Convert timestamp keys to a format Cal-Heatmap v4 can understand
       const formattedData = [];
       
       try {
         // Convert the object data format to array format required by Cal-Heatmap v4
         Object.keys(parsedData).forEach(timestamp => {
+          // Ensure timestamp is a number
+          const ts = parseInt(timestamp, 10);
+          if (isNaN(ts)) {
+            console.warn('Invalid timestamp:', timestamp);
+            return;
+          }
+          
           formattedData.push({
-            date: new Date(parseInt(timestamp) * 1000), // Convert seconds to milliseconds
+            date: new Date(ts * 1000), // Convert seconds to milliseconds
             value: parsedData[timestamp]
           });
         });
         
         console.log('Formatted heatmap data:', formattedData);
         
+        if (formattedData.length === 0) {
+          heatmapElement.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-full text-gray-400 py-4">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <p>No valid activity data found</p>
+              <p class="text-xs mt-1">There may be an issue with your activity records</p>
+            </div>`;
+          return;
+        }
+        
+        // Determine date range for the visualization
+        const dates = formattedData.map(d => d.date);
+        const oldestDate = new Date(Math.min(...dates.map(d => d.getTime())));
+        const newestDate = new Date(Math.max(...dates.map(d => d.getTime())));
+        const today = new Date();
+
+        console.log('Heatmap data date range:', {
+          oldest: oldestDate.toISOString(),
+          newest: newestDate.toISOString(),
+          today: today.toISOString()
+        });
+        
         if (typeof CalHeatmap !== 'function') {
           console.error('CalHeatmap is not defined');
-          heatmapElement.innerHTML = '<div class="text-center py-5 text-gray-500">Calendar heatmap is not available</div>';
+          heatmapElement.innerHTML = '<div class="text-center py-5 text-gray-500">Calendar heatmap library is not available</div>';
           return;
         }
         
         // Clear any existing heatmap
         heatmapElement.innerHTML = '';
+        
+        // TEMPORARY: For database with future dates (2025)
+        // If all dates are future dates, just display those dates
+        // This is for testing purpose and should be fixed when database has correct dates
+        
+        // Set start date 6 months before the earliest date in the data
+        let startDate = new Date(oldestDate);
+        startDate.setMonth(startDate.getMonth() - 6);
+        
+        // Set end date 6 months after the latest date in the data
+        let endDate = new Date(newestDate);
+        endDate.setMonth(endDate.getMonth() + 6);
+        
+        // // Add a notice about future dates
+        // const noticeDiv = document.createElement('div');
+        // noticeDiv.className = 'bg-yellow-100 text-yellow-800 text-xs px-3 py-1 rounded-md mb-3';
+        // noticeDiv.innerHTML = 'Note: Showing future dates for testing purposes. The database contains 2025 dates.';
+        // heatmapElement.parentNode.insertBefore(noticeDiv, heatmapElement);
+        
+        console.log('Heatmap visualization range:', {
+          start: startDate.toISOString(),
+          end: endDate.toISOString()
+        });
         
         // Initialize new heatmap
         const cal = new CalHeatmap();
@@ -779,7 +839,7 @@ class VisualizationManager {
             type: 'month',
             gutter: 15,
             label: {
-              text: 'MMM',
+              text: 'MMM YYYY', // Include year since we're showing future dates
               textAlign: 'center',
               position: 'top'
             }
@@ -792,9 +852,9 @@ class VisualizationManager {
             gutter: 3
           },
           date: {
-            start: new Date(new Date().setDate(new Date().getDate() - 365)),
-            // Use a more current end date to ensure today's data is shown
-            end: new Date()
+            // Set the date range based on the data
+            start: startDate,
+            end: endDate
           },
           data: {
             source: formattedData,
@@ -804,8 +864,8 @@ class VisualizationManager {
           },
           scale: {
             color: {
-              range: ['#e0f2fe', '#3b82f6'],
-              domain: [1, 10]
+              range: ['#e0f2fe', '#0ea5e9', '#3b82f6', '#1d4ed8'],
+              domain: [1, 3, 6, 10]
             }
           },
           // Add a tooltip to show the actual count value on hover
@@ -839,12 +899,12 @@ class VisualizationManager {
         
       } catch (innerError) {
         console.error('Error formatting heatmap data:', innerError);
-        heatmapElement.innerHTML = '<div class="text-center py-5 text-gray-500">Error loading calendar heatmap data</div>';
+        heatmapElement.innerHTML = '<div class="text-center py-5 text-gray-500">Error loading calendar heatmap data. Please try refreshing the page.</div>';
       }
     } catch (error) {
       console.error('Error initializing heatmap:', error);
       if (heatmapElement) {
-        heatmapElement.innerHTML = '<div class="text-center py-5 text-gray-500">Error loading calendar heatmap</div>';
+        heatmapElement.innerHTML = '<div class="text-center py-5 text-gray-500">Error loading calendar heatmap. Please try refreshing the page.</div>';
       }
     }
   }

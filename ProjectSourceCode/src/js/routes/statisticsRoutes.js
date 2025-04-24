@@ -9,8 +9,8 @@ router.use(auth);
 router.get('/statistics', ctrl.getStatisticsPage);
 
 // Debug statistics page - same controller but different view
-router.get('/statistics/debug', function(req, res) {
-  // Pass only req and res, and handle customView separately
+router.get('/statistics/debug', (req, res) => {
+  // Pass the custom view as a string parameter
   ctrl.getStatisticsPage(req, res, 'pages/debug-statistics');
 });
 

@@ -1,4 +1,3 @@
--- Sample users with plain text password for easy testing
 -- The password for all test users is 'password123'
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
@@ -10,6 +9,7 @@ INSERT INTO users (username,email,password,phone) VALUES
    crypt('password123', gen_salt('bf',10)),'5551234567'),
   ('janedoe','jane@example.com',
    crypt('password123', gen_salt('bf',10)),'5559876543');
+   
 -- Sample friend relationships
 INSERT INTO friends (sender, receiver, mutual)
 VALUES
@@ -18,7 +18,6 @@ VALUES
   (1, 3, TRUE),  -- testuser and janedoe are friends
   (3, 1, TRUE),  -- reciprocal friendship
   (2, 3, FALSE); -- johndoe sent request to janedoe (not mutual yet)
-  -- ON CONFLICT ON CONSTRAINT "idx_friends_pair" DO NOTHING;
 
 -- Sample habit categories
 INSERT INTO habit_categories (category_name, color, icon)
