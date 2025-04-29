@@ -78,10 +78,16 @@ exports.updateNotificationPreferences = async (req, res) => {
 
     // Format digest_time to HH:MM:SS
     let formattedDigestTime = null;
-    if (digest_time) {
+    if (typeof digest_time === 'string' && digest_time.includes(':')) {
       const [hh, mm] = digest_time.split(':');
-      formattedDigestTime = `${hh.padStart(2,'0')}:${mm.padStart(2,'0')}:00`;
-    }
+      if (hh !== undefined && mm !== undefined) {
+        formattedDigestTime = `${hh.padStart(2, '0')}:${mm.padStart(2, '0')}:00`;
+      } else {
+        console.error('Malformed digest_time (missing hh or mm):', digest_time);
+      }
+    } else {
+      console.error('Invalid digest_time (not a string with ":"):', digest_time);
+    } 
 
     // Persist to DB
     await db.none(`
