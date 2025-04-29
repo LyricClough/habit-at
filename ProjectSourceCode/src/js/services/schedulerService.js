@@ -128,6 +128,13 @@ function addDailyDigestSchedule(user) {
     activeJobs[key].stop();
     delete activeJobs[key];
   }
+  
+  // Check if digest_time is null or undefined
+  if (!digest_time) {
+    console.log(`Warning: User ${user_id} has daily_digest enabled but no digest_time set. Skipping schedule.`);
+    return;
+  }
+  
   const [hh, mm] = digest_time.split(':').map(Number);
   const expr = `${mm} ${hh} * * *`;  // every day at HH:MM
   
