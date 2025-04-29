@@ -180,7 +180,7 @@ https://github.com/LyricClough/habit-at
 - TailwindCSS Animate - Animation utilities
 - TailwindCSS Typography - Typography utilities
 
-### Infrastrucutre
+### Infrastructure
 - Docker- Containerization
 - Render - Deployemnt
 
